@@ -3,6 +3,7 @@ package de.upb.mb.efsm;
 import com.google.common.base.Objects;
 import com.google.common.collect.Multimap;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -10,21 +11,21 @@ import java.util.Set;
  * @author Manuel Benz
  * created on 20.02.18
  */
-public class EFSM<State, Parameter, Variable, Transition extends de.upb.mb.efsm.Transition<State, Parameter, Variable>> {
+public class EFSM<State, Parameter, Variable> {
   private final Set<State> states;
-  private final Set<Transition> transitons;
-  private final Multimap<State, Transition> srcToTransitions;
-  private final Multimap<State, Transition> tgtToTransitions;
+  private final Set<Transition<State, Parameter, Variable>> transitons;
+  private final Multimap<State, Transition<State, Parameter, Variable>> srcToTransitions;
+  private final Multimap<State, Transition<State, Parameter, Variable>> tgtToTransitions;
 
   private final Set<Variable> context;
   private State curState;
 
   protected EFSM(Set<State> states,
                  State initialState,
-                 Set<Transition> transitions,
+                 Set<Transition<State, Parameter, Variable>> transitions,
                  Set<Variable> initalContext,
-                 Multimap<State, Transition> srcToTransitions,
-                 Multimap<State, Transition> tgtToTransitions) {
+                 Multimap<State, Transition<State, Parameter, Variable>> srcToTransitions,
+                 Multimap<State, Transition<State, Parameter, Variable>> tgtToTransitions) {
     this.states = new HashSet<>(states);
     this.curState = initialState;
     this.transitons = new HashSet<>(transitions);
@@ -34,7 +35,7 @@ public class EFSM<State, Parameter, Variable, Transition extends de.upb.mb.efsm.
   }
 
   public boolean canTransfer(Parameter input) {
-    for (Transition transition : srcToTransitions.get(curState)) {
+    for (Transition<State, Parameter, Variable> transition : srcToTransitions.get(curState)) {
       if (transition.isFeasible(input, context)) {
         return true;
       }
@@ -50,7 +51,7 @@ public class EFSM<State, Parameter, Variable, Transition extends de.upb.mb.efsm.
    * @return The output of the taken transition or null if the input is not accepted in the current configuration
    */
   public Set<Parameter> transfer(Parameter input) {
-    for (Transition transition : srcToTransitions.get(curState)) {
+    for (Transition<State, Parameter, Variable> transition : srcToTransitions.get(curState)) {
       if (transition.isFeasible(input, context)) {
         curState = transition.getTgt();
         return transition.take(input, context);
@@ -64,7 +65,15 @@ public class EFSM<State, Parameter, Variable, Transition extends de.upb.mb.efsm.
     return new Configuration(curState, context);
   }
 
-  private class Configuration {
+  public Set<State> getStates() {
+    return Collections.unmodifiableSet(states);
+  }
+
+  public Set<Transition<State, Parameter, Variable>> getTransitons() {
+    return Collections.unmodifiableSet(transitons);
+  }
+
+  public class Configuration {
     private final State curState;
     private final Set<Variable> context;
 

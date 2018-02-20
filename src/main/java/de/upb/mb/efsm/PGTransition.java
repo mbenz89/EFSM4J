@@ -9,9 +9,6 @@ import java.util.Set;
  * created on 20.02.18
  */
 public abstract class PGTransition<State, Parameter, Variable> extends Transition<State, Parameter, Variable> {
-  public PGTransition(State src, State tgt) {
-    super(src, tgt);
-  }
 
   @Override
   protected boolean domainGuard(Set<Variable> context) {
