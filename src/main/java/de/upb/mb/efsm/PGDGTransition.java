@@ -6,7 +6,7 @@ package de.upb.mb.efsm;
  * @author Manuel Benz
  * created on 20.02.18
  */
-public abstract class PGDGTransition<State, Parameter, Variable> extends Transition<State, Parameter, Variable> {
+public abstract class PGDGTransition<State, Parameter, Context> extends Transition<State, Parameter, Context> {
 
 
 }

@@ -11,31 +11,31 @@ import java.util.Set;
  * @author Manuel Benz
  * created on 20.02.18
  */
-public class EFSM<State, Parameter, Variable> {
+public class EFSM<State, Parameter, Context> {
   private final Set<State> states;
-  private final Set<Transition<State, Parameter, Variable>> transitons;
-  private final Multimap<State, Transition<State, Parameter, Variable>> srcToTransitions;
-  private final Multimap<State, Transition<State, Parameter, Variable>> tgtToTransitions;
+  private final Set<Transition<State, Parameter, Context>> transitons;
+  private final Multimap<State, Transition<State, Parameter, Context>> srcToTransitions;
+  private final Multimap<State, Transition<State, Parameter, Context>> tgtToTransitions;
 
-  private final Set<Variable> context;
+  private final Context context;
   private State curState;
 
   protected EFSM(Set<State> states,
                  State initialState,
-                 Set<Transition<State, Parameter, Variable>> transitions,
-                 Set<Variable> initalContext,
-                 Multimap<State, Transition<State, Parameter, Variable>> srcToTransitions,
-                 Multimap<State, Transition<State, Parameter, Variable>> tgtToTransitions) {
+                 Context initalContext,
+                 Set<Transition<State, Parameter, Context>> transitions,
+                 Multimap<State, Transition<State, Parameter, Context>> srcToTransitions,
+                 Multimap<State, Transition<State, Parameter, Context>> tgtToTransitions) {
     this.states = new HashSet<>(states);
     this.curState = initialState;
     this.transitons = new HashSet<>(transitions);
-    this.context = new HashSet<>(initalContext);
+    this.context = initalContext;
     this.srcToTransitions = srcToTransitions;
     this.tgtToTransitions = tgtToTransitions;
   }
 
   public boolean canTransfer(Parameter input) {
-    for (Transition<State, Parameter, Variable> transition : srcToTransitions.get(curState)) {
+    for (Transition<State, Parameter, Context> transition : srcToTransitions.get(curState)) {
       if (transition.isFeasible(input, context)) {
         return true;
       }
@@ -51,7 +51,7 @@ public class EFSM<State, Parameter, Variable> {
    * @return The output of the taken transition or null if the input is not accepted in the current configuration
    */
   public Set<Parameter> transfer(Parameter input) {
-    for (Transition<State, Parameter, Variable> transition : srcToTransitions.get(curState)) {
+    for (Transition<State, Parameter, Context> transition : srcToTransitions.get(curState)) {
       if (transition.isFeasible(input, context)) {
         curState = transition.getTgt();
         return transition.take(input, context);
@@ -69,15 +69,15 @@ public class EFSM<State, Parameter, Variable> {
     return Collections.unmodifiableSet(states);
   }
 
-  public Set<Transition<State, Parameter, Variable>> getTransitons() {
+  public Set<Transition<State, Parameter, Context>> getTransitons() {
     return Collections.unmodifiableSet(transitons);
   }
 
   public class Configuration {
     private final State curState;
-    private final Set<Variable> context;
+    private final Context context;
 
-    public Configuration(State curState, Set<Variable> context) {
+    public Configuration(State curState, Context context) {
       this.curState = curState;
       this.context = context;
     }
@@ -86,7 +86,7 @@ public class EFSM<State, Parameter, Variable> {
       return curState;
     }
 
-    public Set<Variable> getContext() {
+    public Context getContext() {
       return context;
     }
 

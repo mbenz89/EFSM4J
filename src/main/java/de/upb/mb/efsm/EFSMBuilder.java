@@ -11,24 +11,24 @@ import java.util.Set;
  * @author Manuel Benz
  * created on 20.02.18
  */
-public class EFSMBuilder<State, Parameter, Variable> {
+public class EFSMBuilder<State, Parameter, Context> {
   private Set<State> states = new HashSet<>();
   private State initialState;
-  private Set<Transition<State, Parameter, Variable>> transitions = new HashSet<>();
-  private Set<Variable> initialContext = new HashSet<>();
+  private Set<Transition<State, Parameter, Context>> transitions = new HashSet<>();
+  private Context initialContext;
 
   public EFSMBuilder() {
 
   }
 
-  public EFSMBuilder<State, Parameter, Variable> withState(State... s) {
+  public EFSMBuilder<State, Parameter, Context> withState(State... s) {
     if (s != null) {
       states.addAll(Arrays.asList(s));
     }
     return this;
   }
 
-  public EFSMBuilder<State, Parameter, Variable> withInitialState(State s) {
+  public EFSMBuilder<State, Parameter, Context> withInitialState(State s) {
     if (initialState != null) {
       throw new IllegalStateException("Initial state already set");
     }
@@ -37,7 +37,7 @@ public class EFSMBuilder<State, Parameter, Variable> {
     return this;
   }
 
-  public EFSMBuilder<State, Parameter, Variable> withTransition(State src, State tgt, Transition<State, Parameter, Variable> t) {
+  public EFSMBuilder<State, Parameter, Context> withTransition(State src, State tgt, Transition<State, Parameter, Context> t) {
     states.add(src);
     states.add(tgt);
 
@@ -48,27 +48,27 @@ public class EFSMBuilder<State, Parameter, Variable> {
     return this;
   }
 
-  public EFSMBuilder<State, Parameter, Variable> withInitialContext(Variable... context) {
-    if (context != null) {
-      initialContext.addAll(Arrays.asList(context));
-    }
-
+  public EFSMBuilder<State, Parameter, Context> withInitialContext(Context initialContext) {
+    this.initialContext = initialContext;
     return this;
   }
 
-  public EFSM<State, Parameter, Variable> build() {
+  public EFSM<State, Parameter, Context> build() {
     if (initialState == null) {
       throw new IllegalStateException("Initial state not set");
     }
+    if (initialContext == null) {
+      throw new IllegalStateException("Context must be initialized");
+    }
 
-    Multimap<State, Transition<State, Parameter, Variable>> srcToTransitions = MultimapBuilder.hashKeys(states.size()).arrayListValues().build();
-    Multimap<State, Transition<State, Parameter, Variable>> tgtToTransitions = MultimapBuilder.hashKeys(states.size()).arrayListValues().build();
+    Multimap<State, Transition<State, Parameter, Context>> srcToTransitions = MultimapBuilder.hashKeys(states.size()).arrayListValues().build();
+    Multimap<State, Transition<State, Parameter, Context>> tgtToTransitions = MultimapBuilder.hashKeys(states.size()).arrayListValues().build();
 
-    for (Transition<State, Parameter, Variable> transition : transitions) {
+    for (Transition<State, Parameter, Context> transition : transitions) {
       srcToTransitions.put(transition.getSrc(), transition);
       tgtToTransitions.put(transition.getTgt(), transition);
     }
 
-    return new EFSM<>(states, initialState, transitions, initialContext, srcToTransitions, tgtToTransitions);
+    return new EFSM<>(states, initialState, initialContext, transitions, srcToTransitions, tgtToTransitions);
   }
 }
