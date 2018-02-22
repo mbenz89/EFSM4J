@@ -3,14 +3,15 @@ package de.upb.mb.efsm.eefsm;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.stream.Collectors;
 
 /**
  * @author Manuel Benz
  * created on 22.02.18
  */
-public class EEFSMContext {
+public class EEFSMContext<ContextObject> {
 
-  private final HashSet<EEFSMContext.ContextObject> internalSet = new HashSet<>();
+  private final HashSet<ContextObject> internalSet = new HashSet<>();
 
   public EEFSMContext(ContextObject... o) {
     union(o);
@@ -56,6 +57,8 @@ public class EEFSMContext {
     internalSet.removeAll(c.internalSet);
   }
 
-  public static final class ContextObject extends Object {
+  @Override
+  public String toString() {
+    return "{" + internalSet.stream().map(ContextObject::toString).collect(Collectors.joining(", ")) + "}";
   }
 }

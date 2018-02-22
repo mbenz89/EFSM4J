@@ -7,13 +7,13 @@ import org.junit.jupiter.api.Test;
 import java.util.Collections;
 import java.util.Set;
 
-import static de.upb.mb.efsm.Objects.state0;
-import static de.upb.mb.efsm.Objects.state1;
-import static de.upb.mb.efsm.Objects.state2;
-import static de.upb.mb.efsm.Objects.trans1;
-import static de.upb.mb.efsm.Objects.trans2;
-import static de.upb.mb.efsm.Objects.trans3;
-import static de.upb.mb.efsm.Objects.uninitialized;
+import static de.upb.mb.efsm.Example.state0;
+import static de.upb.mb.efsm.Example.state1;
+import static de.upb.mb.efsm.Example.state2;
+import static de.upb.mb.efsm.Example.trans1;
+import static de.upb.mb.efsm.Example.trans2;
+import static de.upb.mb.efsm.Example.trans3;
+import static de.upb.mb.efsm.Example.uninitialized;
 
 /**
  * @author Manuel Benz
@@ -23,7 +23,7 @@ class EFSMBuilderTest {
 
   @Test
   public void checkConsistency() {
-    EFSM<State, Boolean, Set<Object>> efsm = Objects.efsm();
+    EFSM<State, Boolean, Set<Object>> efsm = Example.efsm();
 
     Assertions.assertEquals(state0, efsm.getConfiguration().getCurState());
     Assertions.assertEquals(Collections.singleton(uninitialized), efsm.getConfiguration().getContext());

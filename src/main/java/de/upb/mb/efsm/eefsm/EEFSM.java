@@ -10,12 +10,12 @@ import java.util.Set;
  * @author Manuel Benz
  * created on 22.02.18
  */
-public class EEFSM<State, Input> extends EFSM<State, Input, EEFSMContext> {
-  protected EEFSM(Set<State> states, State initialState, EEFSMContext initalContext, Set<Transition<State, Input, EEFSMContext>> transitions) {
+public class EEFSM<State, Input, ContextObject> extends EFSM<State, Input, EEFSMContext<ContextObject>> {
+  protected EEFSM(Set<State> states, State initialState, EEFSMContext initalContext, Set<Transition<State, Input, EEFSMContext<ContextObject>>> transitions) {
     super(states, initialState, initalContext, transitions);
   }
 
-  public static <State, Input> EFSMBuilder<State, Input, EEFSMContext, EEFSM<State, Input>> builder() {
+  public static <State, Input, ContextObject> EFSMBuilder<State, Input, EEFSMContext<ContextObject>, EEFSM<State, Input, ContextObject>> builder() {
     return new EFSMBuilder(EEFSM.class);
   }
 }

@@ -8,7 +8,7 @@ import java.util.Set;
  * @author Manuel Benz
  * created on 20.02.18
  */
-public class Objects {
+public class Example {
   static State state0 = new State("0");
   static State state1 = new State("1");
   static State state2 = new State("2");
