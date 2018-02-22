@@ -9,12 +9,32 @@ package de.upb.mb.efsm;
 public abstract class SimpleTransition<State, Parameter, Context> extends Transition<State, Parameter, Context> {
 
   @Override
-  protected boolean inputGuard(Parameter input, Context context) {
+  protected boolean inputGuard(Parameter input) {
     return true;
   }
 
   @Override
   protected boolean domainGuard(Context context) {
     return true;
+  }
+
+  @Override
+  public boolean isSimpleTransition() {
+    return true;
+  }
+
+  @Override
+  public boolean isDGTransition() {
+    return false;
+  }
+
+  @Override
+  public boolean isPGTransition() {
+    return false;
+  }
+
+  @Override
+  public boolean isPGDGTransition() {
+    return false;
   }
 }

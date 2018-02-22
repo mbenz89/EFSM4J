@@ -8,5 +8,23 @@ package de.upb.mb.efsm;
  */
 public abstract class PGDGTransition<State, Parameter, Context> extends Transition<State, Parameter, Context> {
 
+  @Override
+  public boolean isPGDGTransition() {
+    return true;
+  }
 
+  @Override
+  public boolean isDGTransition() {
+    return false;
+  }
+
+  @Override
+  public boolean isPGTransition() {
+    return false;
+  }
+
+  @Override
+  public boolean isSimpleTransition() {
+    return false;
+  }
 }

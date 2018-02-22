@@ -28,7 +28,7 @@ public class Objects {
   static PGDGTransition<State, Boolean, Set<Object>> trans2 = new PGDGTransition<State, Boolean, Set<Object>>() {
 
     @Override
-    protected boolean inputGuard(Boolean input, Set<Object> context) {
+    protected boolean inputGuard(Boolean input) {
       return input;
     }
 

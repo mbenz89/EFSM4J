@@ -8,9 +8,28 @@ package de.upb.mb.efsm;
  */
 public abstract class DGTransition<State, Parameter, Context> extends Transition<State, Parameter, Context> {
 
+  @Override
+  protected boolean inputGuard(Parameter input) {
+    return true;
+  }
 
   @Override
-  protected boolean inputGuard(Parameter input, Context context) {
+  public boolean isDGTransition() {
     return true;
+  }
+
+  @Override
+  public boolean isPGTransition() {
+    return false;
+  }
+
+  @Override
+  public boolean isPGDGTransition() {
+    return false;
+  }
+
+  @Override
+  public boolean isSimpleTransition() {
+    return false;
   }
 }

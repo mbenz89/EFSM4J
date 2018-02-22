@@ -1,8 +1,5 @@
 package de.upb.mb.efsm;
 
-import com.google.common.collect.Multimap;
-import com.google.common.collect.MultimapBuilder;
-
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -61,14 +58,6 @@ public class EFSMBuilder<State, Parameter, Context> {
       throw new IllegalStateException("Context must be initialized");
     }
 
-    Multimap<State, Transition<State, Parameter, Context>> srcToTransitions = MultimapBuilder.hashKeys(states.size()).arrayListValues().build();
-    Multimap<State, Transition<State, Parameter, Context>> tgtToTransitions = MultimapBuilder.hashKeys(states.size()).arrayListValues().build();
-
-    for (Transition<State, Parameter, Context> transition : transitions) {
-      srcToTransitions.put(transition.getSrc(), transition);
-      tgtToTransitions.put(transition.getTgt(), transition);
-    }
-
-    return new EFSM<>(states, initialState, initialContext, transitions, srcToTransitions, tgtToTransitions);
+    return new EFSM<>(states, initialState, initialContext, transitions);
   }
 }

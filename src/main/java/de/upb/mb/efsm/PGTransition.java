@@ -12,4 +12,24 @@ public abstract class PGTransition<State, Parameter, Context> extends Transition
   protected boolean domainGuard(Context context) {
     return true;
   }
+
+  @Override
+  public boolean isPGTransition() {
+    return true;
+  }
+
+  @Override
+  public boolean isDGTransition() {
+    return false;
+  }
+
+  @Override
+  public boolean isPGDGTransition() {
+    return false;
+  }
+
+  @Override
+  public boolean isSimpleTransition() {
+    return false;
+  }
 }

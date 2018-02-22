@@ -8,13 +8,13 @@ import java.util.Set;
  * @author Manuel Benz
  * created on 20.02.18
  */
-abstract class Transition<State, Parameter, Context> {
+public abstract class Transition<State, Parameter, Context> {
 
   private State src;
   private State tgt;
 
-  public boolean isFeasible(Parameter input,Context context) {
-    return inputGuard(input, context) && domainGuard(context);
+  public boolean isFeasible(Parameter input, Context context) {
+    return inputGuard(input) && domainGuard(context);
   }
 
   /**
@@ -63,9 +63,17 @@ abstract class Transition<State, Parameter, Context> {
     this.tgt = tgt;
   }
 
-  protected abstract boolean inputGuard(Parameter input, Context context);
+  protected abstract boolean inputGuard(Parameter input);
 
   protected abstract boolean domainGuard(Context context);
 
   protected abstract Set<Parameter> operation(Parameter input, Context context);
+
+  public abstract boolean isDGTransition();
+
+  public abstract boolean isPGTransition();
+
+  public abstract boolean isPGDGTransition();
+
+  public abstract boolean isSimpleTransition();
 }

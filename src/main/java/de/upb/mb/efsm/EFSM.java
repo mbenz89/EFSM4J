@@ -1,10 +1,8 @@
 package de.upb.mb.efsm;
 
 import com.google.common.base.Objects;
-import com.google.common.collect.Multimap;
+import org.jgrapht.graph.DirectedMultigraph;
 
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -12,30 +10,34 @@ import java.util.Set;
  * created on 20.02.18
  */
 public class EFSM<State, Parameter, Context> {
-  private final Set<State> states;
-  private final Set<Transition<State, Parameter, Context>> transitons;
-  private final Multimap<State, Transition<State, Parameter, Context>> srcToTransitions;
-  private final Multimap<State, Transition<State, Parameter, Context>> tgtToTransitions;
-
   private final Context context;
+  private DirectedMultigraph<State, Transition<State, Parameter, Context>> baseGraph;
   private State curState;
 
   protected EFSM(Set<State> states,
                  State initialState,
                  Context initalContext,
-                 Set<Transition<State, Parameter, Context>> transitions,
-                 Multimap<State, Transition<State, Parameter, Context>> srcToTransitions,
-                 Multimap<State, Transition<State, Parameter, Context>> tgtToTransitions) {
-    this.states = new HashSet<>(states);
+                 Set<Transition<State, Parameter, Context>> transitions) {
     this.curState = initialState;
-    this.transitons = new HashSet<>(transitions);
     this.context = initalContext;
-    this.srcToTransitions = srcToTransitions;
-    this.tgtToTransitions = tgtToTransitions;
+    baseGraph = new DirectedMultigraph<>((src, tgt) -> {
+      EpsilonTransition<State, Parameter, Context> e = new EpsilonTransition<>();
+      e.setSrc(src);
+      e.setTgt(tgt);
+      return e;
+    });
+
+    for (State state : states) {
+      baseGraph.addVertex(state);
+    }
+
+    for (Transition<State, Parameter, Context> transition : transitions) {
+      baseGraph.addEdge(transition.getSrc(), transition.getTgt(), transition);
+    }
   }
 
   public boolean canTransfer(Parameter input) {
-    for (Transition<State, Parameter, Context> transition : srcToTransitions.get(curState)) {
+    for (Transition<State, Parameter, Context> transition : baseGraph.outgoingEdgesOf(curState)) {
       if (transition.isFeasible(input, context)) {
         return true;
       }
@@ -51,7 +53,7 @@ public class EFSM<State, Parameter, Context> {
    * @return The output of the taken transition or null if the input is not accepted in the current configuration
    */
   public Set<Parameter> transfer(Parameter input) {
-    for (Transition<State, Parameter, Context> transition : srcToTransitions.get(curState)) {
+    for (Transition<State, Parameter, Context> transition : baseGraph.outgoingEdgesOf(curState)) {
       if (transition.isFeasible(input, context)) {
         curState = transition.getTgt();
         return transition.take(input, context);
@@ -61,16 +63,42 @@ public class EFSM<State, Parameter, Context> {
     return null;
   }
 
+  /**
+   * Checks if the given input leads to a new configuration, returns the new configuration or null otherwise.
+   *
+   * @param input
+   * @return The configuration after taking one of the posible transitions for the given input or null if the input is not accepted in the current configuration
+   */
+  public Configuration transferAndDrop(Parameter input) {
+    if (transfer(input) != null) {
+      return getConfiguration();
+    } else {
+      return null;
+    }
+  }
+
   public Configuration getConfiguration() {
     return new Configuration(curState, context);
   }
 
   public Set<State> getStates() {
-    return Collections.unmodifiableSet(states);
+    return baseGraph.vertexSet();
   }
 
   public Set<Transition<State, Parameter, Context>> getTransitons() {
-    return Collections.unmodifiableSet(transitons);
+    return baseGraph.edgeSet();
+  }
+
+  public Set<Transition<State, Parameter, Context>> transitionOutOf(State state) {
+    return baseGraph.outgoingEdgesOf(curState);
+  }
+
+  public Set<Transition<State, Parameter, Context>> transitionInTo(State state) {
+    return baseGraph.incomingEdgesOf(curState);
+  }
+
+  public DirectedMultigraph<State, Transition<State, Parameter, Context>> getBaseGraph() {
+    return baseGraph;
   }
 
   public class Configuration {
