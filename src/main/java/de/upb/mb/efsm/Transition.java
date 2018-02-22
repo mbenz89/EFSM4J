@@ -76,4 +76,6 @@ public abstract class Transition<State, Parameter, Context> {
   public abstract boolean isPGDGTransition();
 
   public abstract boolean isSimpleTransition();
+
+  public abstract boolean isEpsilonTransition();
 }

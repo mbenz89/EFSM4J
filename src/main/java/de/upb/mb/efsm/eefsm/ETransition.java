@@ -12,6 +12,7 @@ import java.util.Set;
  */
 public class ETransition<State, Input, ContextObject> extends Transition<State, Input, EEFSMContext<ContextObject>> {
 
+  public static final String ℂ = "\u2102";
   private final Input expectedInput;
   private final ContextObject expectedContext;
   private final boolean elementOf;
@@ -74,22 +75,27 @@ public class ETransition<State, Input, ContextObject> extends Transition<State, 
   }
 
   @Override
+  public boolean isEpsilonTransition() {
+    return isSimpleTransition() && addToContext == null && removeFromContext == null;
+  }
+
+  @Override
   public String toString() {
     StringBuilder builder = new StringBuilder();
 
-    builder.append((expectedInput == null ? "-" : expectedInput) + " / " + (expectedContext == null ? "-" : expectedContext));
+    builder.append((expectedInput == null ? "-" : expectedInput) + " \uFF0F " + (expectedContext == null ? "-" : expectedContext));
     if (expectedContext != null) {
-      builder.append((elementOf ? " in " : " not in ") + "context");
+      builder.append((elementOf ? " \u2208 " : " \u2209 ") + ℂ);
     }
     builder.append("\n");
-    builder.append(String.join("", Collections.nCopies(builder.length(), "-")) + "\n");
+    builder.append(String.join("", Collections.nCopies(builder.length() + 5, "-")) + "\n");
     if (addToContext != null || removeFromContext != null) {
-      builder.append("context = ");
+      builder.append(ℂ + " = ");
       if (addToContext != null) {
-        builder.append("(context u " + Arrays.toString(addToContext) + ")");
+        builder.append("(" + ℂ + " \u222A " + Arrays.toString(addToContext) + ")");
       }
       if (removeFromContext != null) {
-        builder.append(" / " + Arrays.toString(removeFromContext));
+        builder.append((addToContext == null ? ℂ : "") + " \u2216 " + Arrays.toString(removeFromContext));
       }
     } else {
       builder.append("-");

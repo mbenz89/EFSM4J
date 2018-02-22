@@ -110,7 +110,7 @@ public class EFSM<State, Parameter, Context> {
       this.context = context;
     }
 
-    public State getCurState() {
+    public State getState() {
       return curState;
     }
 

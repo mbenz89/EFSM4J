@@ -14,4 +14,9 @@ public class EpsilonTransition<State, Parameter, Context> extends SimpleTransiti
   protected Set<Parameter> operation(Parameter input, Context context) {
     return Collections.emptySet();
   }
+
+  @Override
+  public boolean isEpsilonTransition() {
+    return true;
+  }
 }

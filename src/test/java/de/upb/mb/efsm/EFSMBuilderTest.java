@@ -25,7 +25,7 @@ class EFSMBuilderTest {
   public void checkConsistency() {
     EFSM<State, Boolean, Set<Object>> efsm = Example.efsm();
 
-    Assertions.assertEquals(state0, efsm.getConfiguration().getCurState());
+    Assertions.assertEquals(state0, efsm.getConfiguration().getState());
     Assertions.assertEquals(Collections.singleton(uninitialized), efsm.getConfiguration().getContext());
 
     Assertions.assertEquals(Sets.newHashSet(state0, state1, state2), efsm.getStates());

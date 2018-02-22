@@ -61,12 +61,30 @@ public class EFSMBuilder<State, Parameter, Context, EFSMType extends EFSM<State,
     }
 
     try {
-      Constructor<EFSMType> constructor = efsmTypeClass.getDeclaredConstructor(Set.class, Object.class, Object.class, Set.class);
+      Constructor<EFSMType> constructor = getConstructor();
+      if (constructor == null) {
+        throw new RuntimeException();
+      }
+      constructor.setAccessible(true);
       return constructor.newInstance(states, initialState, initialContext, transitions);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
 
+  }
+
+  private Constructor<EFSMType> getConstructor() {
+    for (Constructor<?> constructor : efsmTypeClass.getDeclaredConstructors()) {
+      Class<?>[] parameterTypes = constructor.getParameterTypes();
+      if (parameterTypes.length != 4) {
+        continue;
+      }
+
+      if (parameterTypes[0].isAssignableFrom(states.getClass()) && parameterTypes[1].isAssignableFrom(initialState.getClass()) && parameterTypes[2].isAssignableFrom(initialContext.getClass()) && parameterTypes[3].isAssignableFrom(transitions.getClass())) {
+        return (Constructor<EFSMType>) constructor;
+      }
+    }
+    return null;
   }
 
 }
