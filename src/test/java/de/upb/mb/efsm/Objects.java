@@ -57,7 +57,7 @@ public class Objects {
       return null;
     }
   };
-  private static EFSMBuilder<State, Boolean, Set<Object>> builder = new EFSMBuilder<>();
+  private static EFSMBuilder<State, Boolean, Set<Object>, EFSM<State, Boolean, Set<Object>>> builder = new EFSMBuilder(EFSM.class);
 
   static EFSM<State, Boolean, Set<Object>> efsm() {
     return builder.withInitialState(state0)
