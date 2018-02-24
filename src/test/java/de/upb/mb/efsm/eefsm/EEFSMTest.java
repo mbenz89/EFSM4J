@@ -1,13 +1,11 @@
 package de.upb.mb.efsm.eefsm;
 
-import org.jgrapht.io.DOTExporter;
-import org.jgrapht.io.IntegerComponentNameProvider;
+import de.upb.mb.efsm.EFSMDotExporter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Paths;
 
 /**
  * @author Manuel Benz
@@ -24,14 +22,7 @@ class EEFSMTest {
 
   @Test
   void toDot() throws IOException {
-    DOTExporter exporter = new DOTExporter<>(
-        new IntegerComponentNameProvider<>(),
-        state -> state.toString(),
-        edge -> edge.toString()
-    );
-
-    try (BufferedWriter writer = new BufferedWriter(new FileWriter("./target/eefsm.dot"))) {
-      exporter.exportGraph(example.eefsm.getBaseGraph(), writer);
-    }
+    EFSMDotExporter exporter = new EFSMDotExporter(example.eefsm);
+    exporter.writeOut(Paths.get("./target/eefsm.dot"));
   }
 }

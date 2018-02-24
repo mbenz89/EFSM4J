@@ -1,6 +1,8 @@
 package de.upb.mb.efsm;
 
 import com.google.common.base.Objects;
+import org.jgrapht.ListenableGraph;
+import org.jgrapht.graph.DefaultListenableGraph;
 import org.jgrapht.graph.DirectedMultigraph;
 
 import java.util.Set;
@@ -9,35 +11,32 @@ import java.util.Set;
  * @author Manuel Benz
  * created on 20.02.18
  */
-public class EFSM<State, Parameter, Context> {
+public class EFSM<State, Parameter, Context, Transition extends de.upb.mb.efsm.Transition<State, Parameter, Context>> {
   private final Context context;
-  private DirectedMultigraph<State, Transition<State, Parameter, Context>> baseGraph;
+  private ListenableGraph<State, Transition> baseGraph;
   private State curState;
 
   protected EFSM(Set<State> states,
                  State initialState,
                  Context initalContext,
-                 Set<Transition<State, Parameter, Context>> transitions) {
+                 Set<Transition> transitions) {
     this.curState = initialState;
     this.context = initalContext;
-    baseGraph = new DirectedMultigraph<>((src, tgt) -> {
-      EpsilonTransition<State, Parameter, Context> e = new EpsilonTransition<>();
-      e.setSrc(src);
-      e.setTgt(tgt);
-      return e;
-    });
+    baseGraph = new DefaultListenableGraph<>(new DirectedMultigraph<State, Transition>((src, tgt) -> {
+      throw new IllegalStateException("Edges should not be added without a transition object. We cannot infer a specific transition object due to generics.");
+    }), true);
 
     for (State state : states) {
       baseGraph.addVertex(state);
     }
 
-    for (Transition<State, Parameter, Context> transition : transitions) {
+    for (Transition transition : transitions) {
       baseGraph.addEdge(transition.getSrc(), transition.getTgt(), transition);
     }
   }
 
   public boolean canTransfer(Parameter input) {
-    for (Transition<State, Parameter, Context> transition : baseGraph.outgoingEdgesOf(curState)) {
+    for (Transition transition : baseGraph.outgoingEdgesOf(curState)) {
       if (transition.isFeasible(input, context)) {
         return true;
       }
@@ -53,7 +52,7 @@ public class EFSM<State, Parameter, Context> {
    * @return The output of the taken transition or null if the input is not accepted in the current configuration
    */
   public Set<Parameter> transfer(Parameter input) {
-    for (Transition<State, Parameter, Context> transition : baseGraph.outgoingEdgesOf(curState)) {
+    for (Transition transition : baseGraph.outgoingEdgesOf(curState)) {
       if (transition.isFeasible(input, context)) {
         curState = transition.getTgt();
         return transition.take(input, context);
@@ -85,19 +84,19 @@ public class EFSM<State, Parameter, Context> {
     return baseGraph.vertexSet();
   }
 
-  public Set<Transition<State, Parameter, Context>> getTransitons() {
+  public Set<Transition> getTransitons() {
     return baseGraph.edgeSet();
   }
 
-  public Set<Transition<State, Parameter, Context>> transitionOutOf(State state) {
+  public Set<Transition> transitionOutOf(State state) {
     return baseGraph.outgoingEdgesOf(curState);
   }
 
-  public Set<Transition<State, Parameter, Context>> transitionInTo(State state) {
+  public Set<Transition> transitionInTo(State state) {
     return baseGraph.incomingEdgesOf(curState);
   }
 
-  public DirectedMultigraph<State, Transition<State, Parameter, Context>> getBaseGraph() {
+  protected ListenableGraph<State, Transition> getBaseGraph() {
     return baseGraph;
   }
 

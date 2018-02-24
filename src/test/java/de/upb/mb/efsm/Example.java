@@ -26,10 +26,11 @@ public class Example {
     }
 
     @Override
-    public boolean isEpsilonTransition() {
-      return false;
+    public boolean hasOperation() {
+      return true;
     }
   };
+
   static PGDGTransition<State, Boolean, Set<Object>> trans2 = new PGDGTransition<State, Boolean, Set<Object>>() {
 
     @Override
@@ -50,9 +51,10 @@ public class Example {
     }
 
     @Override
-    public boolean isEpsilonTransition() {
-      return false;
+    public boolean hasOperation() {
+      return true;
     }
+
   };
   static DGTransition<State, Boolean, Set<Object>> trans3 = new DGTransition<State, Boolean, Set<Object>>() {
     @Override
@@ -68,13 +70,13 @@ public class Example {
     }
 
     @Override
-    public boolean isEpsilonTransition() {
-      return false;
+    public boolean hasOperation() {
+      return true;
     }
   };
-  private static EFSMBuilder<State, Boolean, Set<Object>, EFSM<State, Boolean, Set<Object>>> builder = new EFSMBuilder(EFSM.class);
+  private static EFSMBuilder<State, Boolean, Set<Object>, Transition<State, Boolean, Set<Object>>, EFSM<State, Boolean, Set<Object>, Transition<State, Boolean, Set<Object>>>> builder = new EFSMBuilder(EFSM.class);
 
-  static EFSM<State, Boolean, Set<Object>> efsm() {
+  static EFSM<State, Boolean, Set<Object>, Transition<State, Boolean, Set<Object>>> efsm() {
     return builder.withInitialState(state0)
         .withInitialContext(Sets.newHashSet(uninitialized))
         .withTransition(state0, state1, trans1)

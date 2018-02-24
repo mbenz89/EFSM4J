@@ -73,12 +73,12 @@ public class ETransition<State, Input, ContextObject> extends Transition<State, 
 
   @Override
   public boolean hasDomainGuard() {
-    return false;
+    return expectedContext != null;
   }
 
   @Override
   public boolean hasParameterGuard() {
-    return false;
+    return expectedInput != null;
   }
 
 
