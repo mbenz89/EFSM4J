@@ -1,6 +1,5 @@
 package de.upb.mb.efsm;
 
-import com.google.common.base.Objects;
 import org.jgrapht.ListenableGraph;
 import org.jgrapht.graph.DefaultListenableGraph;
 import org.jgrapht.graph.DirectedMultigraph;
@@ -35,7 +34,7 @@ public class EFSM<State, Parameter, Context, Transition extends de.upb.mb.efsm.T
     }
   }
 
-  public boolean canTransfer(Parameter input) {
+  public boolean canTransition(Parameter input) {
     for (Transition transition : baseGraph.outgoingEdgesOf(curState)) {
       if (transition.isFeasible(input, context)) {
         return true;
@@ -45,13 +44,17 @@ public class EFSM<State, Parameter, Context, Transition extends de.upb.mb.efsm.T
     return false;
   }
 
+  public boolean canTransition() {
+    return canTransition(null);
+  }
+
   /**
    * Checks if the given input leads to a new configuration, returns the output for the transition taken.
    *
    * @param input
-   * @return The output of the taken transition or null if the input is not accepted in the current configuration
+   * @return The output for the taken transition or null if the input is not accepted in the current configuration
    */
-  public Set<Parameter> transfer(Parameter input) {
+  public Set<Parameter> transition(Parameter input) {
     for (Transition transition : baseGraph.outgoingEdgesOf(curState)) {
       if (transition.isFeasible(input, context)) {
         curState = transition.getTgt();
@@ -63,20 +66,39 @@ public class EFSM<State, Parameter, Context, Transition extends de.upb.mb.efsm.T
   }
 
   /**
+   * Checks if the empty input leads to a new configuration, returns the output for the transition taken.
+   *
+   * @return The output for the taken transition or null if the input is not accepted in the current configuration
+   */
+  public Set<Parameter> transition() {
+    return transition(null);
+  }
+
+
+  /**
    * Checks if the given input leads to a new configuration, returns the new configuration or null otherwise.
    *
    * @param input
-   * @return The configuration after taking one of the posible transitions for the given input or null if the input is not accepted in the current configuration
+   * @return The configuration after taking one of the possible transitions for the given input or null if the input is not accepted in the current configuration
    */
-  public Configuration transferAndDrop(Parameter input) {
-    if (transfer(input) != null) {
+  public Configuration transitionAndDrop(Parameter input) {
+    if (transition(input) != null) {
       return getConfiguration();
     } else {
       return null;
     }
   }
 
-  public Configuration getConfiguration() {
+  /**
+   * Checks if the empty input leads to a new configuration, returns the new configuration or null otherwise.
+   *
+   * @return The configuration after taking one of the possible transitions for the empty input or null if the input is not accepted in the current configuration
+   */
+  public Configuration transitionAndDrop() {
+    return transitionAndDrop(null);
+  }
+
+  public Configuration<State, Context> getConfiguration() {
     return new Configuration(curState, context);
   }
 
@@ -88,11 +110,11 @@ public class EFSM<State, Parameter, Context, Transition extends de.upb.mb.efsm.T
     return baseGraph.edgeSet();
   }
 
-  public Set<Transition> transitionOutOf(State state) {
+  public Set<Transition> transitionsOutOf(State state) {
     return baseGraph.outgoingEdgesOf(curState);
   }
 
-  public Set<Transition> transitionInTo(State state) {
+  public Set<Transition> transitionsInTo(State state) {
     return baseGraph.incomingEdgesOf(curState);
   }
 
@@ -100,39 +122,4 @@ public class EFSM<State, Parameter, Context, Transition extends de.upb.mb.efsm.T
     return baseGraph;
   }
 
-  public class Configuration {
-    private final State curState;
-    private final Context context;
-
-    public Configuration(State curState, Context context) {
-      this.curState = curState;
-      this.context = context;
-    }
-
-    public State getState() {
-      return curState;
-    }
-
-    public Context getContext() {
-      return context;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) {
-        return true;
-      }
-      if (o == null || getClass() != o.getClass()) {
-        return false;
-      }
-      Configuration that = (Configuration) o;
-      return Objects.equal(curState, that.curState) &&
-          Objects.equal(context, that.context);
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hashCode(curState, context);
-    }
-  }
 }

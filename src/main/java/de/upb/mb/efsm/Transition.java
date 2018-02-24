@@ -63,6 +63,12 @@ public abstract class Transition<State, Parameter, Context> {
     this.tgt = tgt;
   }
 
+  /**
+   * Has to handle the empty input (null)
+   *
+   * @param input Null as empty input or a Parameter
+   * @return
+   */
   protected abstract boolean inputGuard(Parameter input);
 
   protected abstract boolean domainGuard(Context context);

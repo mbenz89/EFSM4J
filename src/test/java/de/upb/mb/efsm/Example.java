@@ -9,15 +9,15 @@ import java.util.Set;
  * created on 20.02.18
  */
 public class Example {
-  static State state0 = new State("0");
-  static State state1 = new State("1");
-  static State state2 = new State("2");
+  State state0 = new State("0");
+  State state1 = new State("1");
+  State state2 = new State("2");
 
-  static Object uninitialized = new Object();
-  static Object initialized = new Object();
-  static Object running = new Object();
+  Object uninitialized = new Object();
+  Object initialized = new Object();
+  Object running = new Object();
 
-  static SimpleTransition<State, Boolean, Set<Object>> trans1 = new SimpleTransition<State, Boolean, Set<Object>>() {
+  SimpleTransition<State, Boolean, Set<Object>> trans1 = new SimpleTransition<State, Boolean, Set<Object>>() {
     @Override
     protected Set<Boolean> operation(Boolean input, Set<Object> context) {
       context.remove(uninitialized);
@@ -31,11 +31,11 @@ public class Example {
     }
   };
 
-  static PGDGTransition<State, Boolean, Set<Object>> trans2 = new PGDGTransition<State, Boolean, Set<Object>>() {
+  PGDGTransition<State, Boolean, Set<Object>> trans2 = new PGDGTransition<State, Boolean, Set<Object>>() {
 
     @Override
     protected boolean inputGuard(Boolean input) {
-      return input;
+      return input != null && input;
     }
 
     @Override
@@ -56,7 +56,7 @@ public class Example {
     }
 
   };
-  static DGTransition<State, Boolean, Set<Object>> trans3 = new DGTransition<State, Boolean, Set<Object>>() {
+  DGTransition<State, Boolean, Set<Object>> trans3 = new DGTransition<State, Boolean, Set<Object>>() {
     @Override
     protected boolean domainGuard(Set<Object> context) {
       return context.contains(running);
@@ -74,10 +74,11 @@ public class Example {
       return true;
     }
   };
-  private static EFSMBuilder<State, Boolean, Set<Object>, Transition<State, Boolean, Set<Object>>, EFSM<State, Boolean, Set<Object>, Transition<State, Boolean, Set<Object>>>> builder = new EFSMBuilder(EFSM.class);
+  EFSM<State, Boolean, Set<Object>, Transition<State, Boolean, Set<Object>>> efsm;
+  private EFSMBuilder<State, Boolean, Set<Object>, Transition<State, Boolean, Set<Object>>, EFSM<State, Boolean, Set<Object>, Transition<State, Boolean, Set<Object>>>> builder = new EFSMBuilder(EFSM.class);
 
-  static EFSM<State, Boolean, Set<Object>, Transition<State, Boolean, Set<Object>>> efsm() {
-    return builder.withInitialState(state0)
+  public Example() {
+    efsm = builder.withInitialState(state0)
         .withInitialContext(Sets.newHashSet(uninitialized))
         .withTransition(state0, state1, trans1)
         .withTransition(state1, state2, trans2)
