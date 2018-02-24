@@ -19,22 +19,12 @@ public abstract class SimpleTransition<State, Parameter, Context> extends Transi
   }
 
   @Override
-  public boolean isSimpleTransition() {
-    return true;
-  }
-
-  @Override
-  public boolean isDGTransition() {
+  public boolean hasDomainGuard() {
     return false;
   }
 
   @Override
-  public boolean isPGTransition() {
-    return false;
-  }
-
-  @Override
-  public boolean isPGDGTransition() {
+  public boolean hasParameterGuard() {
     return false;
   }
 }

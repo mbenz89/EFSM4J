@@ -16,7 +16,8 @@ public class EpsilonTransition<State, Parameter, Context> extends SimpleTransiti
   }
 
   @Override
-  public boolean isEpsilonTransition() {
-    return true;
+  public boolean hasOperation() {
+    return false;
   }
+
 }

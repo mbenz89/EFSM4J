@@ -23,8 +23,20 @@ public class ETransition<State, Input, ContextObject> extends Transition<State, 
     this.expectedInput = expectedInput;
     this.expectedContext = expectedContext;
     this.elementOf = elementOf;
-    this.addToContext = addToContext;
-    this.removeFromContext = removeFromContext;
+    // ensure that these arrays are not empty, so that later checks against null ensure there are not operations
+    this.addToContext = sanitize(addToContext);
+    this.removeFromContext = sanitize(removeFromContext);
+  }
+
+  /**
+   * Returns null if the given array is null or empty, the given array otherwise.
+   *
+   * @param array
+   * @param <T>
+   * @return
+   */
+  private <T> T[] sanitize(T[] array) {
+    return array == null || array.length == 0 ? null : array;
   }
 
   @Override
@@ -55,29 +67,20 @@ public class ETransition<State, Input, ContextObject> extends Transition<State, 
   }
 
   @Override
-  public boolean isDGTransition() {
-    return expectedInput == null && expectedContext != null;
+  public boolean hasOperation() {
+    return addToContext != null || removeFromContext != null;
   }
 
   @Override
-  public boolean isPGTransition() {
-    return expectedInput != null && expectedContext == null;
+  public boolean hasDomainGuard() {
+    return false;
   }
 
   @Override
-  public boolean isPGDGTransition() {
-    return expectedInput != null && expectedContext != null;
+  public boolean hasParameterGuard() {
+    return false;
   }
 
-  @Override
-  public boolean isSimpleTransition() {
-    return expectedInput == null && expectedContext == null;
-  }
-
-  @Override
-  public boolean isEpsilonTransition() {
-    return isSimpleTransition() && addToContext == null && removeFromContext == null;
-  }
 
   @Override
   public String toString() {

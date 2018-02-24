@@ -14,22 +14,12 @@ public abstract class DGTransition<State, Parameter, Context> extends Transition
   }
 
   @Override
-  public boolean isDGTransition() {
+  public boolean hasDomainGuard() {
     return true;
   }
 
   @Override
-  public boolean isPGTransition() {
-    return false;
-  }
-
-  @Override
-  public boolean isPGDGTransition() {
-    return false;
-  }
-
-  @Override
-  public boolean isSimpleTransition() {
+  public boolean hasParameterGuard() {
     return false;
   }
 }

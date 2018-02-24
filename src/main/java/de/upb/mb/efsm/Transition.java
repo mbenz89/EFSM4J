@@ -69,13 +69,30 @@ public abstract class Transition<State, Parameter, Context> {
 
   protected abstract Set<Parameter> operation(Parameter input, Context context);
 
-  public abstract boolean isDGTransition();
 
-  public abstract boolean isPGTransition();
+  public abstract boolean hasOperation();
 
-  public abstract boolean isPGDGTransition();
+  public abstract boolean hasDomainGuard();
 
-  public abstract boolean isSimpleTransition();
+  public abstract boolean hasParameterGuard();
 
-  public abstract boolean isEpsilonTransition();
+  public boolean isEpsilonTransition() {
+    return isSimpleTransition() && !hasOperation();
+  }
+
+  public boolean isDGTransition() {
+    return hasDomainGuard() && !hasParameterGuard();
+  }
+
+  public boolean isPGTransition() {
+    return hasParameterGuard() && !hasDomainGuard();
+  }
+
+  public boolean isPGDGTransition() {
+    return hasParameterGuard() && hasDomainGuard();
+  }
+
+  public boolean isSimpleTransition() {
+    return !hasDomainGuard() && !hasParameterGuard();
+  }
 }
