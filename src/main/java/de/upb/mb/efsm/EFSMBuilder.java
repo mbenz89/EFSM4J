@@ -9,7 +9,7 @@ import java.util.Set;
  * @author Manuel Benz
  * created on 20.02.18
  */
-public class EFSMBuilder<State, Parameter, Context, Transition extends de.upb.mb.efsm.Transition<State, Parameter, Context>, EFSM extends de.upb.mb.efsm.EFSM<State, Parameter, Context, Transition>> {
+public class EFSMBuilder<State, Parameter, Context extends IEFSMContext<Context>, Transition extends de.upb.mb.efsm.Transition<State, Parameter, Context>, EFSM extends de.upb.mb.efsm.EFSM<State, Parameter, Context, Transition>> {
   private final Class<EFSM> efsmTypeClass;
   private Set<State> states = new HashSet<>();
   private State initialState;

@@ -1,7 +1,5 @@
 package de.upb.mb.efsm;
 
-import com.google.common.collect.Sets;
-
 import java.util.Set;
 
 /**
@@ -17,9 +15,9 @@ public class Example {
   Object initialized = new Object();
   Object running = new Object();
 
-  SimpleTransition<State, Boolean, Set<Object>> trans1 = new SimpleTransition<State, Boolean, Set<Object>>() {
+  SimpleTransition<State, Boolean, Context> trans1 = new SimpleTransition<State, Boolean, Context>() {
     @Override
-    protected Set<Boolean> operation(Boolean input, Set<Object> context) {
+    protected Set<Boolean> operation(Boolean input, Context context) {
       context.remove(uninitialized);
       context.add(initialized);
       return null;
@@ -31,7 +29,7 @@ public class Example {
     }
   };
 
-  PGDGTransition<State, Boolean, Set<Object>> trans2 = new PGDGTransition<State, Boolean, Set<Object>>() {
+  PGDGTransition<State, Boolean, Context> trans2 = new PGDGTransition<State, Boolean, Context>() {
 
     @Override
     protected boolean inputGuard(Boolean input) {
@@ -39,12 +37,12 @@ public class Example {
     }
 
     @Override
-    protected boolean domainGuard(Set<Object> context) {
+    protected boolean domainGuard(Context context) {
       return context.contains(initialized);
     }
 
     @Override
-    protected Set<Boolean> operation(Boolean input, Set<Object> context) {
+    protected Set<Boolean> operation(Boolean input, Context context) {
       context.remove(initialized);
       context.add(running);
       return null;
@@ -56,14 +54,14 @@ public class Example {
     }
 
   };
-  DGTransition<State, Boolean, Set<Object>> trans3 = new DGTransition<State, Boolean, Set<Object>>() {
+  DGTransition<State, Boolean, Context> trans3 = new DGTransition<State, Boolean, Context>() {
     @Override
-    protected boolean domainGuard(Set<Object> context) {
+    protected boolean domainGuard(Context context) {
       return context.contains(running);
     }
 
     @Override
-    protected Set<Boolean> operation(Boolean input, Set<Object> context) {
+    protected Set<Boolean> operation(Boolean input, Context context) {
       context.remove(running);
       context.add(initialized);
       return null;
@@ -74,12 +72,14 @@ public class Example {
       return true;
     }
   };
-  EFSM<State, Boolean, Set<Object>, Transition<State, Boolean, Set<Object>>> efsm;
-  private EFSMBuilder<State, Boolean, Set<Object>, Transition<State, Boolean, Set<Object>>, EFSM<State, Boolean, Set<Object>, Transition<State, Boolean, Set<Object>>>> builder = new EFSMBuilder(EFSM.class);
+  EFSM<State, Boolean, Context, Transition<State, Boolean, Context>> efsm;
+  private EFSMBuilder<State, Boolean, Context,
+      Transition<State, Boolean, Context>,
+      EFSM<State, Boolean, Context, Transition<State, Boolean, Context>>> builder = new EFSMBuilder(EFSM.class);
 
   public Example() {
     efsm = builder.withInitialState(state0)
-        .withInitialContext(Sets.newHashSet(uninitialized))
+        .withInitialContext(new Context(uninitialized))
         .withTransition(state0, state1, trans1)
         .withTransition(state1, state2, trans2)
         .withTransition(state2, state1, trans3).build();

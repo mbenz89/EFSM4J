@@ -10,7 +10,7 @@ import java.util.Set;
  * @author Manuel Benz
  * created on 20.02.18
  */
-public class EFSM<State, Parameter, Context, Transition extends de.upb.mb.efsm.Transition<State, Parameter, Context>> {
+public class EFSM<State, Parameter, Context extends IEFSMContext<Context>, Transition extends de.upb.mb.efsm.Transition<State, Parameter, Context>> {
   private final Context context;
   private ListenableGraph<State, Transition> baseGraph;
   private State curState;
@@ -99,7 +99,8 @@ public class EFSM<State, Parameter, Context, Transition extends de.upb.mb.efsm.T
   }
 
   public Configuration<State, Context> getConfiguration() {
-    return new Configuration(curState, context);
+    // this should be immutabable or at least changes should not infer with the state of this machine
+    return new Configuration(curState, context.snapshot());
   }
 
   public Set<State> getStates() {

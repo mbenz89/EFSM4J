@@ -6,7 +6,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
-import java.util.Set;
 
 
 /**
@@ -24,7 +23,7 @@ class EFSMBuilderTest {
 
   @Test
   public void checkConsistency() {
-    EFSM<State, Boolean, Set<Object>, Transition<State, Boolean, Set<Object>>> efsm = example.efsm;
+    EFSM<State, Boolean, Context, Transition<State, Boolean, Context>> efsm = example.efsm;
 
     Assertions.assertEquals(example.state0, efsm.getConfiguration().getState());
     Assertions.assertEquals(Collections.singleton(example.uninitialized), efsm.getConfiguration().getContext());

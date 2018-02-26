@@ -1,6 +1,7 @@
 package de.upb.mb.efsm;
 
 import com.google.common.base.Objects;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 /**
  * @author Manuel Benz
@@ -21,6 +22,14 @@ public class Configuration<State, Context> {
 
   public Context getContext() {
     return context;
+  }
+
+  @Override
+  public String toString() {
+    return new ToStringBuilder(this)
+        .append("state", curState)
+        .append("context", context)
+        .toString();
   }
 
   @Override
