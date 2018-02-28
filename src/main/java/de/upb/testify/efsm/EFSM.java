@@ -1,9 +1,12 @@
 package de.upb.testify.efsm;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.jgrapht.ListenableGraph;
 import org.jgrapht.graph.DefaultListenableGraph;
 import org.jgrapht.graph.DirectedMultigraph;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.Set;
 
 /**
@@ -11,16 +14,22 @@ import java.util.Set;
  * created on 20.02.18
  */
 public class EFSM<State, Parameter, Context extends IEFSMContext<Context>, Transition extends de.upb.testify.efsm.Transition<State, Parameter, Context>> {
-  private final Context context;
+  public static final String PROP_CONFIGURATION = "PROP_CONFIGURATION";
+  private final Context initialContext;
+  private final State initialState;
+  private final PropertyChangeSupport pcs;
   private ListenableGraph<State, Transition> baseGraph;
   private State curState;
+  private Context curContext;
 
   protected EFSM(Set<State> states,
                  State initialState,
                  Context initalContext,
                  Set<Transition> transitions) {
-    this.curState = initialState;
-    this.context = initalContext;
+    this.curState = this.initialState = initialState;
+    this.curContext = initalContext;
+    this.initialContext = initalContext.snapshot();
+
     baseGraph = new DefaultListenableGraph<>(new DirectedMultigraph<State, Transition>((src, tgt) -> {
       throw new IllegalStateException("Edges should not be added without a transition object. We cannot infer a specific transition object due to generics.");
     }), true);
@@ -32,11 +41,13 @@ public class EFSM<State, Parameter, Context extends IEFSMContext<Context>, Trans
     for (Transition transition : transitions) {
       baseGraph.addEdge(transition.getSrc(), transition.getTgt(), transition);
     }
+
+    this.pcs = new PropertyChangeSupport(this);
   }
 
   public boolean canTransition(Parameter input) {
     for (Transition transition : baseGraph.outgoingEdgesOf(curState)) {
-      if (transition.isFeasible(input, context)) {
+      if (transition.isFeasible(input, curContext)) {
         return true;
       }
     }
@@ -56,9 +67,12 @@ public class EFSM<State, Parameter, Context extends IEFSMContext<Context>, Trans
    */
   public Set<Parameter> transition(Parameter input) {
     for (Transition transition : baseGraph.outgoingEdgesOf(curState)) {
-      if (transition.isFeasible(input, context)) {
+      if (transition.isFeasible(input, curContext)) {
+        Configuration<State, Context> prevConfig = getConfiguration();
         curState = transition.getTgt();
-        return transition.take(input, context);
+        Set<Parameter> output = transition.take(input, curContext);
+        pcs.firePropertyChange(PROP_CONFIGURATION, prevConfig, Pair.of(getConfiguration(),transition));
+        return output;
       }
     }
 
@@ -100,8 +114,13 @@ public class EFSM<State, Parameter, Context extends IEFSMContext<Context>, Trans
 
   public Configuration<State, Context> getConfiguration() {
     // this should be immutabable or at least changes should not infer with the state of this machine
-    return new Configuration(curState, context.snapshot());
+    return new Configuration(curState, curContext.snapshot());
   }
+
+  public Configuration<State, Context> getInitialConfiguration() {
+    return new Configuration(initialState, initialContext.snapshot());
+  }
+
 
   public Set<State> getStates() {
     return baseGraph.vertexSet();
@@ -112,15 +131,30 @@ public class EFSM<State, Parameter, Context extends IEFSMContext<Context>, Trans
   }
 
   public Set<Transition> transitionsOutOf(State state) {
-    return baseGraph.outgoingEdgesOf(curState);
+    return baseGraph.outgoingEdgesOf(state);
   }
 
   public Set<Transition> transitionsInTo(State state) {
-    return baseGraph.incomingEdgesOf(curState);
+    return baseGraph.incomingEdgesOf(state);
+  }
+
+  public void reset() {
+    Configuration<State, Context> prefConfig = getConfiguration();
+    this.curState = initialState;
+    this.curContext = initialContext.snapshot();
+    this.pcs.firePropertyChange(PROP_CONFIGURATION, prefConfig, getConfiguration());
   }
 
   protected ListenableGraph<State, Transition> getBaseGraph() {
     return baseGraph;
   }
 
+
+  public void addPropertyChangeListener(PropertyChangeListener listener) {
+    this.pcs.addPropertyChangeListener(listener);
+  }
+
+  public void removePropertyChangeListener(PropertyChangeListener listener) {
+    this.pcs.removePropertyChangeListener(listener);
+  }
 }

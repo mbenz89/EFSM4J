@@ -68,4 +68,26 @@ class EFSMTest {
     Assertions.assertNotEquals(configuration, efsm.getConfiguration());
     Assertions.assertEquals(conf2, efsm.getConfiguration());
   }
+
+  @Test
+  void reset() {
+    EFSM<State, Boolean, Context, Transition<State, Boolean, Context>> efsm = example.efsm;
+    Configuration<State, Context> initConfiguration = efsm.getConfiguration();
+
+    Assertions.assertEquals(example.state0, initConfiguration.getState());
+    Assertions.assertEquals(Sets.newHashSet(example.uninitialized), initConfiguration.getContext());
+
+    Configuration<State, Context> newConfig =  efsm.transitionAndDrop();
+    Assertions.assertEquals(example.state1, newConfig.getState());
+    Assertions.assertEquals(Sets.newHashSet(example.initialized), newConfig.getContext());
+
+    efsm.reset();
+
+    Configuration<State, Context> afterReset = efsm.getConfiguration();
+
+    Assertions.assertEquals(initConfiguration, afterReset);
+    Assertions.assertEquals(efsm.getInitialConfiguration(), afterReset);
+    Assertions.assertNotEquals(newConfig, afterReset);
+
+  }
 }
