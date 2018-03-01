@@ -6,6 +6,7 @@ import de.upb.testify.efsm.Param;
 import de.upb.testify.efsm.State;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -22,6 +23,7 @@ class EFSMDebuggerTest {
   }
 
   @Test
+  @Disabled
   void start() {
     EEFSM<State, Param, Object> eefsm = example.eefsm;
     EFSMDebugger<State, ETransition<State, Param, Object>> debugger = EFSMDebugger.startDebugger(eefsm, true, state -> state.toString(), t -> "");

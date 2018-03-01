@@ -55,6 +55,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -484,17 +485,47 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
 
     property.prefWidthProperty().bind(treeTable.widthProperty().multiply(0.3));
 
-    TreeTableColumn<Object, Object> value = column("Value", o -> {
-      Object val = o.getValue();
-      if (val instanceof Field) {
-        try {
-          return String.valueOf(((Field) val).get(o.getParent().getValue()));
-        } catch (IllegalAccessException e) {
-          return "-";
+    TreeTableColumn<Object, Object> value = column("Value", new Function<TreeItem<Object>, Object>() {
+      @Override
+      public Object apply(TreeItem<Object> o) {
+        Object val = o.getValue();
+        if (val instanceof Field) {
+          try {
+            Field field = (Field) val;
+            Object fieldVal = field.get(o.getParent().getValue());
+            if (field.getType().isArray()) {
+              return Arrays.toString(unpack(fieldVal));
+            } else {
+              return String.valueOf(fieldVal);
+            }
+          } catch (IllegalAccessException e) {
+            return "-";
+          }
+        }
+
+        return String.valueOf(val);
+      }
+
+      private Object[] unpack(final Object value) {
+        if (value == null) {
+          return null;
+        }
+        if (value.getClass().isArray()) {
+          if (value instanceof Object[]) {
+            return (Object[]) value;
+          } else // box primitive arrays
+          {
+            final Object[] boxedArray = new Object[Array.getLength(value)];
+            for (int index = 0; index < boxedArray.length; index++) {
+              boxedArray[index] = Array.get(value, index); // automatic boxing
+            }
+            return boxedArray;
+          }
+        } else {
+          throw new IllegalArgumentException("Not an array");
         }
       }
 
-      return String.valueOf(val);
     });
 
     value.prefWidthProperty().bind(treeTable.widthProperty().multiply(0.7));
@@ -540,8 +571,17 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
       public ObservableList<TreeItem<Object>> getChildren() {
         Object value = getValue();
         if (!childrenComputed) {
-          Class<?> aClass = value.getClass();
-          super.getChildren();
+          Class<?> aClass;
+          if (!(value instanceof Field)) {
+            aClass = value.getClass();
+          } else {
+            try {
+              value = ((Field) value).get(getParent().getValue());
+              aClass = value.getClass();
+            } catch (IllegalAccessException e) {
+              throw new RuntimeException();
+            }
+          }
 
           while (aClass != null) {
             // we do  not care about fields of collections and arrays but their contents
@@ -549,12 +589,18 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
               for (Object o : Iterable.class.cast(value)) {
                 children.add(createTreeItem(o));
               }
+            } else if (aClass.isArray()) {
+              int length = Array.getLength(value);
+              for (int i = 0; i < length; i++) {
+                Object arrayElement = Array.get(value, i);
+                children.add(createTreeItem(arrayElement));
+              }
             } else {
               for (Field field : aClass.getDeclaredFields()) {
                 if (!Modifier.isStatic(field.getModifiers())) {
                   field.setAccessible(true);
-                  // if a field is an array or a collection, we could add it here
                   children.add(createTreeItem(field));
+
                 }
               }
             }
@@ -571,11 +617,18 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
       }
 
       private boolean isValueOfInterest(Object value) {
+        if (value == null) {
+          return false;
+        }
         // we do not want to show the whole jdk
-        return value != null
-            && value.getClass().getPackage() != null
-            && (value.getClass().getPackage().getName().startsWith("de.upb.testify")
-            || value.getClass().getPackage().getName().startsWith("soot"));
+        Class<?> aClass = value.getClass();
+        Package aPackage = aClass.getPackage();
+        return (aPackage != null
+            && aPackage.getName().startsWith("de.upb.testify")
+            || aPackage.getName().startsWith("soot"))
+            || aClass.isArray()
+            || value instanceof Field && ((Field) value).getType().isArray()
+            || value instanceof Field && Iterable.class.isAssignableFrom(((Field) value).getType());
       }
     };
 
