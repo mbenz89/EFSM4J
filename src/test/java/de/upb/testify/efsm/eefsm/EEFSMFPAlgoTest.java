@@ -20,13 +20,15 @@ class EEFSMFPAlgoTest {
   }
 
   @Test
-  void findsComplexPath() {
+  void findsPathBetweenoC1AndHx() {
     EEFSMFPAlgo<State, Param, Object> sfp = new EEFSMFPAlgo<>(example.eefsm);
 
-    EEFSMPath<State, Param, Object> path = sfp.getPath(example.oC1, example.Hx);
+    EEFSMPath<State, Param, Object> path = sfp.getPath(example.initialContext, example.oC1, example.Hx);
 
     Assertions.assertNotNull(path);
     Assertions.assertEquals(example.oC1, path.getSrc());
     Assertions.assertEquals(example.Hx, path.getTgt());
+
+
   }
 }

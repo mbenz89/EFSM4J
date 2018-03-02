@@ -46,25 +46,24 @@ public class EEFSMFPAlgo<State, Input, ContextObject> extends JGraphBasedFPALgo<
   }
 
   @Override
-  public EEFSMPath<State, Input, ContextObject> getPath(State src, State tgt) {
+  public EEFSMPath<State, Input, ContextObject> getPath(EEFSMContext<ContextObject> context, State src, State tgt) {
     // check if there is any path first
     GraphPath<State, ETransition<State, Input, ContextObject>> path = shortestPaths.getPath(src, tgt);
     if (path == null) {
       return null;
     }
 
-    return backTrack(new EEFSMPath(eefsm, path), 0);
+    return backTrack(context, new EEFSMPath(eefsm, path), 0);
   }
 
   /**
+   * @param context
    * @param srcToTarget
-   * @param index       Count of transitions that were already traversed and for which the domain guards are already satisfied in the current path
+   * @param index          Count of transitions that were already traversed and for which the domain guards are already satisfied in the current path
    * @return
    */
-  private EEFSMPath<State, Input, ContextObject> backTrack(EEFSMPath<State, Input, ContextObject> srcToTarget, int index) {
-    // FIXME The context has to come from the outside
-    EEFSMContext curContext = eefsm.getConfiguration().getContext().snapshot();
-    if (srcToTarget.isFeasible(curContext)) {
+  private EEFSMPath<State, Input, ContextObject> backTrack(EEFSMContext<ContextObject> context, EEFSMPath<State, Input, ContextObject> srcToTarget, int index) {
+    if (srcToTarget.isFeasible(context)) {
       return srcToTarget;
     }
 
@@ -94,7 +93,7 @@ public class EEFSMFPAlgo<State, Input, ContextObject> extends JGraphBasedFPALgo<
                 newResult.appendPath(intermediateToPrevious);
                 EFSMPath<State, Input, EEFSMContext<ContextObject>, ETransition<State, Input, ContextObject>> previousToTgt = srcToTarget.subPath(srcToTarget.getLength() - index, srcToTarget.getLength());
                 newResult.appendPath(previousToTgt);
-                EEFSMPath<State, Input, ContextObject> result = backTrack(newResult, index);
+                EEFSMPath<State, Input, ContextObject> result = backTrack(context, newResult, index);
                 if (result != null) {
                   return result;
                 }

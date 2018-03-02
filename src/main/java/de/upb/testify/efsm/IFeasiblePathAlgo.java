@@ -13,5 +13,5 @@ public interface IFeasiblePathAlgo<State, Parameter, Context extends IEFSMContex
    * @param tgt
    * @return
    */
-  EFSMPath<State, Parameter, Context, Transition> getPath(State src, State tgt);
+  EFSMPath<State, Parameter, Context, Transition> getPath(Context initialContext, State src, State tgt);
 }

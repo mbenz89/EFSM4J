@@ -80,6 +80,7 @@ public class WhiteBoardExample {
 
 
   State initialState = oC1;
+  EEFSMContext<Object> initialContext = new EEFSMContext();
   State loiState = Hx;
 
   public WhiteBoardExample() {
@@ -87,7 +88,7 @@ public class WhiteBoardExample {
 
     eefsm = builder.withState(oC1, oSta1, Hc, oR1, UIx, Hx, UI, H, oSto1, oD1, oC2, oSta2, oR2, UIy, UIf, Hy, Hf, B2)
         .withInitialState(initialState)
-        .withInitialContext(new EEFSMContext<>())
+        .withInitialContext(initialContext)
         .withTransition(oC1, Hc, oC1ToHc)
         .withTransition(Hc, oSta1, hCToOsta1)
         .withTransition(oC1, oSta1, oC1ToOsta1)

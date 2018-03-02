@@ -21,6 +21,7 @@ public class EEFSMPath<State, Input, ContextObject> extends EFSMPath<State, Inpu
     super(eefsm, basePath);
   }
 
+
   @Override
   public boolean isFeasible(EEFSMContext<ContextObject> context) {
     if (!(context instanceof EEFSMContext)) {

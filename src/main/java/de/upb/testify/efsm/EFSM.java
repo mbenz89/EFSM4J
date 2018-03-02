@@ -167,12 +167,19 @@ public class EFSM<State, Parameter, Context extends IEFSMContext<Context>, Trans
     this.pcs.removePropertyChangeListener(listener);
   }
 
-  protected EFSM<State, Parameter, Context, Transition> snapshot(State state, Context context) {
-    return new EFSM<>(this, state, context);
+  /**
+   * This will track changes to the base graph but not configuration changes to the efsm. Also, no property listeners are copied.
+   * Shouldn't be that expensive since only the context and state change
+   *
+   * @return
+   */
+  protected EFSM<State, Parameter, Context, Transition> snapshot(State initialState, Context initialContext) {
+    return new EFSM<>(this, initialState, initialContext);
   }
 
   /**
    * This will track changes to the base graph but not configuration changes to the efsm. Also, no property listeners are copied.
+   * Shouldn't be that expensive since only the context and state change
    *
    * @return
    */

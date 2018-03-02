@@ -1,5 +1,6 @@
 package de.upb.testify.efsm.eefsm;
 
+import de.upb.testify.efsm.Configuration;
 import de.upb.testify.efsm.EFSM;
 import de.upb.testify.efsm.EFSMBuilder;
 
@@ -16,5 +17,20 @@ public class EEFSM<State, Input, ContextObject> extends EFSM<State, Input, EEFSM
 
   public static <State, Input, ContextObject> EFSMBuilder<State, Input, EEFSMContext<ContextObject>, ETransition<State, Input, ContextObject>, EEFSM<State, Input, ContextObject>> builder() {
     return new EFSMBuilder(EEFSM.class);
+  }
+
+  @Override
+  protected EFSM<State, Input, EEFSMContext<ContextObject>, ETransition<State, Input, ContextObject>> snapshot(State state, EEFSMContext<ContextObject> context) {
+    return super.snapshot(state, context);
+  }
+
+  @Override
+  protected EFSM<State, Input, EEFSMContext<ContextObject>, ETransition<State, Input, ContextObject>> snapshot() {
+    return super.snapshot();
+  }
+
+  @Override
+  protected void forceConfiguration(Configuration<State, EEFSMContext<ContextObject>> config) {
+    super.forceConfiguration(config);
   }
 }

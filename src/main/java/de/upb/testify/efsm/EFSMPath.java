@@ -5,15 +5,17 @@ import org.jgrapht.GraphPath;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Spliterator;
+import java.util.function.Consumer;
 
 /**
  * @author Manuel Benz
  * created on 02.03.18
  */
-public class EFSMPath<State, Parameter, Context extends IEFSMContext<Context>, Transition extends de.upb.testify.efsm.Transition<State, Parameter, Context>> {
+public class EFSMPath<State, Parameter, Context extends IEFSMContext<Context>, Transition extends de.upb.testify.efsm.Transition<State, Parameter, Context>> implements Iterable<Transition> {
 
   private final LinkedList<Transition> transitions;
   /**
@@ -40,6 +42,7 @@ public class EFSMPath<State, Parameter, Context extends IEFSMContext<Context>, T
     this.efsm = efsm;
     this.transitions = new LinkedList<>(transitions);
   }
+
 
   protected void appendTransition(Transition t) {
     if (!transitions.isEmpty()) {
@@ -156,8 +159,8 @@ public class EFSMPath<State, Parameter, Context extends IEFSMContext<Context>, T
     return transitions.size();
   }
 
-  public List<Parameter> getInputsToTrigger() {
-    return transitions.stream().map(t -> t.getExpectedInput()).collect(Collectors.toList());
+  public Iterator<Parameter> getInputsToTrigger() {
+    return transitions.stream().map(t -> t.getExpectedInput()).iterator();
   }
 
   public boolean isFeasible(Context context) {
@@ -182,5 +185,20 @@ public class EFSMPath<State, Parameter, Context extends IEFSMContext<Context>, T
 
   public EFSM<State, Parameter, Context, Transition> getEfsm() {
     return efsm;
+  }
+
+  @Override
+  public Iterator<Transition> iterator() {
+    return transitions.iterator();
+  }
+
+  @Override
+  public void forEach(Consumer<? super Transition> action) {
+    transitions.forEach(action);
+  }
+
+  @Override
+  public Spliterator<Transition> spliterator() {
+    return transitions.spliterator();
   }
 }
