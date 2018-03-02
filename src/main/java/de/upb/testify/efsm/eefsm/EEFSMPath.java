@@ -45,6 +45,11 @@ public class EEFSMPath<State, Input, ContextObject> extends EFSMPath<State, Inpu
   }
 
   @Override
+  protected void appendPath(GraphPath<State, ETransition<State, Input, ContextObject>> other) {
+    super.appendPath(other);
+  }
+
+  @Override
   protected void prependPath(EFSMPath<State, Input, EEFSMContext<ContextObject>, ETransition<State, Input, ContextObject>> other) {
     super.prependPath(other);
   }

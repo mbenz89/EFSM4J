@@ -36,6 +36,11 @@ public class EFSMPath<State, Parameter, Context extends IEFSMContext<Context>, T
     transitions = new LinkedList<>(basePath.getEdgeList());
   }
 
+  private EFSMPath(EFSM<State, Parameter, Context, Transition> efsm, List<Transition> transitions) {
+    this.efsm = efsm;
+    this.transitions = new LinkedList<>(transitions);
+  }
+
   protected void appendTransition(Transition t) {
     if (!transitions.isEmpty()) {
       Transition last = transitions.getLast();
@@ -59,35 +64,41 @@ public class EFSMPath<State, Parameter, Context extends IEFSMContext<Context>, T
   }
 
   protected void appendPath(EFSMPath<State, Parameter, Context, Transition> other) {
+    appendPath(other.transitions);
+  }
+
+  protected void appendPath(GraphPath<State, Transition> other) {
+    appendPath(new LinkedList<>(other.getEdgeList()));
+  }
+
+
+  private void appendPath(LinkedList<Transition> other) {
     if (other.isEmpty()) {
       return;
     }
 
-    ensureConnects(transitions, other.transitions);
+    ensureConnects(this.transitions, other);
 
-    transitions.addAll(other.transitions);
+    this.transitions.addAll(other);
   }
 
   protected void prependPath(EFSMPath<State, Parameter, Context, Transition> other) {
+    prependPath(other.transitions);
+  }
+
+  protected void prependPath(GraphPath<State, Transition> other) {
+    prependPath(new LinkedList<>(other.getEdgeList()));
+  }
+
+
+  private void prependPath(LinkedList<Transition> other) {
     if (other.isEmpty()) {
       return;
     }
 
-    ensureConnects(other.transitions, transitions);
+    ensureConnects(other, this.transitions);
 
-    transitions.addAll(0, other.transitions);
-  }
-
-  protected void prependPath(GraphPath<State, Transition> other) {
-    if (other.getLength() <= 0) {
-      return;
-    }
-
-    LinkedList<Transition> otherTrans = new LinkedList<>(other.getEdgeList());
-
-    ensureConnects(otherTrans, this.transitions);
-
-    this.transitions.addAll(0, otherTrans);
+    this.transitions.addAll(0, other);
   }
 
   private void ensureConnects(LinkedList<Transition> head, LinkedList<Transition> tail) {
@@ -141,6 +152,10 @@ public class EFSMPath<State, Parameter, Context extends IEFSMContext<Context>, T
     return transitions.getLast().getTgt();
   }
 
+  public int getLength() {
+    return transitions.size();
+  }
+
   public List<Parameter> getInputsToTrigger() {
     return transitions.stream().map(t -> t.getExpectedInput()).collect(Collectors.toList());
   }
@@ -155,6 +170,14 @@ public class EFSMPath<State, Parameter, Context extends IEFSMContext<Context>, T
       }
     }
     return true;
+  }
+
+  public EFSMPath<State, Parameter, Context, Transition> subPath(int src, int tgt) {
+    int size = transitions.size();
+    if (src < 0 || src >= size || tgt < src || tgt > size) {
+      throw new IndexOutOfBoundsException();
+    }
+    return new EFSMPath(efsm, transitions.subList(src, tgt));
   }
 
   public EFSM<State, Parameter, Context, Transition> getEfsm() {

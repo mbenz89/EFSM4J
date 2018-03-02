@@ -2,12 +2,14 @@ package de.upb.testify.efsm.eefsm;
 
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
+import de.upb.testify.efsm.EFSMPath;
 import de.upb.testify.efsm.JGraphBasedFPALgo;
 import org.jgrapht.GraphPath;
 import org.jgrapht.alg.interfaces.ShortestPathAlgorithm;
 import org.jgrapht.alg.shortestpath.FloydWarshallShortestPaths;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.ListIterator;
 
 /**
@@ -45,33 +47,34 @@ public class EEFSMFPAlgo<State, Input, ContextObject> extends JGraphBasedFPALgo<
 
   @Override
   public EEFSMPath<State, Input, ContextObject> getPath(State src, State tgt) {
-    EEFSMContext curContext = eefsm.getConfiguration().getContext().snapshot();
-
     // check if there is any path first
     GraphPath<State, ETransition<State, Input, ContextObject>> path = shortestPaths.getPath(src, tgt);
     if (path == null) {
       return null;
     }
 
-    // maybe we are lucky and the path is valid already
-    EEFSMPath<State, Input, ContextObject> resultPath = new EEFSMPath(eefsm, path);
-    if (resultPath.isFeasible(curContext)) {
-      return resultPath;
-    }
-
-    // if we weren't lucky, there have to be domain constraints on the way which we need to find and solve
-    return backTrack(src, path, new EEFSMPath(eefsm));
+    return backTrack(new EEFSMPath(eefsm, path), 0);
   }
 
-  private EEFSMPath<State, Input, ContextObject> backTrack(State src, GraphPath<State, ETransition<State, Input, ContextObject>> srcToTgtDirect, EEFSMPath<State, Input, ETransition<State, Input, ContextObject>> result) {
+  /**
+   * @param srcToTarget
+   * @param index       Count of transitions that were already traversed and for which the domain guards are already satisfied in the current path
+   * @return
+   */
+  private EEFSMPath<State, Input, ContextObject> backTrack(EEFSMPath<State, Input, ContextObject> srcToTarget, int index) {
+    // FIXME The context has to come from the outside
+    EEFSMContext curContext = eefsm.getConfiguration().getContext().snapshot();
+    if (srcToTarget.isFeasible(curContext)) {
+      return srcToTarget;
+    }
 
-    ListIterator<ETransition<State, Input, ContextObject>> reverseIter = srcToTgtDirect.getEdgeList().listIterator(srcToTgtDirect.getLength());
+    // we start at a point in the path that
+    List<ETransition<State, Input, ContextObject>> transitions = srcToTarget.getTransitions();
+    ListIterator<ETransition<State, Input, ContextObject>> reverseIter = transitions.listIterator(transitions.size() - index);
 
     while (reverseIter.hasPrevious()) {
-
       ETransition<State, Input, ContextObject> previous = reverseIter.previous();
-      result.prependTransation(previous);
-
+      index++;
 
       if (previous.hasDomainGuard()) {
         ContextObject expectedContext = previous.getExpectedContext();
@@ -83,13 +86,18 @@ public class EEFSMFPAlgo<State, Input, ContextObject> extends JGraphBasedFPALgo<
 
           for (ETransition<State, ?, ?> adder : adders) {
             State intermediate = adder.getSrc();
-            GraphPath<State, ETransition<State, Input, ContextObject>> intermediateToTgt = shortestPaths.getPath(intermediate, srcToTgtDirect.getEndVertex());
-            if (intermediateToTgt != null) {
-              GraphPath<State, ETransition<State, Input, ContextObject>> srcToIntermediate = shortestPaths.getPath(src, intermediate);
+            GraphPath<State, ETransition<State, Input, ContextObject>> intermediateToPrevious = shortestPaths.getPath(intermediate, previous.getSrc());
+            if (intermediateToPrevious != null) {
+              GraphPath<State, ETransition<State, Input, ContextObject>> srcToIntermediate = shortestPaths.getPath(srcToTarget.getSrc(), intermediate);
               if (srcToIntermediate != null) {
-                EEFSMPath<State, Input, ETransition<State, Input, ContextObject>> newResult = new EEFSMPath(eefsm, result);
-                newResult.prependPath((GraphPath) intermediateToTgt);
-                newResult.prependPath((GraphPath) srcToIntermediate);
+                EEFSMPath<State, Input, ContextObject> newResult = new EEFSMPath(eefsm, srcToIntermediate);
+                newResult.appendPath(intermediateToPrevious);
+                EFSMPath<State, Input, EEFSMContext<ContextObject>, ETransition<State, Input, ContextObject>> previousToTgt = srcToTarget.subPath(srcToTarget.getLength() - index, srcToTarget.getLength());
+                newResult.appendPath(previousToTgt);
+                EEFSMPath<State, Input, ContextObject> result = backTrack(newResult, index);
+                if (result != null) {
+                  return result;
+                }
               }
             }
           }
@@ -104,6 +112,5 @@ public class EEFSMFPAlgo<State, Input, ContextObject> extends JGraphBasedFPALgo<
 
     return null;
   }
-
 
 }
