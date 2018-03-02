@@ -48,11 +48,12 @@ class EFSMDebuggerTest {
     path.appendTransition(example.oR1ToUix);
     path.appendTransition(example.uiXToHx);
 
-    debugThis(example.eefsm, path);
+    debugThis(example, path);
   }
 
 
-  void debugThis(EEFSM<State, Param, Object> eefsm, EEFSMPath<State, Param, Object> path) {
+  public static void debugThis(WhiteBoardExample example, EEFSMPath<State, Param, Object> path) {
+    EEFSM<State, Param, Object> eefsm = example.eefsm;
     Assertions.assertTrue(path.isFeasible(example.initialContext));
 
     EFSMDebugger<State, ETransition<State, Param, Object>> debugger = EFSMDebugger.startDebugger(eefsm, true, state -> state.toString(), t -> "");

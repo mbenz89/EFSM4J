@@ -2,6 +2,7 @@ package de.upb.testify.efsm.eefsm;
 
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
+import de.upb.testify.efsm.Configuration;
 import de.upb.testify.efsm.EFSMPath;
 import de.upb.testify.efsm.JGraphBasedFPALgo;
 import org.jgrapht.GraphPath;
@@ -46,20 +47,25 @@ public class EEFSMFPAlgo<State, Input, ContextObject> extends JGraphBasedFPALgo<
   }
 
   @Override
-  public EEFSMPath<State, Input, ContextObject> getPath(EEFSMContext<ContextObject> context, State src, State tgt) {
+  public EEFSMPath<State, Input, ContextObject> getPath(Configuration<State, EEFSMContext<ContextObject>> config, State tgt) {
     // check if there is any path first
-    GraphPath<State, ETransition<State, Input, ContextObject>> path = shortestPaths.getPath(src, tgt);
+    GraphPath<State, ETransition<State, Input, ContextObject>> path = shortestPaths.getPath(config.getState(), tgt);
     if (path == null) {
       return null;
     }
 
-    return backTrack(context, new EEFSMPath(eefsm, path), 0);
+    return backTrack(config.getContext(), new EEFSMPath(eefsm, path), 0);
+  }
+
+  @Override
+  public EEFSMPath<State, Input, ContextObject> getPath(State tgt) {
+    return getPath(eefsm.getConfiguration(), tgt);
   }
 
   /**
    * @param context
    * @param srcToTarget
-   * @param index          Count of transitions that were already traversed and for which the domain guards are already satisfied in the current path
+   * @param index       Count of transitions that were already traversed and for which the domain guards are already satisfied in the current path
    * @return
    */
   private EEFSMPath<State, Input, ContextObject> backTrack(EEFSMContext<ContextObject> context, EEFSMPath<State, Input, ContextObject> srcToTarget, int index) {
