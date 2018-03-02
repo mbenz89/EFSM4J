@@ -58,8 +58,10 @@ import java.beans.PropertyChangeListener;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -193,7 +195,7 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
   }
 
   @Override
-  public void start(Stage primaryStage) throws Exception {
+  public void start(Stage primaryStage) {
     this.primaryStage = primaryStage;
   }
 
@@ -555,7 +557,7 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
   private TreeItem<Object> createTreeItem(Object value) {
     TreeItem<Object> item = new TreeItem<Object>(value) {
 
-      private final ObservableList<TreeItem<Object>> children = super.getChildren();
+      private final List<TreeItem<Object>> children = new ArrayList<>();
       private boolean childrenComputed = false;
 
       {
@@ -607,8 +609,11 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
             aClass = aClass.getSuperclass();
           }
           childrenComputed = true;
+          // we have to add all childrens here together after we set the childrenComputed flag to prevent a stackoverflow execption on double clickig an item
+          // it will recurse into the same items again but stop due to childrenComputed flag set
+          super.getChildren().addAll(children);
         }
-        return children;
+        return super.getChildren();
       }
 
       @Override
