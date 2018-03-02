@@ -40,6 +40,11 @@ public class ETransition<State, Input, ContextObject> extends Transition<State, 
   }
 
   @Override
+  protected Input getExpectedInput() {
+    return expectedInput;
+  }
+
+  @Override
   protected boolean inputGuard(Input input) {
     if (expectedInput == null || expectedInput.equals(input)) {
       return true;

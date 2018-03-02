@@ -27,7 +27,7 @@ public class EFSM<State, Parameter, Context extends IEFSMContext<Context>, Trans
                  Context initalContext,
                  Set<Transition> transitions) {
     this.curState = this.initialState = initialState;
-    this.curContext = initalContext;
+    this.curContext = initalContext.snapshot();
     this.initialContext = initalContext.snapshot();
 
     baseGraph = new DefaultListenableGraph<>(new DirectedMultigraph<State, Transition>((src, tgt) -> {
@@ -42,6 +42,15 @@ public class EFSM<State, Parameter, Context extends IEFSMContext<Context>, Trans
       baseGraph.addEdge(transition.getSrc(), transition.getTgt(), transition);
     }
 
+    this.pcs = new PropertyChangeSupport(this);
+  }
+
+  private EFSM(EFSM<State, Parameter, Context, Transition> base, State initialState, Context initialContext) {
+    this.initialContext = initialContext.snapshot();
+    this.curContext = initialContext.snapshot();
+    this.curState = this.initialState = initialState;
+    this.baseGraph = base.baseGraph;
+    // we do not want to delegate any events of this to the original listeners
     this.pcs = new PropertyChangeSupport(this);
   }
 
@@ -71,7 +80,7 @@ public class EFSM<State, Parameter, Context extends IEFSMContext<Context>, Trans
         Configuration<State, Context> prevConfig = getConfiguration();
         curState = transition.getTgt();
         Set<Parameter> output = transition.take(input, curContext);
-        pcs.firePropertyChange(PROP_CONFIGURATION, prevConfig, Pair.of(getConfiguration(),transition));
+        pcs.firePropertyChange(PROP_CONFIGURATION, prevConfig, Pair.of(getConfiguration(), transition));
         return output;
       }
     }
@@ -156,5 +165,23 @@ public class EFSM<State, Parameter, Context extends IEFSMContext<Context>, Trans
 
   public void removePropertyChangeListener(PropertyChangeListener listener) {
     this.pcs.removePropertyChangeListener(listener);
+  }
+
+  protected EFSM<State, Parameter, Context, Transition> snapshot(State state, Context context) {
+    return new EFSM<>(this, state, context);
+  }
+
+  /**
+   * This will track changes to the base graph but not configuration changes to the efsm. Also, no property listeners are copied.
+   *
+   * @return
+   */
+  protected EFSM<State, Parameter, Context, Transition> snapshot() {
+    return snapshot(this.curState, this.curContext);
+  }
+
+  protected void forceConfiguration(Configuration<State, Context> config) {
+    this.curState = config.getState();
+    this.curContext = config.getContext().snapshot();
   }
 }
