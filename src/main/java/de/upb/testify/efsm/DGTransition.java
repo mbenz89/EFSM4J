@@ -22,4 +22,9 @@ public abstract class DGTransition<State, Parameter, Context> extends Transition
   public boolean hasParameterGuard() {
     return false;
   }
+
+  @Override
+  protected Parameter getExpectedInput() {
+    return null;
+  }
 }

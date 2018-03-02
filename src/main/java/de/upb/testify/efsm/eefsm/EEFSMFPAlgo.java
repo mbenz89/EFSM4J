@@ -1,47 +1,106 @@
 package de.upb.testify.efsm.eefsm;
 
-import de.upb.testify.efsm.EFSMPath;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
 import de.upb.testify.efsm.JGraphBasedFPALgo;
 import org.jgrapht.GraphPath;
 import org.jgrapht.alg.interfaces.ShortestPathAlgorithm;
 import org.jgrapht.alg.shortestpath.FloydWarshallShortestPaths;
 
+import java.util.Collection;
+import java.util.ListIterator;
+
 /**
  * @author Manuel Benz
  * created on 02.03.18
  */
-public class EEFSMFPAlgo<State> extends JGraphBasedFPALgo<State, ETransition<State, ?, ?>> {
+public class EEFSMFPAlgo<State, Input, ContextObject> extends JGraphBasedFPALgo<State, Input, EEFSMContext<ContextObject>, ETransition<State, Input, ContextObject>> {
 
-  private final ShortestPathAlgorithm<State, ETransition<State, ?, ?>> shortestPaths;
-  private final EEFSM<State, ?, ?> eefsm;
+  private final ShortestPathAlgorithm<State, ETransition<State, Input, ContextObject>> shortestPaths;
+  private final EEFSM<State, Input, ContextObject> eefsm;
+  private final Multimap<ContextObject, ETransition<State, Input, ContextObject>> contextToAdders;
+  private final Multimap<ContextObject, ETransition<State, Input, ContextObject>> contextToRemovers;
 
-  public EEFSMFPAlgo(EEFSM<State, ?, ?> eefsm) {
+  public EEFSMFPAlgo(EEFSM<State, Input, ContextObject> eefsm) {
     super(eefsm);
     this.eefsm = eefsm;
     shortestPaths = new FloydWarshallShortestPaths<>(this.baseGraph);
+    contextToAdders = MultimapBuilder.hashKeys().arrayListValues().build();
+    contextToRemovers = MultimapBuilder.hashKeys().arrayListValues().build();
+
+    for (ETransition<State, Input, ContextObject> transition : eefsm.getTransitons()) {
+      transition.getContextAdditions().ifPresent(context -> {
+        for (ContextObject obj : context) {
+          contextToAdders.put(obj, transition);
+        }
+      });
+
+      transition.getContextRemovals().ifPresent(context -> {
+        for (ContextObject obj : context) {
+          contextToRemovers.put(obj, transition);
+        }
+      });
+    }
   }
 
   @Override
-  public EFSMPath getPath(State src, State tgt) {
+  public EEFSMPath<State, Input, ContextObject> getPath(State src, State tgt) {
     EEFSMContext curContext = eefsm.getConfiguration().getContext().snapshot();
 
     // check if there is any path first
-    GraphPath<State, ETransition<State, ?, ?>> path = shortestPaths.getPath(src, tgt);
+    GraphPath<State, ETransition<State, Input, ContextObject>> path = shortestPaths.getPath(src, tgt);
     if (path == null) {
       return null;
     }
 
     // maybe we are lucky and the path is valid already
-    EEFSMPath<State, ?> resultPath = new EEFSMPath(eefsm, path);
+    EEFSMPath<State, Input, ContextObject> resultPath = new EEFSMPath(eefsm, path);
     if (resultPath.isFeasible(curContext)) {
       return resultPath;
     }
 
-    // if we weren't lucky, there have to be domain constraints on the way which we need to find
-    return fixpoint(path);
+    // if we weren't lucky, there have to be domain constraints on the way which we need to find and solve
+    return backTrack(src, path, new EEFSMPath(eefsm));
   }
 
-  private EFSMPath fixpoint(GraphPath<State, ETransition<State, ?, ?>> path) {
+  private EEFSMPath<State, Input, ContextObject> backTrack(State src, GraphPath<State, ETransition<State, Input, ContextObject>> srcToTgtDirect, EEFSMPath<State, Input, ETransition<State, Input, ContextObject>> result) {
+
+    ListIterator<ETransition<State, Input, ContextObject>> reverseIter = srcToTgtDirect.getEdgeList().listIterator(srcToTgtDirect.getLength());
+
+    while (reverseIter.hasPrevious()) {
+
+      ETransition<State, Input, ContextObject> previous = reverseIter.previous();
+      result.prependTransation(previous);
+
+
+      if (previous.hasDomainGuard()) {
+        ContextObject expectedContext = previous.getExpectedContext();
+        if (previous.isElementOfGuard()) {
+          Collection<ETransition<State, Input, ContextObject>> adders = contextToAdders.get(expectedContext);
+          if (adders == null) {
+            throw new IllegalStateException("Not satisfiable");
+          }
+
+          for (ETransition<State, ?, ?> adder : adders) {
+            State intermediate = adder.getSrc();
+            GraphPath<State, ETransition<State, Input, ContextObject>> intermediateToTgt = shortestPaths.getPath(intermediate, srcToTgtDirect.getEndVertex());
+            if (intermediateToTgt != null) {
+              GraphPath<State, ETransition<State, Input, ContextObject>> srcToIntermediate = shortestPaths.getPath(src, intermediate);
+              if (srcToIntermediate != null) {
+                EEFSMPath<State, Input, ETransition<State, Input, ContextObject>> newResult = new EEFSMPath(eefsm, result);
+                newResult.prependPath((GraphPath) intermediateToTgt);
+                newResult.prependPath((GraphPath) srcToIntermediate);
+              }
+            }
+          }
+
+
+        } else {
+
+        }
+      }
+
+    }
 
     return null;
   }

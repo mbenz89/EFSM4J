@@ -16,6 +16,7 @@ public class Example {
   Object running = new Object();
 
   SimpleTransition<State, Boolean, Context> trans1 = new SimpleTransition<State, Boolean, Context>() {
+
     @Override
     protected Set<Boolean> operation(Boolean input, Context context) {
       context.remove(uninitialized);
@@ -30,6 +31,11 @@ public class Example {
   };
 
   PGDGTransition<State, Boolean, Context> trans2 = new PGDGTransition<State, Boolean, Context>() {
+
+    @Override
+    protected Boolean getExpectedInput() {
+      return true;
+    }
 
     @Override
     protected boolean inputGuard(Boolean input) {
@@ -47,6 +53,7 @@ public class Example {
       context.add(running);
       return null;
     }
+
 
     @Override
     public boolean hasOperation() {

@@ -4,6 +4,7 @@ import de.upb.testify.efsm.Transition;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -42,6 +43,22 @@ public class ETransition<State, Input, ContextObject> extends Transition<State, 
   @Override
   protected Input getExpectedInput() {
     return expectedInput;
+  }
+
+  protected Optional<ContextObject[]> getContextAdditions() {
+    return Optional.ofNullable(addToContext);
+  }
+
+  protected Optional<ContextObject[]> getContextRemovals() {
+    return Optional.ofNullable(removeFromContext);
+  }
+
+  protected ContextObject getExpectedContext() {
+    return expectedContext;
+  }
+
+  protected boolean isElementOfGuard() {
+    return elementOf;
   }
 
   @Override
