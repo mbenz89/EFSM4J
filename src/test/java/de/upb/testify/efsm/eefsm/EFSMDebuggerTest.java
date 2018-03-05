@@ -51,26 +51,26 @@ class EFSMDebuggerTest {
   @Disabled
   void staticPath() {
     EEFSMPath path = new EEFSMPath<>(example.eefsm);
-    path.appendTransition(example.oC1ToHc);
-    path.appendTransition(example.hCToOsta1);
-    path.appendTransition(example.oSta1ToOr1);
-    path.appendTransition(example.oR1ToUi);
-    path.appendTransition(example.uiToH);
-    path.appendTransition(example.hToOc2);
-    path.appendTransition(example.oC2ToOSta2);
-    path.appendTransition(example.oSta2ToOr2);
-    path.appendTransition(example.oR2ToOSto1);
-    path.appendTransition(example.oSto1ToOR2);
-    path.appendTransition(example.oR2ToUIy);
-    path.appendTransition(example.uiYToHy);
-    path.appendTransition(example.hyToOr2);
-    path.appendTransition(example.oR2ToB2);
-    path.appendTransition(example.b2ToOC1);
-    path.appendTransition(example.oC1ToHc);
-    path.appendTransition(example.hCToOsta1);
-    path.appendTransition(example.oSta1ToOr1);
-    path.appendTransition(example.oR1ToUix);
-    path.appendTransition(example.uiXToHx);
+    path.append(example.oC1ToHc);
+    path.append(example.hCToOsta1);
+    path.append(example.oSta1ToOr1);
+    path.append(example.oR1ToUi);
+    path.append(example.uiToH);
+    path.append(example.hToOc2);
+    path.append(example.oC2ToOSta2);
+    path.append(example.oSta2ToOr2);
+    path.append(example.oR2ToOSto1);
+    path.append(example.oSto1ToOR2);
+    path.append(example.oR2ToUIy);
+    path.append(example.uiYToHy);
+    path.append(example.hyToOr2);
+    path.append(example.oR2ToB2);
+    path.append(example.b2ToOC1);
+    path.append(example.oC1ToHc);
+    path.append(example.hCToOsta1);
+    path.append(example.oSta1ToOr1);
+    path.append(example.oR1ToUix);
+    path.append(example.uiXToHx);
 
     debugThis(example, path);
   }

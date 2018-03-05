@@ -66,14 +66,15 @@ public class EEFSMFPAlgo<State, Input, ContextObject> extends JGraphBasedFPALgo<
   /**
    * @param context
    * @param curSolution
-   * @param index       Count of transitions that were already traversed and for which the domain guards are already satisfied in the current path
+   * @param index       Count of transitions that were already traversed and for which the domain guards are already satisfied in the current path (counting from the end of the path)
    * @return
    */
   private EEFSMPath<State, Input, ContextObject> backTrack(EEFSMContext<ContextObject> context, EEFSMPath<State, Input, ContextObject> curSolution, int index) {
     if (curSolution.isFeasible(context)) {
       return curSolution;
     }
-    // FIXME what if it is never feasible?
+    // we do not want to accept complete loops since this means the path is not satisfiable
+
 
     // we start at a point in the path that
     List<ETransition<State, Input, ContextObject>> transitions = curSolution.getTransitions();
@@ -97,13 +98,17 @@ public class EEFSMFPAlgo<State, Input, ContextObject> extends JGraphBasedFPALgo<
           throw new IllegalStateException("Not satisfiable");
         }
 
-        for (ETransition<State, ?, ?> intermediate : solvers) {
-          EEFSMPath<State, Input, ContextObject> result = pathOverIntermediate(curSolution, index, intermediate);
+        for (ETransition<State, Input, ContextObject> intermediate : solvers) {
+          EEFSMPath<State, Input, ContextObject> result;
+          // if the intermediate we need to take is already in the not-yet evaluated sub-path, we do not add it again
+          if (curSolution.subPath(0, index).contains(intermediate)) {
+            result = backTrack(context, curSolution, index);
+          } else {
+            result = backTrack(context, pathOverIntermediate(curSolution, index, intermediate), index);
+          }
+
           if (result != null) {
-            result = backTrack(context, result, index);
-            if (result != null) {
-              return result;
-            }
+            return result;
           }
         }
       }
@@ -116,24 +121,26 @@ public class EEFSMFPAlgo<State, Input, ContextObject> extends JGraphBasedFPALgo<
     State intermediateSrc = intermediate.getSrc();
     State intermediateTgt = intermediate.getTgt();
 
-    GraphPath intermediateToPrevious = shortestPaths.getPath(intermediateTgt, curSolution.getTransitionAt(curSolution.getLength() - index).getSrc());
+    int curLength = curSolution.getLength();
+    int curIndex = curLength - index;
 
-    if (intermediateToPrevious != null) {
+    GraphPath intermediateToCur = shortestPaths.getPath(intermediateTgt, curSolution.getTransitionAt(curIndex).getSrc());
+
+    if (intermediateToCur != null) {
       GraphPath srcToIntermediate = shortestPaths.getPath(curSolution.getSrc(), intermediateSrc);
 
       if (srcToIntermediate != null) {
         // glue all the sub-parts together
         EEFSMPath<State, Input, ContextObject> newSolution = new EEFSMPath(eefsm, srcToIntermediate);
-        newSolution.appendTransition(intermediate);
-        newSolution.appendPath(intermediateToPrevious);
+        newSolution.append(intermediate);
+        newSolution.append(intermediateToCur);
 
-        EFSMPath previousToTgt = curSolution.subPath(curSolution.getLength() - index, curSolution.getLength());
-        newSolution.appendPath(previousToTgt);
+        EFSMPath curToTarget = curSolution.subPath(curIndex, curLength);
+        newSolution.append(curToTarget);
 
         return newSolution;
       }
     }
     return null;
   }
-
 }

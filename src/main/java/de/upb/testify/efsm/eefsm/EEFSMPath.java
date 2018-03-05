@@ -31,32 +31,32 @@ public class EEFSMPath<State, Input, ContextObject> extends EFSMPath<State, Inpu
   }
 
   @Override
-  protected void appendTransition(ETransition t) {
-    super.appendTransition(t);
+  protected void append(ETransition t) {
+    super.append(t);
   }
 
   @Override
-  protected void prependTransation(ETransition t) {
-    super.prependTransation(t);
+  protected void prepend(ETransition t) {
+    super.prepend(t);
   }
 
   @Override
-  protected void appendPath(EFSMPath<State, Input, EEFSMContext<ContextObject>, ETransition<State, Input, ContextObject>> other) {
-    super.appendPath(other);
+  protected void append(EFSMPath<State, Input, EEFSMContext<ContextObject>, ETransition<State, Input, ContextObject>> other) {
+    super.append(other);
   }
 
   @Override
-  protected void appendPath(GraphPath<State, ETransition<State, Input, ContextObject>> other) {
-    super.appendPath(other);
+  protected void append(GraphPath<State, ETransition<State, Input, ContextObject>> other) {
+    super.append(other);
   }
 
   @Override
-  protected void prependPath(EFSMPath<State, Input, EEFSMContext<ContextObject>, ETransition<State, Input, ContextObject>> other) {
-    super.prependPath(other);
+  protected void prepend(EFSMPath<State, Input, EEFSMContext<ContextObject>, ETransition<State, Input, ContextObject>> other) {
+    super.prepend(other);
   }
 
   @Override
-  protected void prependPath(GraphPath<State, ETransition<State, Input, ContextObject>> other) {
-    super.prependPath(other);
+  protected void prepend(GraphPath<State, ETransition<State, Input, ContextObject>> other) {
+    super.prepend(other);
   }
 }

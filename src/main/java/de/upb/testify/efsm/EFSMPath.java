@@ -44,7 +44,7 @@ public class EFSMPath<State, Parameter, Context extends IEFSMContext<Context>, T
   }
 
 
-  protected void appendTransition(Transition t) {
+  protected void append(Transition t) {
     if (!transitions.isEmpty()) {
       Transition last = transitions.getLast();
       if (last.getTgt() != t.getSrc()) {
@@ -55,7 +55,27 @@ public class EFSMPath<State, Parameter, Context extends IEFSMContext<Context>, T
     transitions.addLast(t);
   }
 
-  protected void prependTransation(Transition t) {
+
+  protected void append(EFSMPath<State, Parameter, Context, Transition> other) {
+    append(other.transitions);
+  }
+
+  protected void append(GraphPath<State, Transition> other) {
+    append(new LinkedList<>(other.getEdgeList()));
+  }
+
+
+  private void append(LinkedList<Transition> other) {
+    if (other.isEmpty()) {
+      return;
+    }
+
+    ensureConnects(this.transitions, other);
+
+    this.transitions.addAll(other);
+  }
+
+  protected void prepend(Transition t) {
     if (!transitions.isEmpty()) {
       Transition first = transitions.getFirst();
       if (first.getSrc() != t.getTgt()) {
@@ -66,35 +86,16 @@ public class EFSMPath<State, Parameter, Context extends IEFSMContext<Context>, T
     transitions.addFirst(t);
   }
 
-  protected void appendPath(EFSMPath<State, Parameter, Context, Transition> other) {
-    appendPath(other.transitions);
+  protected void prepend(EFSMPath<State, Parameter, Context, Transition> other) {
+    prepend(other.transitions);
   }
 
-  protected void appendPath(GraphPath<State, Transition> other) {
-    appendPath(new LinkedList<>(other.getEdgeList()));
-  }
-
-
-  private void appendPath(LinkedList<Transition> other) {
-    if (other.isEmpty()) {
-      return;
-    }
-
-    ensureConnects(this.transitions, other);
-
-    this.transitions.addAll(other);
-  }
-
-  protected void prependPath(EFSMPath<State, Parameter, Context, Transition> other) {
-    prependPath(other.transitions);
-  }
-
-  protected void prependPath(GraphPath<State, Transition> other) {
-    prependPath(new LinkedList<>(other.getEdgeList()));
+  protected void prepend(GraphPath<State, Transition> other) {
+    prepend(new LinkedList<>(other.getEdgeList()));
   }
 
 
-  private void prependPath(LinkedList<Transition> other) {
+  private void prepend(LinkedList<Transition> other) {
     if (other.isEmpty()) {
       return;
     }
@@ -139,6 +140,10 @@ public class EFSMPath<State, Parameter, Context extends IEFSMContext<Context>, T
     states.add(transitions.getLast().getTgt());
 
     return states;
+  }
+
+  public boolean contains(Transition t) {
+    return transitions.contains(t);
   }
 
   public boolean isEmpty() {
@@ -204,5 +209,10 @@ public class EFSMPath<State, Parameter, Context extends IEFSMContext<Context>, T
   @Override
   public Spliterator<Transition> spliterator() {
     return transitions.spliterator();
+  }
+
+  @Override
+  public String toString() {
+    return transitions.toString();
   }
 }
