@@ -19,6 +19,29 @@ class EFSMDebuggerTest {
 
   private BasicInterComponentExample example;
 
+  public static void debugThis(BasicInterComponentExample example, EEFSMPath<State, Param, Object> path) {
+    EEFSM<State, Param, Object> eefsm = example.eefsm;
+    Assertions.assertTrue(path.isFeasible(example.initialContext));
+
+    EFSMDebugger<State, ETransition<State, Param, Object>> debugger = EFSMDebugger.startDebugger(eefsm, true, state -> state.toString(), t -> t.toString());
+
+    Iterator<Param> iterator = path.getInputsToTrigger();
+    while (iterator.hasNext()) {
+      Assertions.assertNotNull(eefsm.transition(iterator.next()), "Transition failed in configuration: " + eefsm.getConfiguration());
+    }
+
+    Assertions.assertEquals(new Configuration<>(example.Hx, new EEFSMContext<>(example.Le, example.Hc)), eefsm.getConfiguration());
+
+
+    while (true) {
+      try {
+        Thread.sleep(2000);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
+  }
+
   @BeforeEach
   void setUp() {
     example = new BasicInterComponentExample();
@@ -41,6 +64,7 @@ class EFSMDebuggerTest {
     path.appendTransition(example.oR2ToUIy);
     path.appendTransition(example.uiYToHy);
     path.appendTransition(example.hyToOr2);
+    path.appendTransition(example.oR2ToB2);
     path.appendTransition(example.b2ToOC1);
     path.appendTransition(example.oC1ToHc);
     path.appendTransition(example.hCToOsta1);
@@ -49,29 +73,5 @@ class EFSMDebuggerTest {
     path.appendTransition(example.uiXToHx);
 
     debugThis(example, path);
-  }
-
-
-  public static void debugThis(BasicInterComponentExample example, EEFSMPath<State, Param, Object> path) {
-    EEFSM<State, Param, Object> eefsm = example.eefsm;
-    Assertions.assertTrue(path.isFeasible(example.initialContext));
-
-    EFSMDebugger<State, ETransition<State, Param, Object>> debugger = EFSMDebugger.startDebugger(eefsm, true, state -> state.toString(), t -> "");
-
-    Iterator<Param> iterator = path.getInputsToTrigger();
-    while (iterator.hasNext()) {
-      Assertions.assertNotNull(eefsm.transition(iterator.next()), "Transition failed in configuration: " + eefsm.getConfiguration());
-    }
-
-    Assertions.assertEquals(new Configuration<>(example.Hx, new EEFSMContext<>(example.Le, example.Hc)), eefsm.getConfiguration());
-
-
-    while (true) {
-      try {
-        Thread.sleep(2000);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
-    }
   }
 }

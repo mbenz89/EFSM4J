@@ -2,7 +2,9 @@ package de.upb.testify.efsm;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
-import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
+import com.mxgraph.layout.mxEdgeLabelLayout;
+import com.mxgraph.layout.mxFastOrganicLayout;
+import com.mxgraph.layout.mxParallelEdgeLayout;
 import com.mxgraph.model.mxGeometry;
 import com.mxgraph.model.mxICell;
 import com.mxgraph.model.mxIGraphModel;
@@ -161,8 +163,8 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     borderPane.setTop(initToolBar());
     borderPane.setBottom(initStatusBar());
 
-    this.stateLabeler = o -> stateLabeler.apply((State) o);
-    this.transitionLabeler = o -> transitionLabeler.apply((Transition) o);
+    this.stateLabeler = o -> o instanceof String ? o.toString() : stateLabeler.apply((State) o);
+    this.transitionLabeler = o -> o instanceof String ? o.toString() : transitionLabeler.apply((Transition) o);
     this.controlMode = startInControlMode;
 
     efsm.addPropertyChangeListener(this);
@@ -170,6 +172,7 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     jgxAdapter.layout();
     graphComponent = new mxGraphComponent(jgxAdapter);
     graphComponent.setToolTips(true);
+    graphComponent.setDragEnabled(false);
     setupScrolling();
     setupZooming();
     setupHaltOnNode();
@@ -657,17 +660,20 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
       public void mouseClicked(MouseEvent e) {
         if (e.getClickCount() == 2) {
           Object cellAt = graphComponent.getCellAt(e.getX(), e.getY());
+          // for now we just allow to halt on nodes. if we see need, it woult be easy to extend to halt on a specific transition
           if (cellAt != null) {
             mxICell cell = (mxICell) cellAt;
-            mxICell[] mxICells = {cell};
-            if (haltingStates.containsKey(cellAt)) {
-              // remove visual feedback
-              jgxAdapter.setCellStyle(new SB(cell).setFrom(haltingStates.get(cellAt), mxConstants.STYLE_SHADOW, mxConstants.STYLE_SHAPE).build(), mxICells);
-              haltingStates.remove(cellAt);
-            } else {
-              // add visual feedback
-              haltingStates.put(cell, cell.getStyle());
-              jgxAdapter.setCellStyle(new SB(cell).set(mxConstants.STYLE_SHADOW, true).set(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_DOUBLE_ELLIPSE).build(), mxICells);
+            if (cell.isVertex()) {
+              mxICell[] mxICells = {cell};
+              if (haltingStates.containsKey(cellAt)) {
+                // remove visual feedback
+                jgxAdapter.setCellStyle(new SB(cell).setFrom(haltingStates.get(cellAt), mxConstants.STYLE_SHADOW, mxConstants.STYLE_SHAPE).build(), mxICells);
+                haltingStates.remove(cellAt);
+              } else {
+                // add visual feedback
+                haltingStates.put(cell, cell.getStyle());
+                jgxAdapter.setCellStyle(new SB(cell).set(mxConstants.STYLE_SHADOW, true).set(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_DOUBLE_ELLIPSE).build(), mxICells);
+              }
             }
           }
         }
@@ -820,11 +826,14 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     private void setDefaultEdgeStyle() {
       Map<String, Object> style = getStylesheet().getDefaultEdgeStyle();
       style.put(mxConstants.STYLE_STROKECOLOR, "black");
-      style.put(mxConstants.STYLE_EDGE, mxConstants.EDGESTYLE_ORTHOGONAL);
+      style.put(mxConstants.STYLE_EDGE, mxConstants.EDGESTYLE_ELBOW);
       style.put(mxConstants.STYLE_ROUNDED, true);
       style.put(mxConstants.STYLE_FONTSTYLE, mxConstants.FONT_BOLD);
-      style.put(mxConstants.STYLE_VERTICAL_ALIGN, mxConstants.ALIGN_MIDDLE);
+      style.put(mxConstants.STYLE_VERTICAL_ALIGN, mxConstants.ALIGN_TOP);
       style.put(mxConstants.STYLE_ALIGN, mxConstants.ALIGN_CENTER);
+      style.put(mxConstants.STYLE_VERTICAL_LABEL_POSITION, mxConstants.ALIGN_LEFT);
+      style.put(mxConstants.STYLE_LABEL_POSITION, mxConstants.ALIGN_LEFT);
+      style.put(mxConstants.STYLE_FONTSIZE, 6);
     }
 
     private void setDefaultVertexStyle() {
@@ -900,11 +909,32 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
 
     private void layout() {
       Stopwatch sw = Stopwatch.createStarted();
+
+/*
       mxHierarchicalLayout mxHierarchicalLayout = new mxHierarchicalLayout(this);
       mxHierarchicalLayout.setDisableEdgeStyle(false);
+      mxHierarchicalLayout.setFineTuning(true);
       mxHierarchicalLayout.execute(getDefaultParent());
+*/
 
-      // new mxParallelEdgeLayout(jgxAdapter).getCallChains(jgxAdapter.getDefaultParent());
+      // define layout
+      mxFastOrganicLayout layout = new mxFastOrganicLayout(this);
+
+      // set some properties
+      layout.setForceConstant(80); // the higher, the more separated
+      layout.setResetEdges(true);
+      layout.setDisableEdgeStyle(true); // true transforms the edges and makes them direct lines
+      layout.setMaxIterations(50.0 * Math.sqrt(getVertexToCellMap().size()));
+
+      // layout graph
+      layout.execute(this.getDefaultParent());
+
+      mxParallelEdgeLayout parallelEdgeLayout = new mxParallelEdgeLayout(this);
+      parallelEdgeLayout.execute(this.getDefaultParent());
+
+      mxEdgeLabelLayout labelLayout = new mxEdgeLabelLayout(this);
+      labelLayout.execute(this.getDefaultParent());
+
       logger.trace("Layouting graph took {}", sw);
     }
     // endregion
