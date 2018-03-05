@@ -19,11 +19,11 @@ import java.util.Set;
  */
 class EEFSMTest {
 
-  private WhiteBoardExample example;
+  private BasicInterComponentExample example;
 
   @BeforeEach
   void setUp() {
-    example = new WhiteBoardExample();
+    example = new BasicInterComponentExample();
   }
 
   @Test
@@ -102,6 +102,7 @@ class EEFSMTest {
     eefsm.transition(example.oR2Entry);
     eefsm.transition(example.UIyClick);
     eefsm.transition(example.HyEntry);
+    eefsm.transition();
     eefsm.transition(example.EvtBack);
 
     EEFSMContext<Super> context = new EEFSMContext<>(example.Hc, example.Le);

@@ -17,11 +17,11 @@ import java.util.Iterator;
  */
 class EFSMDebuggerTest {
 
-  private WhiteBoardExample example;
+  private BasicInterComponentExample example;
 
   @BeforeEach
   void setUp() {
-    example = new WhiteBoardExample();
+    example = new BasicInterComponentExample();
   }
 
   @Test
@@ -40,7 +40,7 @@ class EFSMDebuggerTest {
     path.appendTransition(example.oSto1ToOR2);
     path.appendTransition(example.oR2ToUIy);
     path.appendTransition(example.uiYToHy);
-    path.appendTransition(example.hYToB2);
+    path.appendTransition(example.hyToOr2);
     path.appendTransition(example.b2ToOC1);
     path.appendTransition(example.oC1ToHc);
     path.appendTransition(example.hCToOsta1);
@@ -52,7 +52,7 @@ class EFSMDebuggerTest {
   }
 
 
-  public static void debugThis(WhiteBoardExample example, EEFSMPath<State, Param, Object> path) {
+  public static void debugThis(BasicInterComponentExample example, EEFSMPath<State, Param, Object> path) {
     EEFSM<State, Param, Object> eefsm = example.eefsm;
     Assertions.assertTrue(path.isFeasible(example.initialContext));
 

@@ -15,12 +15,12 @@ import java.util.Iterator;
  */
 class EEFSMFPAlgoTest {
 
-  private WhiteBoardExample example;
+  private BasicInterComponentExample example;
   private boolean debugger = false;
 
   @BeforeEach
   void setUp() {
-    example = new WhiteBoardExample();
+    example = new BasicInterComponentExample();
   }
 
   @Test

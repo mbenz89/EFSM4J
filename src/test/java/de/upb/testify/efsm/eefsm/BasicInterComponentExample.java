@@ -9,7 +9,7 @@ import de.upb.testify.efsm.State;
  * @author Manuel Benz
  * created on 22.02.18
  */
-public class WhiteBoardExample {
+public class BasicInterComponentExample {
 
   public EEFSM<State, Param, Object> eefsm;
 
@@ -71,10 +71,11 @@ public class WhiteBoardExample {
   ETransition<State, Param, Object> oSto1ToOR2 = new ETransitionbuilder<State, Param, Object>().fireIfInContext(oR2).addToContext(oSto1).removeFromContext(oR2).build();
   ETransition<State, Param, Object> oR2ToUIy = new ETransitionbuilder<State, Param, Object>().fireOnInput(UIyClick).addToContext(Le).build();
   ETransition<State, Param, Object> uiYToHy = new ETransitionbuilder<State, Param, Object>().fireOnInput(HyEntry).build();
-  ETransition<State, Param, Object> hYToB2 = new ETransitionbuilder<State, Param, Object>().fireOnInput(EvtBack).build();
+  ETransition<State, Param, Object> hyToOr2 = new ETransitionbuilder<State, Param, Object>().build();
   ETransition<State, Param, Object> oR2ToUIF = new ETransitionbuilder<State, Param, Object>().fireOnInput(UIfClick).build();
   ETransition<State, Param, Object> uiFToHf = new ETransitionbuilder<State, Param, Object>().fireOnInput(HfEntry).build();
-  ETransition<State, Param, Object> hFToB2 = new ETransitionbuilder<State, Param, Object>().fireOnInput(EvtBack).build();
+  ETransition<State, Param, Object> hfToOr2 = new ETransitionbuilder<State, Param, Object>().build();
+  ETransition<State, Param, Object> oR2ToB2 = new ETransitionbuilder<State, Param, Object>().fireOnInput(EvtBack).build();
   ETransition<State, Param, Object> b2ToOC1 = new ETransitionbuilder<State, Param, Object>().fireOnInput(oC1Entry).fireIfInContext(oSto1).removeFromContext(oSto1, Hc).build();
   ETransition<State, Param, Object> b2ToOr1 = new ETransitionbuilder<State, Param, Object>().fireOnInput(oR1Entry).fireIfNotInContext(oSto1).build();
 
@@ -83,7 +84,7 @@ public class WhiteBoardExample {
   EEFSMContext<Object> initialContext = new EEFSMContext();
   State loiState = Hx;
 
-  public WhiteBoardExample() {
+  public BasicInterComponentExample() {
     EFSMBuilder<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>, EEFSM<State, Param, Object>> builder = EEFSM.builder();
 
     eefsm = builder.withState(oC1, oSta1, Hc, oR1, UIx, Hx, UI, H, oSto1, oD1, oC2, oSta2, oR2, UIy, UIf, Hy, Hf, B2)
@@ -106,10 +107,11 @@ public class WhiteBoardExample {
         .withTransition(oSto1, oR2, oSto1ToOR2)
         .withTransition(oR2, UIy, oR2ToUIy)
         .withTransition(UIy, Hy, uiYToHy)
-        .withTransition(Hy, B2, hYToB2)
+        .withTransition(Hy, oR2, hyToOr2)
         .withTransition(oR2, UIf, oR2ToUIF)
         .withTransition(UIf, Hf, uiFToHf)
-        .withTransition(Hf, B2, hFToB2)
+        .withTransition(Hf, oR2, hfToOr2)
+        .withTransition(oR2, B2, oR2ToB2)
         .withTransition(B2, oC1, b2ToOC1)
         .withTransition(B2, oR1, b2ToOr1)
         .build();
