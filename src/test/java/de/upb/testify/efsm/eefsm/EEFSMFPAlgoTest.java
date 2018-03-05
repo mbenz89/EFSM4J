@@ -30,7 +30,7 @@ class EEFSMFPAlgoTest {
     EEFSMPath<State, Param, Object> path = sfp.getPath(example.Hx);
 
     Assertions.assertNotNull(path);
-    Assertions.assertEquals(14, path.getLength());
+    Assertions.assertEquals(15, path.getLength());
     Assertions.assertEquals(example.oC1, path.getSrc());
     Assertions.assertEquals(example.Hx, path.getTgt());
 
@@ -47,7 +47,7 @@ class EEFSMFPAlgoTest {
     EEFSMPath<State, Param, Object> path = sfp.getPath(example.Hx);
 
     Assertions.assertNotNull(path);
-    Assertions.assertEquals(14, path.getLength());
+    Assertions.assertEquals(15, path.getLength());
     Assertions.assertEquals(example.oC1, path.getSrc());
     Assertions.assertEquals(example.Hx, path.getTgt());
     Assertions.assertTrue(path.isFeasible(eefsm.getConfiguration().getContext()));

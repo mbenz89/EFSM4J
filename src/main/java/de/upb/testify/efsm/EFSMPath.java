@@ -122,6 +122,10 @@ public class EFSMPath<State, Parameter, Context extends IEFSMContext<Context>, T
     return Collections.unmodifiableList(transitions);
   }
 
+  public Transition getTransitionAt(int index) {
+    return transitions.get(index);
+  }
+
   public List<State> getStates() {
     if (transitions.isEmpty()) {
       return Collections.emptyList();
@@ -164,8 +168,8 @@ public class EFSMPath<State, Parameter, Context extends IEFSMContext<Context>, T
   }
 
   public boolean isFeasible(Context context) {
+    // we just create a snapshot of the original efsm and check if we can transition from the path's src to target in the given context
     EFSM<State, Parameter, Context, Transition> snapshot = efsm.snapshot(getSrc(), context);
-    snapshot.forceConfiguration(new Configuration(getSrc(), context));
     for (Transition transition : transitions) {
       Configuration configuration = snapshot.transitionAndDrop(transition.getExpectedInput());
       if (configuration == null || !configuration.getState().equals(transition.getTgt())) {
