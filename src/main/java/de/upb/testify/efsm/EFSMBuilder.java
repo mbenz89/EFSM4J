@@ -20,6 +20,14 @@ public class EFSMBuilder<State, Parameter, Context extends IEFSMContext<Context>
     this.efsmTypeClass = efsmTypeClass;
   }
 
+  public EFSMBuilder<State, Parameter, Context, Transition, EFSM> withEFSM(EFSM s) {
+    if (s != null) {
+      states.addAll(s.getStates());
+      transitions.addAll(s.getTransitons());
+    }
+    return this;
+  }
+
   public EFSMBuilder<State, Parameter, Context, Transition, EFSM> withState(State... s) {
     if (s != null) {
       states.addAll(Arrays.asList(s));

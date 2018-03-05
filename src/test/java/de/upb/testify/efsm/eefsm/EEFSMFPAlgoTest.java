@@ -1,12 +1,16 @@
 package de.upb.testify.efsm.eefsm;
 
 import de.upb.testify.efsm.Configuration;
+import de.upb.testify.efsm.ContextVar;
+import de.upb.testify.efsm.EFSMBuilder;
+import de.upb.testify.efsm.EFSMDotExporter;
 import de.upb.testify.efsm.Param;
 import de.upb.testify.efsm.State;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Iterator;
 
 /**
@@ -15,16 +19,12 @@ import java.util.Iterator;
  */
 class EEFSMFPAlgoTest {
 
-  private BasicInterComponentExample example;
   private boolean debugger = false;
 
-  @BeforeEach
-  void setUp() {
-    example = new BasicInterComponentExample();
-  }
 
   @Test
   void c1ToHx() {
+    BasicInterComponentExample example = new BasicInterComponentExample();
     EEFSMFPAlgo<State, Param, Object> sfp = new EEFSMFPAlgo<>(example.eefsm);
 
     EEFSMPath<State, Param, Object> path = sfp.getPath(example.Hx);
@@ -41,6 +41,7 @@ class EEFSMFPAlgoTest {
 
   @Test
   void c1ToHxWithOnStop1() {
+    BasicInterComponentExample example = new BasicInterComponentExample();
     EEFSM<State, Param, Object> eefsm = example.eefsm;
     EEFSMFPAlgo<State, Param, Object> sfp = new EEFSMFPAlgo<>(eefsm);
 
@@ -75,5 +76,88 @@ class EEFSMFPAlgoTest {
     if (debugger) {
       EFSMDebuggerTest.debugThis(example, path);
     }
+  }
+
+  @Test
+  void infeasible() {
+    InterComponentExampleInfeasible example = new InterComponentExampleInfeasible();
+    EEFSM<State, Param, Object> eefsm = example.eefsm;
+    EEFSMFPAlgo<State, Param, Object> sfp = new EEFSMFPAlgo<>(eefsm);
+    EEFSMPath<State, Param, Object> path = sfp.getPath(example.Hx);
+    Assertions.assertNull(path);
+  }
+
+  @Test
+  void largeEFSM() {
+    BasicInterComponentExample example1 = new BasicInterComponentExample();
+    BasicInterComponentExample example2 = new BasicInterComponentExample();
+    BasicInterComponentExample example3 = new BasicInterComponentExample();
+    BasicInterComponentExample example4 = new BasicInterComponentExample();
+    BasicInterComponentExample example5 = new BasicInterComponentExample();
+    BasicInterComponentExample example6 = new BasicInterComponentExample();
+
+    ContextVar additionalContext = new ContextVar("add");
+    State tgt = new State("tgt");
+
+
+    EFSMBuilder<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>, EEFSM<State, Param, Object>> builder = EEFSM.builder();
+    builder.withInitialState(example1.initialState).withInitialContext(example1.initialContext);
+    builder.withEFSM(example1.eefsm);
+    builder.withEFSM(example2.eefsm);
+    builder.withTransition(example1.Hf, example2.oC1, new ETransition<>(new Param("e2Entry"), example1.Le, true, null, null));
+    builder.withEFSM(example3.eefsm);
+    builder.withTransition(example2.Hf, example3.oC1, new ETransition<>(new Param("e3Entry"), example2.Le, true, null, null));
+    builder.withTransition(example3.oR1, example2.oR2, new ETransition<>(example3.EvtBack, null, true, null, null));
+    builder.withEFSM(example4.eefsm);
+    builder.withTransition(example3.Hf, example4.oC1, new ETransition<>(new Param("e4Entry"), example3.Hc, true, null, null));
+    builder.withTransition(example4.oR1, example2.oR2, new ETransition<>(example4.EvtBack, null, true, null, null));
+    builder.withState(tgt);
+    builder.withTransition(example3.oD1, tgt, new ETransition<>(new Param("tgtEntry"), additionalContext, true, null, null));
+    builder.withEFSM(example5.eefsm);
+    builder.withTransition(example4.Hf, example5.oC1, new ETransition<>(new Param("e5Entry"), example1.Le, true, null, null));
+    builder.withTransition(example5.oR1, example4.oR2, new ETransition<>(example5.EvtBack, null, true, null, null));
+    builder.withEFSM(example6.eefsm);
+    builder.withTransition(example5.Hf, example6.oC1, new ETransition<>(new Param("e6Entry"), example1.Le, true, new ContextVar[] {additionalContext}, null));
+    builder.withTransition(example6.oR1, example5.oR2, new ETransition<>(example6.EvtBack, null, true, null, null));
+
+    EEFSM<State, Param, Object> e = builder.build();
+
+    if (debugger) {
+      try {
+        EFSMDotExporter d = new EFSMDotExporter(e);
+        d.writeOut(Paths.get("target/largeEFSM.dot"));
+      } catch (IOException e1) {
+        e1.printStackTrace();
+      }
+    }
+
+    EEFSMFPAlgo<State, Param, Object> sfp = new EEFSMFPAlgo<>(e);
+
+    EEFSMPath<State, Param, Object> path = sfp.getPath(tgt);
+
+    Assertions.assertNotNull(path);
+    Assertions.assertTrue(path.isFeasible(example1.initialContext));
+
+    Iterator<Param> inputsToTrigger = path.getInputsToTrigger();
+    while (inputsToTrigger.hasNext()) {
+      e.transition(inputsToTrigger.next());
+    }
+
+    Assertions.assertTrue(e.getConfiguration().getState().equals(tgt));
+
+    e.reset();
+
+    path = sfp.getPath(example6.oR2);
+
+    inputsToTrigger = path.getInputsToTrigger();
+    while (inputsToTrigger.hasNext()) {
+      e.transition(inputsToTrigger.next());
+    }
+
+    Assertions.assertTrue(e.getConfiguration().getState().equals(example6.oR2));
+
+    path = sfp.getPath(example1.oR1);
+
+    Assertions.assertNull(path);
   }
 }

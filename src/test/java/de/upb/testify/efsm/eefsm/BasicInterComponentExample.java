@@ -86,7 +86,7 @@ public class BasicInterComponentExample {
 
   public BasicInterComponentExample() {
     EFSMBuilder<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>, EEFSM<State, Param, Object>> builder = EEFSM.builder();
-
+    changeSomething();
     eefsm = builder.withState(oC1, oSta1, Hc, oR1, UIx, Hx, UI, H, oSto1, oD1, oC2, oSta2, oR2, UIy, UIf, Hy, Hf, B2)
         .withInitialState(initialState)
         .withInitialContext(initialContext)
@@ -115,5 +115,9 @@ public class BasicInterComponentExample {
         .withTransition(B2, oC1, b2ToOC1)
         .withTransition(B2, oR1, b2ToOr1)
         .build();
+  }
+
+  protected void changeSomething(){
+
   }
 }

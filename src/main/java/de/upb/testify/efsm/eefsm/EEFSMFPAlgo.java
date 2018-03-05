@@ -108,8 +108,9 @@ public class EEFSMFPAlgo<State, Input, ContextObject> extends JGraphBasedFPALgo<
 
           for (ETransition<State, Input, ContextObject> intermediate : solvers) {
             EEFSMPath<State, Input, ContextObject> result;
+
             // if the intermediate we need to take is already in the not-yet evaluated sub-path, we do not add it again
-            if (possibleSolution.subPath(0, solutionDepth).contains(intermediate)) {
+            if (possibleSolution.subPath(0, possibleSolution.getLength() - solutionDepth).contains(intermediate)) {
               result = backTrack(context, possibleSolutions, solutionDepth);
             } else {
               result = backTrack(context, k2PathsOverIntermediate(possibleSolution, solutionDepth, intermediate), solutionDepth);
