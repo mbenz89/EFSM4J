@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Manuel Benz
@@ -81,10 +82,8 @@ public class EEFSMFPAlgo<State, Input, ContextObject> extends JGraphBasedFPALgo<
         return solution;
       }
     }
-    // we do not want to accept complete loops since this means the path is not satisfiable
 
-    for (EEFSMPath<State, Input, ContextObject> possibleSolution : possibleSolutions) {
-      // we start at a point in the path that
+    return possibleSolutions.parallelStream().flatMap(possibleSolution -> {
       List<ETransition<State, Input, ContextObject>> transitions = possibleSolution.getTransitions();
 
       int solutionDepth = depth;
@@ -104,8 +103,7 @@ public class EEFSMFPAlgo<State, Input, ContextObject> extends JGraphBasedFPALgo<
           }
 
           if (solvers == null) {
-            // FIXME we have to handle this correctly
-            throw new IllegalStateException("Not satisfiable");
+            return Stream.empty();
           }
 
           for (ETransition<State, Input, ContextObject> intermediate : solvers) {
@@ -118,14 +116,14 @@ public class EEFSMFPAlgo<State, Input, ContextObject> extends JGraphBasedFPALgo<
             }
 
             if (result != null) {
-              return result;
+              return Stream.of(result);
             }
           }
         }
       }
-    }
 
-    return null;
+      return Stream.empty();
+    }).findAny().orElse(null);
   }
 
   private List<EEFSMPath<State, Input, ContextObject>> k2PathsOverIntermediate(EEFSMPath<State, Input, ContextObject> curSolution, int index, ETransition<State, ?, ?> intermediate) {
