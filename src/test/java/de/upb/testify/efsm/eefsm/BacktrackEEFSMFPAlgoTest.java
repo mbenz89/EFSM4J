@@ -7,6 +7,7 @@ import de.upb.testify.efsm.EFSMDotExporter;
 import de.upb.testify.efsm.Param;
 import de.upb.testify.efsm.State;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -17,7 +18,7 @@ import java.util.Iterator;
  * @author Manuel Benz
  * created on 02.03.18
  */
-class EEFSMFPAlgoTest {
+class BacktrackEEFSMFPAlgoTest {
 
   private boolean debugger = false;
 
@@ -25,7 +26,7 @@ class EEFSMFPAlgoTest {
   @Test
   void c1ToHx() {
     BasicInterComponentExample example = new BasicInterComponentExample();
-    EEFSMFPAlgo<State, Param, Object> sfp = new EEFSMFPAlgo<>(example.eefsm);
+    BacktrackEEFSMFPAlgo<State, Param, Object> sfp = new BacktrackEEFSMFPAlgo<>(example.eefsm);
 
     EEFSMPath<State, Param, Object> path = sfp.getPath(example.Hx);
 
@@ -40,10 +41,65 @@ class EEFSMFPAlgoTest {
   }
 
   @Test
+  void c1ToHx2() {
+    BasicInterComponentExample example = new BasicInterComponentExample();
+    AllPath<State, Param, Object> sfp = new AllPath <>(example.eefsm);
+
+    EEFSMPath<State, Param, Object> path = sfp.getPath(example.Hx);
+
+    Assertions.assertNotNull(path);
+    //Assertions.assertEquals(15, path.getLength());
+    Assertions.assertEquals(example.oC1, path.getSrc());
+    Assertions.assertEquals(example.Hx, path.getTgt());
+
+    if (debugger) {
+      EFSMDebuggerTest.debugThis(example, path);
+    }
+  }
+
+  @Test
+  void c1ToHxWithOnStop12() {
+    BasicInterComponentExample example = new BasicInterComponentExample();
+    EEFSM<State, Param, Object> eefsm = example.eefsm;
+    AllPath<State, Param, Object> sfp = new AllPath<>(eefsm);
+
+    EEFSMPath<State, Param, Object> path = sfp.getPath(example.Hx);
+
+    Assertions.assertNotNull(path);
+   // Assertions.assertEquals(15, path.getLength());
+    Assertions.assertEquals(example.oC1, path.getSrc());
+    Assertions.assertEquals(example.Hx, path.getTgt());
+    Assertions.assertTrue(path.isFeasible(eefsm.getConfiguration().getContext()));
+
+    // lets transition into oSto 1 and then calculate a new path
+    Iterator<Param> iter = path.getInputsToTrigger();
+    while (iter.hasNext()) {
+      Configuration configuration = eefsm.transitionAndDrop(iter.next());
+      if (configuration.getState().equals(example.oR2)) {
+        break;
+      }
+    }
+
+    eefsm.transition(example.oSto1Entry);
+
+    EEFSMPath<State, Param, Object> path2 = sfp.getPath(example.Hx);
+
+    Assertions.assertNotNull(path2);
+  //  Assertions.assertEquals(10, path2.getLength());
+    Assertions.assertEquals(example.oSto1, path2.getSrc());
+    Assertions.assertEquals(example.Hx, path2.getTgt());
+    Assertions.assertTrue(path2.isFeasible(eefsm.getConfiguration().getContext()));
+
+
+    if (debugger) {
+      EFSMDebuggerTest.debugThis(example, path);
+    }
+  }
+  @Test
   void c1ToHxWithOnStop1() {
     BasicInterComponentExample example = new BasicInterComponentExample();
     EEFSM<State, Param, Object> eefsm = example.eefsm;
-    EEFSMFPAlgo<State, Param, Object> sfp = new EEFSMFPAlgo<>(eefsm);
+    BacktrackEEFSMFPAlgo<State, Param, Object> sfp = new BacktrackEEFSMFPAlgo<>(eefsm);
 
     EEFSMPath<State, Param, Object> path = sfp.getPath(example.Hx);
 
@@ -79,15 +135,24 @@ class EEFSMFPAlgoTest {
   }
 
   @Test
+  void infeasible2() {
+    InterComponentExampleInfeasible example = new InterComponentExampleInfeasible();
+    EEFSM<State, Param, Object> eefsm = example.eefsm;
+    AllPath<State, Param, Object> sfp = new AllPath<>(eefsm);
+    EEFSMPath<State, Param, Object> path = sfp.getPath(example.Hx);
+    Assertions.assertNull(path);
+  }
+  @Test
   void infeasible() {
     InterComponentExampleInfeasible example = new InterComponentExampleInfeasible();
     EEFSM<State, Param, Object> eefsm = example.eefsm;
-    EEFSMFPAlgo<State, Param, Object> sfp = new EEFSMFPAlgo<>(eefsm);
+    BacktrackEEFSMFPAlgo<State, Param, Object> sfp = new BacktrackEEFSMFPAlgo<>(eefsm);
     EEFSMPath<State, Param, Object> path = sfp.getPath(example.Hx);
     Assertions.assertNull(path);
   }
 
   @Test
+  @Disabled
   void largeEFSM() {
     BasicInterComponentExample example1 = new BasicInterComponentExample();
     BasicInterComponentExample example2 = new BasicInterComponentExample();
@@ -131,7 +196,7 @@ class EEFSMFPAlgoTest {
       }
     }
 
-    EEFSMFPAlgo<State, Param, Object> sfp = new EEFSMFPAlgo<>(e);
+    AllPath<State, Param, Object> sfp = new AllPath<>(e);
 
     EEFSMPath<State, Param, Object> path = sfp.getPath(tgt);
 

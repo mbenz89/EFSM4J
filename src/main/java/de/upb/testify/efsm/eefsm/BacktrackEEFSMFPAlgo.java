@@ -20,7 +20,7 @@ import java.util.stream.Stream;
  * @author Manuel Benz
  * created on 02.03.18
  */
-public class EEFSMFPAlgo<State, Input, ContextObject> extends JGraphBasedFPALgo<State, Input, EEFSMContext<ContextObject>, ETransition<State, Input, ContextObject>> {
+public class BacktrackEEFSMFPAlgo<State, Input, ContextObject> extends JGraphBasedFPALgo<State, Input, EEFSMContext<ContextObject>, ETransition<State, Input, ContextObject>> {
 
   private final KShortestPathAlgorithm<State, ETransition<State, Input, ContextObject>> shortestPaths;
   private final EEFSM<State, Input, ContextObject> eefsm;
@@ -29,7 +29,7 @@ public class EEFSMFPAlgo<State, Input, ContextObject> extends JGraphBasedFPALgo<
 
   private final int K = 5;
 
-  public EEFSMFPAlgo(EEFSM<State, Input, ContextObject> eefsm) {
+  public BacktrackEEFSMFPAlgo(EEFSM<State, Input, ContextObject> eefsm) {
     super(eefsm);
     this.eefsm = eefsm;
     shortestPaths = new KShortestPaths(this.baseGraph, K);
