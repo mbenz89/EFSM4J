@@ -4,10 +4,13 @@ import com.google.common.collect.Lists;
 import org.jgrapht.GraphPath;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 
@@ -38,9 +41,14 @@ public class EFSMPath<State, Parameter, Context extends IEFSMContext<Context>, T
     transitions = new LinkedList<>(basePath.getEdgeList());
   }
 
-  private EFSMPath(EFSM<State, Parameter, Context, Transition> efsm, List<Transition> transitions) {
+  protected EFSMPath(EFSM<State, Parameter, Context, Transition> efsm, Collection<Transition> transitions) {
     this.efsm = efsm;
     this.transitions = new LinkedList<>(transitions);
+  }
+
+  protected EFSMPath(EFSM<State, Parameter, Context, Transition> efsm, Transition... transitions) {
+    this.efsm = efsm;
+    this.transitions = new LinkedList<>(Arrays.asList(transitions));
   }
 
 
@@ -176,8 +184,9 @@ public class EFSMPath<State, Parameter, Context extends IEFSMContext<Context>, T
     // we just create a snapshot of the original efsm and check if we can transition from the path's src to target in the given context
     EFSM<State, Parameter, Context, Transition> snapshot = efsm.snapshot(getSrc(), context);
     for (Transition transition : transitions) {
-      Configuration configuration = snapshot.transitionAndDrop(transition.getExpectedInput());
-      if (configuration == null || !configuration.getState().equals(transition.getTgt())) {
+      // do not use transition and drop here, it is too expensive. also access curstate directly to omit building a configuratin
+      Set<Parameter> out = snapshot.transition(transition.getExpectedInput());
+      if (out == null || !snapshot.curState.equals(transition.getTgt())) {
         return false;
       }
     }

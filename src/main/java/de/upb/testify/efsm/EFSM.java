@@ -19,8 +19,8 @@ public class EFSM<State, Parameter, Context extends IEFSMContext<Context>, Trans
   private final State initialState;
   private final PropertyChangeSupport pcs;
   private ListenableGraph<State, Transition> baseGraph;
-  private State curState;
-  private Context curContext;
+  protected State curState;
+  protected Context curContext;
 
   protected EFSM(Set<State> states,
                  State initialState,
@@ -51,7 +51,7 @@ public class EFSM<State, Parameter, Context extends IEFSMContext<Context>, Trans
     this.curState = this.initialState = initialState;
     this.baseGraph = base.baseGraph;
     // we do not want to delegate any events of this to the original listeners
-    this.pcs = new PropertyChangeSupport(this);
+    this.pcs = null;
   }
 
   public boolean canTransition(Parameter input) {
@@ -77,10 +77,15 @@ public class EFSM<State, Parameter, Context extends IEFSMContext<Context>, Trans
   public Set<Parameter> transition(Parameter input) {
     for (Transition transition : baseGraph.outgoingEdgesOf(curState)) {
       if (transition.isFeasible(input, curContext)) {
-        Configuration<State, Context> prevConfig = getConfiguration();
+        Configuration<State, Context> prevConfig = null;
+        if (pcs != null) {
+          prevConfig = getConfiguration();
+        }
         curState = transition.getTgt();
         Set<Parameter> output = transition.take(input, curContext);
-        pcs.firePropertyChange(PROP_CONFIGURATION, prevConfig, Pair.of(getConfiguration(), transition));
+        if (pcs != null) {
+          pcs.firePropertyChange(PROP_CONFIGURATION, prevConfig, Pair.of(getConfiguration(), transition));
+        }
         return output;
       }
     }
@@ -151,7 +156,9 @@ public class EFSM<State, Parameter, Context extends IEFSMContext<Context>, Trans
     Configuration<State, Context> prefConfig = getConfiguration();
     this.curState = initialState;
     this.curContext = initialContext.snapshot();
-    this.pcs.firePropertyChange(PROP_CONFIGURATION, prefConfig, getConfiguration());
+    if (pcs != null) {
+      this.pcs.firePropertyChange(PROP_CONFIGURATION, prefConfig, getConfiguration());
+    }
   }
 
   protected ListenableGraph<State, Transition> getBaseGraph() {

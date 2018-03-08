@@ -5,6 +5,7 @@ import de.upb.testify.efsm.IEFSMContext;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.stream.Collectors;
 
@@ -37,7 +38,7 @@ public class EEFSMContext<ContextObject> implements IEFSMContext<EEFSMContext<Co
   }
 
   public void union(ContextObject... o) {
-    internalSet.addAll(Arrays.asList(o));
+    Collections.addAll(internalSet, o);
   }
 
   public void union(Collection<ContextObject> o) {

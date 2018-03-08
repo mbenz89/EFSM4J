@@ -16,24 +16,24 @@ public class BasicInterComponentExample {
   // loi enable is the only context var that is not a state
   ContextVar Le = new ContextVar("Le");
 
-  State oC1 = new State("oC1");
-  State oSta1 = new State("oSta1");
-  State Hc = new State("Hc");
-  State oR1 = new State("oR1");
-  State UIx = new State("UIx");
-  State Hx = new State("Hx");
-  State UI = new State("UI");
-  State H = new State("H");
-  State oSto1 = new State("oSto1");
-  State oD1 = new State("oD1");
-  State oC2 = new State("oC2");
-  State oSta2 = new State("oSta2");
-  State oR2 = new State("oR2");
-  State UIy = new State("UIy");
-  State UIf = new State("UIf");
-  State Hy = new State("Hy");
-  State Hf = new State("Hf");
-  State B2 = new State("B2");
+  State oC1 = new State("onCreate1");
+  State oSta1 = new State("onStart1");
+  State Hc = new State("HandlerGCreation");
+  State oR1 = new State("onResume1");
+  State UIx = new State("UiXClicked");
+  State Hx = new State("HandlerX");
+  State UI = new State("UiGClicked");
+  State H = new State("HandlerG");
+  State oSto1 = new State("onStop1");
+  State oD1 = new State("onDestroy1");
+  State oC2 = new State("onCreate2");
+  State oSta2 = new State("onStart2");
+  State oR2 = new State("onRresume2");
+  State UIy = new State("UiYClicked");
+  State UIf = new State("UiFClicked");
+  State Hy = new State("HandlerY");
+  State Hf = new State("HandlerF");
+  State B2 = new State("Back2");
 
   Param HcEntry = new Param("HcEntry");
   Param oSta1Entry = new Param("oSta1Entry");

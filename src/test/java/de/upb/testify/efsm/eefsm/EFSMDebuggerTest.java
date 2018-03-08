@@ -2,6 +2,7 @@ package de.upb.testify.efsm.eefsm;
 
 import de.upb.testify.efsm.Configuration;
 import de.upb.testify.efsm.EFSMDebugger;
+import de.upb.testify.efsm.EFSMPath;
 import de.upb.testify.efsm.Param;
 import de.upb.testify.efsm.State;
 import org.junit.jupiter.api.Assertions;
@@ -19,7 +20,7 @@ class EFSMDebuggerTest {
 
   private BasicInterComponentExample example;
 
-  public static void debugThis(BasicInterComponentExample example, EEFSMPath<State, Param, Object> path) {
+  public static void debugThis(BasicInterComponentExample example, EFSMPath<State, Param, EEFSMContext<Object>,ETransition<State,Param,Object>> path) {
     EEFSM<State, Param, Object> eefsm = example.eefsm;
     Assertions.assertTrue(path.isFeasible(example.initialContext));
 
