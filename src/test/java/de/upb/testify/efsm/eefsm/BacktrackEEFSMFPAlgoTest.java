@@ -43,12 +43,12 @@ class BacktrackEEFSMFPAlgoTest {
   @Test
   void c1ToHx2() {
     BasicInterComponentExample example = new BasicInterComponentExample();
-    AllPath<State, Param, Object> sfp = new AllPath <>(example.eefsm);
+    PE<State, Param, Object> sfp = new PE <>(example.eefsm);
 
-    EEFSMPath<State, Param, Object> path = sfp.getPath(example.Hx);
+    EEFSMPath<State, Param, Object> path = sfp.getPath(example.Hy);
 
     Assertions.assertNotNull(path);
-    //Assertions.assertEquals(15, path.getLength());
+    Assertions.assertEquals(15, path.getLength());
     Assertions.assertEquals(example.oC1, path.getSrc());
     Assertions.assertEquals(example.Hx, path.getTgt());
 
@@ -66,7 +66,7 @@ class BacktrackEEFSMFPAlgoTest {
     EEFSMPath<State, Param, Object> path = sfp.getPath(example.Hx);
 
     Assertions.assertNotNull(path);
-   // Assertions.assertEquals(15, path.getLength());
+    Assertions.assertEquals(18, path.getLength());
     Assertions.assertEquals(example.oC1, path.getSrc());
     Assertions.assertEquals(example.Hx, path.getTgt());
     Assertions.assertTrue(path.isFeasible(eefsm.getConfiguration().getContext()));
@@ -85,7 +85,7 @@ class BacktrackEEFSMFPAlgoTest {
     EEFSMPath<State, Param, Object> path2 = sfp.getPath(example.Hx);
 
     Assertions.assertNotNull(path2);
-  //  Assertions.assertEquals(10, path2.getLength());
+    Assertions.assertEquals(20, path2.getLength());
     Assertions.assertEquals(example.oSto1, path2.getSrc());
     Assertions.assertEquals(example.Hx, path2.getTgt());
     Assertions.assertTrue(path2.isFeasible(eefsm.getConfiguration().getContext()));
@@ -196,7 +196,7 @@ class BacktrackEEFSMFPAlgoTest {
       }
     }
 
-    AllPath<State, Param, Object> sfp = new AllPath<>(e);
+    PE<State, Param, Object> sfp = new PE(e);
 
     EEFSMPath<State, Param, Object> path = sfp.getPath(tgt);
 
