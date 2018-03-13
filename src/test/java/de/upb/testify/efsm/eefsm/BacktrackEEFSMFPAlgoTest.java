@@ -6,7 +6,7 @@ import de.upb.testify.efsm.EFSMBuilder;
 import de.upb.testify.efsm.EFSMDotExporter;
 import de.upb.testify.efsm.EFSMPath;
 import de.upb.testify.efsm.IFeasiblePathAlgo;
-import de.upb.testify.efsm.PEFeasiblePathAlgo;
+import de.upb.testify.efsm.PEAllPath;
 import de.upb.testify.efsm.Param;
 import de.upb.testify.efsm.State;
 import org.junit.jupiter.api.Assertions;
@@ -46,7 +46,7 @@ class BacktrackEEFSMFPAlgoTest {
   @Test
   void c1ToHxPE() {
     BasicInterComponentExample example = new BasicInterComponentExample();
-    PEFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp = new PEFeasiblePathAlgo<>(example.eefsm,20);
+    PEAllPath<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp = new PEAllPath<>(example.eefsm,20);
 
     EFSMPath<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> path = sfp.getPath(example.Hx);
 
@@ -163,7 +163,7 @@ class BacktrackEEFSMFPAlgoTest {
   void c1ToHxWithOnStopPe() {
     BasicInterComponentExample example = new BasicInterComponentExample();
     EEFSM<State, Param, Object> eefsm = example.eefsm;
-    PEFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp = new PEFeasiblePathAlgo<>(eefsm);
+    PEAllPath<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp = new PEAllPath<>(eefsm);
 
     EFSMPath<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> path = sfp.getPath(example.Hx);
 
@@ -220,7 +220,7 @@ class BacktrackEEFSMFPAlgoTest {
   void infeasiblePE() {
     InterComponentExampleInfeasible example = new InterComponentExampleInfeasible();
     EEFSM<State, Param, Object> eefsm = example.eefsm;
-    PEFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp = new PEFeasiblePathAlgo<>(eefsm);
+    PEAllPath<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp = new PEAllPath<>(eefsm);
 
     EFSMPath<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> path = sfp.getPath(example.Hx);
     Assertions.assertNull(path);
@@ -271,7 +271,7 @@ class BacktrackEEFSMFPAlgoTest {
       }
     }
 
-    IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp = new PEFeasiblePathAlgo<>(e,40);
+    IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp = new PEAllPath<>(e,40);
 
     EFSMPath<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> path = sfp.getPath(tgt);
 
