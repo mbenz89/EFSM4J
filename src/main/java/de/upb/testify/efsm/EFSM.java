@@ -18,9 +18,9 @@ public class EFSM<State, Parameter, Context extends IEFSMContext<Context>, Trans
   private final Context initialContext;
   private final State initialState;
   private final PropertyChangeSupport pcs;
-  private ListenableGraph<State, Transition> baseGraph;
   protected State curState;
   protected Context curContext;
+  private ListenableGraph<State, Transition> baseGraph;
 
   protected EFSM(Set<State> states,
                  State initialState,
@@ -153,12 +153,7 @@ public class EFSM<State, Parameter, Context extends IEFSMContext<Context>, Trans
   }
 
   public void reset() {
-    Configuration<State, Context> prefConfig = getConfiguration();
-    this.curState = initialState;
-    this.curContext = initialContext.snapshot();
-    if (pcs != null) {
-      this.pcs.firePropertyChange(PROP_CONFIGURATION, prefConfig, getConfiguration());
-    }
+    forceConfiguration(new Configuration<>(initialState, initialContext.snapshot()));
   }
 
   protected ListenableGraph<State, Transition> getBaseGraph() {
@@ -194,8 +189,15 @@ public class EFSM<State, Parameter, Context extends IEFSMContext<Context>, Trans
     return snapshot(this.curState, this.curContext);
   }
 
-  protected void forceConfiguration(Configuration<State, Context> config) {
+  public void forceConfiguration(Configuration<State, Context> config) {
+    Configuration<State, Context> prefConfig = null;
+    if (pcs != null) {
+      prefConfig = getConfiguration();
+    }
     this.curState = config.getState();
     this.curContext = config.getContext().snapshot();
+    if (pcs != null) {
+      this.pcs.firePropertyChange(PROP_CONFIGURATION, prefConfig, getConfiguration());
+    }
   }
 }

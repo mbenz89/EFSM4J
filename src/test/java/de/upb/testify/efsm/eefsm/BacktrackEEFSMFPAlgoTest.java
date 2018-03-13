@@ -10,6 +10,7 @@ import de.upb.testify.efsm.PEFeasiblePathAlgo;
 import de.upb.testify.efsm.Param;
 import de.upb.testify.efsm.State;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -45,7 +46,7 @@ class BacktrackEEFSMFPAlgoTest {
   @Test
   void c1ToHxPE() {
     BasicInterComponentExample example = new BasicInterComponentExample();
-    PEFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp = new PEFeasiblePathAlgo<>(example.eefsm);
+    PEFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp = new PEFeasiblePathAlgo<>(example.eefsm,20);
 
     EFSMPath<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> path = sfp.getPath(example.Hx);
 
@@ -226,7 +227,8 @@ class BacktrackEEFSMFPAlgoTest {
   }
 
   @Test
-  void largeEFSM() {
+  @Disabled
+  void largeEFSMPE() {
     BasicInterComponentExample example1 = new BasicInterComponentExample();
     BasicInterComponentExample example2 = new BasicInterComponentExample();
     BasicInterComponentExample example3 = new BasicInterComponentExample();
@@ -269,7 +271,7 @@ class BacktrackEEFSMFPAlgoTest {
       }
     }
 
-    IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp = new PEFeasiblePathAlgo<>(e);
+    IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp = new PEFeasiblePathAlgo<>(e,40);
 
     EFSMPath<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> path = sfp.getPath(tgt);
 
