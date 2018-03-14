@@ -4,6 +4,7 @@ import de.upb.testify.efsm.Transition;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -108,7 +109,7 @@ public class ETransition<State, Input, ContextObject> extends Transition<State, 
   public String toString() {
     StringBuilder builder = new StringBuilder();
 
-    builder.append((expectedInput == null ? "-" : expectedInput) + " \uFF0F " + (expectedContext == null ? "-" : expectedContext));
+    builder.append(Objects.toString(expectedInput, "-") + " \uFF0F " + Objects.toString(expectedContext, "-"));
     if (expectedContext != null) {
       builder.append((elementOf ? " \u2208 " : " \u2209 ") + ℂ);
     }
@@ -127,7 +128,7 @@ public class ETransition<State, Input, ContextObject> extends Transition<State, 
     }
 
     builder.append("\n");
-
-    return builder.toString();
+//FIXME return builder
+    return Objects.toString(expectedInput, "-");
   }
 }

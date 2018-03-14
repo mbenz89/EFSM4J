@@ -8,8 +8,8 @@ import de.upb.testify.efsm.EFSMPath;
 import de.upb.testify.efsm.IFeasiblePathAlgo;
 import de.upb.testify.efsm.PEAllPath;
 import de.upb.testify.efsm.PEBasedFPAlgo;
-import de.upb.testify.efsm.PEContextPropagation;
 import de.upb.testify.efsm.Param;
+import de.upb.testify.efsm.PathExpressionWithPruningFPAlgo;
 import de.upb.testify.efsm.State;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
@@ -66,7 +66,7 @@ class BacktrackEEFSMFPAlgoTest {
   @Test
   void c1ToHxPEContext() {
     BasicInterComponentExample example = new BasicInterComponentExample();
-    PEBasedFPAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp = new PEContextPropagation<>(example.eefsm,20);
+    PEBasedFPAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp = new PathExpressionWithPruningFPAlgo<>(example.eefsm,20);
 
     EFSMPath<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> path = sfp.getPath(example.Hx);
 
@@ -183,7 +183,7 @@ class BacktrackEEFSMFPAlgoTest {
   void c1ToHxWithOnStopPe() {
     BasicInterComponentExample example = new BasicInterComponentExample();
     EEFSM<State, Param, Object> eefsm = example.eefsm;
-    PEContextPropagation<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp = new PEContextPropagation<>(eefsm);
+    PathExpressionWithPruningFPAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp = new PathExpressionWithPruningFPAlgo<>(eefsm);
 
     EFSMPath<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> path = sfp.getPath(example.Hx);
 
@@ -291,7 +291,7 @@ class BacktrackEEFSMFPAlgoTest {
       }
     }
 
-    IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp = new PEContextPropagation<>(e,40);
+    IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp = new PathExpressionWithPruningFPAlgo<>(e,40);
 
     EFSMPath<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> path = sfp.getPath(tgt);
 

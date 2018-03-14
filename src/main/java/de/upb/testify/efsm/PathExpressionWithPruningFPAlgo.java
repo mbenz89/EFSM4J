@@ -13,12 +13,12 @@ import java.util.Set;
  * @author Manuel Benz
  * created on 13.03.18
  */
-public class PEContextPropagation<State, Parameter, Context extends IEFSMContext<Context>, Transition extends de.upb.testify.efsm.Transition<State, Parameter, Context>> extends PEBasedFPAlgo<State, Parameter, Context, Transition> {
-  public PEContextPropagation(EFSM<State, Parameter, Context, Transition> efsm) {
+public class PathExpressionWithPruningFPAlgo<State, Parameter, Context extends IEFSMContext<Context>, Transition extends de.upb.testify.efsm.Transition<State, Parameter, Context>> extends PEBasedFPAlgo<State, Parameter, Context, Transition> {
+  public PathExpressionWithPruningFPAlgo(EFSM<State, Parameter, Context, Transition> efsm) {
     super(efsm);
   }
 
-  public PEContextPropagation(EFSM<State, Parameter, Context, Transition> efsm, int maxDepth) {
+  public PathExpressionWithPruningFPAlgo(EFSM<State, Parameter, Context, Transition> efsm, int maxDepth) {
     super(efsm, maxDepth);
   }
 
@@ -26,15 +26,22 @@ public class PEContextPropagation<State, Parameter, Context extends IEFSMContext
   protected Collection<EFSMPath<State, Parameter, Context, Transition>> expressionToPath(Configuration<State, Context> config, IRegEx<Transition> pathExpression) {
     // TODO check for empty pe
     IRegEx<Transition> prunedPE = new PEPruner().prune(pathExpression, config.getContext());
+
+    if (prunedPE == null) {
+      // there is no feasible path
+      return null;
+    }
+
     Set<EFSMPath<State, Parameter, Context, Transition>> res = generatePaths(prunedPE, new EFSMPath<>(efsm));
     if (res != null) {
       assert res.stream().allMatch(p -> p.isFeasible(config.getContext()));
     }
+
     return res;
   }
 
   private Set<EFSMPath<State, Parameter, Context, Transition>> generatePaths(IRegEx<Transition> expr, EFSMPath<State, Parameter, Context, Transition> pred) {
-    if (expr == null || expr instanceof RegEx.EmptySet) {
+    if (expr instanceof RegEx.EmptySet) {
       return Collections.emptySet();
     }
 
@@ -57,6 +64,7 @@ public class PEContextPropagation<State, Parameter, Context extends IEFSMContext
         return Collections.emptySet();
       }
     } else if (expr instanceof RegEx.Star) {
+      // FIXME we just do not take the star path here
       return Collections.singleton(pred);
     } else if (expr instanceof RegEx.Union) {
       Set<EFSMPath<State, Parameter, Context, Transition>> lefts = generatePaths(((RegEx.Union) expr).a, pred);
@@ -80,47 +88,16 @@ public class PEContextPropagation<State, Parameter, Context extends IEFSMContext
      */
     public IRegEx<Transition> prune(IRegEx<Transition> unpruned, Context initialContext) {
       root = unpruned;
-      firstPass(root, null, new ContextHolder(initialContext));
-      return secondPass(root, null);
-    }
-
-    private IRegEx<Transition> secondPass(IRegEx<Transition> regEx, IRegEx<Transition> parentRegEx) {
-      if (regEx == null || regEx instanceof RegEx.Plain) {
-        return regEx;
-      } else if (regEx instanceof RegEx.Concatenate) {
-        RegEx.Concatenate<Transition> concat = (RegEx.Concatenate<Transition>) regEx;
-        if (secondPass(concat.a, concat) == null) {
-          return null;
-        }
-        if (secondPass(concat.b, concat) == null) {
-          return null;
-        }
-        return regEx;
-      } else if (regEx instanceof RegEx.Star) {
-        RegEx.Star<Transition> star = (RegEx.Star<Transition>) regEx;
-        return secondPass(star.a, regEx);
-      } else if (regEx instanceof RegEx.Union) {
-        RegEx.Union<Transition> union = (RegEx.Union<Transition>) regEx;
-        IRegEx<Transition> first = secondPass(union.getFirst(), union);
-        IRegEx<Transition> second = secondPass(union.getSecond(), union);
-
-        if (first == null && second == null) {
-          return null;
-        } else if (first == null) {
-          replaceRegChild(regEx, parentRegEx, union.b);
-          return second;
-        } else if (second == null) {
-          replaceRegChild(regEx, parentRegEx, union.a);
-          return first;
-        } else {
-          return regEx;
-        }
-      } else {
-        throw new IllegalArgumentException("Regex unknown " + regEx.getClass());
+      firstPass(root, new ContextHolder(initialContext));
+      if (secondPass(root, null) == null) {
+        // if the second path returns null, there is no feasible path
+        return null;
       }
+
+      return root;
     }
 
-    private Set<ContextHolder> firstPass(IRegEx<Transition> regEx, IRegEx<Transition> parentRegEx, ContextHolder context) {
+    private Set<ContextHolder> firstPass(IRegEx<Transition> regEx, ContextHolder context) {
       if (regEx == null || regEx instanceof RegEx.EmptySet) {
         return null;
       }
@@ -138,7 +115,7 @@ public class PEContextPropagation<State, Parameter, Context extends IEFSMContext
         }
       } else if (regEx instanceof RegEx.Concatenate) {
         RegEx.Concatenate<Transition> concat = (RegEx.Concatenate<Transition>) regEx;
-        Set<ContextHolder> lefts = firstPass(concat.a, concat, context);
+        Set<ContextHolder> lefts = firstPass(concat.a, context);
 
         if (lefts == null) {
           return lefts;
@@ -146,7 +123,7 @@ public class PEContextPropagation<State, Parameter, Context extends IEFSMContext
 
         Set<ContextHolder> res = Sets.newHashSet();
         for (ContextHolder left : lefts) {
-          Set<ContextHolder> right = firstPass(concat.b, concat, left);
+          Set<ContextHolder> right = firstPass(concat.b, left);
           if (right != null) {
             res.addAll(right);
           }
@@ -159,41 +136,88 @@ public class PEContextPropagation<State, Parameter, Context extends IEFSMContext
 
         return res;
       } else if (regEx instanceof RegEx.Star) {
-        //     RegEx.Star<Transition> star = (RegEx.Star<Transition>) regEx;
-        //   Set<ContextHolder> starRes = markForSecondPass(star.a, context);
-        // FIXME same problem here as well if we take the star we never terminate. if we fix this, we need to also implement pruning here
-        return Collections.singleton(context);
+        RegEx.Star<Transition> star = (RegEx.Star<Transition>) regEx;
+        Set<ContextHolder> starRes = firstPass(star.a, context);
+        if (starRes == null) {
+          return Collections.singleton(context);
+        } else {
+          return Sets.union(Collections.singleton(context), starRes);
+        }
       } else if (regEx instanceof RegEx.Union) {
         RegEx.Union<Transition> union = (RegEx.Union<Transition>) regEx;
-        Set<ContextHolder> first = firstPass(union.getFirst(), union, context.propagateLeft(union));
-        // FIXME it should be ok to take the original context here to prevent cloning too much
-        Set<ContextHolder> second = firstPass(union.getSecond(), union, context.propagateRight(union));
+        Set<ContextHolder> left = firstPass(union.getFirst(), context.propagateLeft(union));
+        Set<ContextHolder> right = firstPass(union.getSecond(), context.propagateRight(union));
 
-        if (first == null && second == null) {
+        if (left == null && right == null) {
           return null;
-        } else if (first == null) {
-          replaceRegChild(regEx, parentRegEx, union.b);
-          return second;
-        } else if (second == null) {
-          replaceRegChild(regEx, parentRegEx, union.a);
-          return first;
+        } else if (left == null) {
+          markForSecondPass(union, true);
+          return right;
+        } else if (right == null) {
+          markForSecondPass(union, false);
+          return left;
         } else {
-          return Sets.union(first, second);
+          return Sets.union(left, right);
         }
       } else {
         throw new IllegalArgumentException("Regex unknown " + regEx.getClass());
       }
     }
 
-    private void markForSecondPass(ContextHolder context) {
-      if (context.left) {
-        context.union.a = null;
+    private void markForSecondPass(RegEx.Union<Transition> union, boolean left) {
+      if (left) {
+        union.a = null;
       } else {
-        context.union.b = null;
+        union.b = null;
       }
     }
 
-    private void replaceRegChild(IRegEx<Transition> oldVal, IRegEx<Transition> parentRegEx, IRegEx<Transition> newVal) {
+    private void markForSecondPass(ContextHolder context) {
+      markForSecondPass(context.union, context.left);
+    }
+
+
+    private IRegEx<Transition> secondPass(IRegEx<Transition> regEx, IRegEx<Transition> parentRegEx) {
+      if (regEx == null || regEx instanceof RegEx.Plain) {
+        return regEx;
+      } else if (regEx instanceof RegEx.Concatenate) {
+        RegEx.Concatenate<Transition> concat = (RegEx.Concatenate<Transition>) regEx;
+        if (secondPass(concat.a, concat) == null) {
+          return null;
+        }
+        if (secondPass(concat.b, concat) == null) {
+          return null;
+        }
+        return concat;
+      } else if (regEx instanceof RegEx.Star) {
+        RegEx.Star<Transition> star = (RegEx.Star<Transition>) regEx;
+        if (secondPass(star.a, star) == null) {
+          // if the content of the star operator is not feasible we can still just take it 0 times!
+          return new RegEx.EmptySet<>();
+        }
+        return star;
+      } else if (regEx instanceof RegEx.Union) {
+        RegEx.Union<Transition> union = (RegEx.Union<Transition>) regEx;
+        IRegEx<Transition> first = secondPass(union.a, union);
+        IRegEx<Transition> second = secondPass(union.b, union);
+
+        if (first == null && second == null) {
+          return null;
+        } else if (first == null) {
+          replaceChildInParent(regEx, parentRegEx, second);
+          return second;
+        } else if (second == null) {
+          replaceChildInParent(regEx, parentRegEx, first);
+          return first;
+        } else {
+          return union;
+        }
+      } else {
+        throw new IllegalArgumentException("Regex unknown " + regEx.getClass());
+      }
+    }
+
+    private void replaceChildInParent(IRegEx<Transition> oldVal, IRegEx<Transition> parentRegEx, IRegEx<Transition> newVal) {
       if (parentRegEx instanceof RegEx.Union) {
         RegEx.Union pUnion = (RegEx.Union) parentRegEx;
         // is this the left or right side of the union?
