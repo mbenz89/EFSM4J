@@ -42,7 +42,11 @@ public abstract class PEBasedFPAlgo<State, Parameter, Context extends IEFSMConte
    */
   @Override
   public EFSMPath<State, Parameter, Context, Transition> getPath(Configuration<State, Context> config, State tgt) {
-    return getPaths(config, tgt).stream().min(Comparator.comparing(EFSMPath::getLength)).orElse(null);
+    Collection<EFSMPath<State, Parameter, Context, Transition>> paths = getPaths(config, tgt);
+    if (paths == null || paths.isEmpty()) {
+      return null;
+    }
+    return paths.stream().min(Comparator.comparing(EFSMPath::getLength)).orElse(null);
   }
 
   @Override
@@ -69,15 +73,6 @@ public abstract class PEBasedFPAlgo<State, Parameter, Context extends IEFSMConte
 
   protected abstract Collection<EFSMPath<State, Parameter, Context, Transition>> expressionToPath(Configuration<State, Context> config, IRegEx<Transition> pathExpression);
 
-  protected final class PathState {
-    EFSMPath<State, Parameter, Context, Transition> path;
-    Configuration<State, Context> config;
-
-    public PathState(EFSMPath<State, Parameter, Context, Transition> path, Configuration<State, Context> config) {
-      this.path = path;
-      this.config = config;
-    }
-  }
 
   /**
    * Implements the LabeledGraph interface, needed for the path expression computation. Edge labels of the wrapper are actual edges of the eefsm instead of the input, to make mapping the paths back easier.
@@ -91,7 +86,7 @@ public abstract class PEBasedFPAlgo<State, Parameter, Context extends IEFSMConte
 
     @Override
     public Set<Edge<State, Transition>> getEdges() {
-      return efsm.getTransitons().stream().map(e -> new PEAllPath.GraphWrapper.EdgeWrapper(e)).collect(Collectors.toSet());
+      return efsm.getTransitons().stream().map(e -> new EdgeWrapper(e)).collect(Collectors.toSet());
     }
 
     @Override

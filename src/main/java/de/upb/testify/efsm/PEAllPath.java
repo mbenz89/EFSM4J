@@ -80,4 +80,14 @@ public class PEAllPath<State, Parameter, Context extends IEFSMContext<Context>, 
     }
   }
 
+  private final class PathState {
+    EFSMPath<State, Parameter, Context, Transition> path;
+    Configuration<State, Context> config;
+
+    public PathState(EFSMPath<State, Parameter, Context, Transition> path, Configuration<State, Context> config) {
+      this.path = path;
+      this.config = config;
+    }
+  }
+
 }

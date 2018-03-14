@@ -51,6 +51,11 @@ public class EFSMPath<State, Parameter, Context extends IEFSMContext<Context>, T
     this.transitions = new LinkedList<>(Arrays.asList(transitions));
   }
 
+  public EFSMPath(EFSM<State, Parameter, Context, Transition> efsm, EFSMPath<State, Parameter, Context, Transition> basePath, Transition t) {
+    this(efsm, basePath);
+    transitions.add(t);
+  }
+
 
   protected void append(Transition t) {
     if (!transitions.isEmpty()) {
