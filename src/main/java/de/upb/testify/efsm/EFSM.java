@@ -13,7 +13,7 @@ import java.util.Set;
  * @author Manuel Benz
  * created on 20.02.18
  */
-public class EFSM<State, Parameter, Context extends IEFSMContext<Context>, Transition extends de.upb.testify.efsm.Transition<State, Parameter, Context>> {
+public class EFSM<State extends Comparable<State>, Parameter, Context extends IEFSMContext<Context>, Transition extends de.upb.testify.efsm.Transition<State, Parameter, Context>> {
   public static final String PROP_CONFIGURATION = "PROP_CONFIGURATION";
   private final Context initialContext;
   private final State initialState;

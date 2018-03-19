@@ -12,7 +12,7 @@ import java.util.stream.Stream;
  * @author Manuel Benz
  * created on 07.03.18
  */
-public class PEAllPath<State, Parameter, Context extends IEFSMContext<Context>, Transition extends de.upb.testify.efsm.Transition<State, Parameter, Context>> extends PEBasedFPAlgo<State, Parameter, Context, Transition> {
+public class PEAllPath<State extends Comparable<State>, Parameter, Context extends IEFSMContext<Context>, Transition extends de.upb.testify.efsm.Transition<State, Parameter, Context>> extends PEBasedFPAlgo<State, Parameter, Context, Transition> {
 
   public PEAllPath(EFSM<State, Parameter, Context, Transition> efsm) {
     super(efsm, Integer.MAX_VALUE);

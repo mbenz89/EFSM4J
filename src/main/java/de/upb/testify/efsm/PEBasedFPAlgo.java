@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -25,7 +26,7 @@ import java.util.stream.Stream;
  * @author Manuel Benz
  * created on 13.03.18
  */
-public abstract class PEBasedFPAlgo<State, Parameter, Context extends IEFSMContext<Context>, Transition extends de.upb.testify.efsm.Transition<State, Parameter, Context>> implements IFeasiblePathAlgo<State, Parameter, Context, Transition> {
+public abstract class PEBasedFPAlgo<State extends Comparable<State>, Parameter, Context extends IEFSMContext<Context>, Transition extends de.upb.testify.efsm.Transition<State, Parameter, Context>> implements IFeasiblePathAlgo<State, Parameter, Context, Transition> {
   private final static Logger logger = LoggerFactory.getLogger(PEBasedFPAlgo.class);
 
   protected final PathExpressionComputer<State, Transition> peComputer;
@@ -141,8 +142,8 @@ public abstract class PEBasedFPAlgo<State, Parameter, Context extends IEFSMConte
         return Collections.emptySet();
       }
     } else if (expr instanceof RegEx.Star) {
-      return Sets.union(Collections.singleton(c.snapshot()), pathExists(((RegEx.Star) expr).a, c.snapshot()));
-      // return Collections.singleton(c);
+     // return Sets.union(Collections.singleton(c.snapshot()), pathExists(((RegEx.Star) expr).a, c.snapshot()));
+       return Collections.singleton(c);
     } else if (expr instanceof RegEx.Union) {
       Set<Context> left = pathExists(((RegEx.Union) expr).a, c.snapshot());
       Set<Context> right = pathExists(((RegEx.Union) expr).b, c.snapshot());
@@ -202,7 +203,8 @@ public abstract class PEBasedFPAlgo<State, Parameter, Context extends IEFSMConte
 
     @Override
     public Set<State> getNodes() {
-      return efsm.getStates();
+      // We return an ordered set here to make the path generation deterministic
+      return new TreeSet<>(efsm.getStates());
     }
 
     @Override

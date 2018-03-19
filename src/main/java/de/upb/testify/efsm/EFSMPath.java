@@ -18,7 +18,7 @@ import java.util.function.Consumer;
  * @author Manuel Benz
  * created on 02.03.18
  */
-public class EFSMPath<State, Parameter, Context extends IEFSMContext<Context>, Transition extends de.upb.testify.efsm.Transition<State, Parameter, Context>> implements Iterable<Transition> {
+public class EFSMPath<State extends Comparable<State>, Parameter, Context extends IEFSMContext<Context>, Transition extends de.upb.testify.efsm.Transition<State, Parameter, Context>> implements Iterable<Transition> {
 
   private final LinkedList<Transition> transitions;
   /**

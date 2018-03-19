@@ -7,7 +7,7 @@ import org.jgrapht.GraphPath;
  * @author Manuel Benz
  * created on 02.03.18
  */
-public class EEFSMPath<State, Input, ContextObject> extends EFSMPath<State, Input, EEFSMContext<ContextObject>, ETransition<State, Input, ContextObject>> {
+public class EEFSMPath<State extends Comparable<State>, Input, ContextObject> extends EFSMPath<State, Input, EEFSMContext<ContextObject>, ETransition<State, Input, ContextObject>> {
 
   protected EEFSMPath(EEFSM<State, Input, ContextObject> eefsm) {
     super(eefsm);
@@ -19,7 +19,7 @@ public class EEFSMPath<State, Input, ContextObject> extends EFSMPath<State, Inpu
 
   protected EEFSMPath(EEFSM<State, Input, ContextObject> eefsm, GraphPath<State, ETransition<State, Input, ContextObject>> basePath) {
     super(eefsm, basePath);
-  }
+  } 
 
 
   @Override

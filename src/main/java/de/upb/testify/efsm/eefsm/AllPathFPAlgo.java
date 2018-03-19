@@ -11,7 +11,7 @@ import java.util.List;
  * @author Manuel Benz
  * created on 06.03.18
  */
-public class AllPathFPAlgo<State, Input, ContextObject> extends JGraphBasedFPALgo<State, Input, EEFSMContext<ContextObject>, ETransition<State, Input, ContextObject>> {
+public class AllPathFPAlgo<State extends Comparable<State>, Input, ContextObject> extends JGraphBasedFPALgo<State, Input, EEFSMContext<ContextObject>, ETransition<State, Input, ContextObject>> {
 
   private final AllDirectedPaths<State, ETransition<State, Input, ContextObject>> allDirectedPaths;
 
