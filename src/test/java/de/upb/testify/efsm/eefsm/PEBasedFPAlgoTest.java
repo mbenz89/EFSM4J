@@ -44,7 +44,7 @@ class PEBasedFPAlgoTest {
     EEFSMContext<Object> context = new EEFSMContext<>();
     context.union(example.oR2, example.Hc);
 
-    eefsm.forceConfiguration(new Configuration(example.oSto1Entry, context));
+    eefsm.forceConfiguration(new Configuration(example.oSto1, context));
 
     Assertions.assertTrue(sfp.pathExists(example.Hx));
   }
@@ -80,7 +80,7 @@ class PEBasedFPAlgoTest {
   }
 
   @Test
-  void largeEFSMPE3() {
+  void largeEFSMPE_Infeasible() {
     LargeInterComponentExample example = new LargeInterComponentExample();
     EEFSM<State, Param, Object> e = example.eefsm;
 

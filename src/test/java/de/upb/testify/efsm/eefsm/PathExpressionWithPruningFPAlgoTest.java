@@ -18,6 +18,21 @@ class PathExpressionWithPruningFPAlgoTest extends AbstractEFSMFPAlgoTest {
   }
 
   @Override
+  void c1ToHx() {
+    super.c1ToHx();
+  }
+
+  @Override
+  void c1ToHxWithOnStop() {
+    super.c1ToHxWithOnStop();
+  }
+
+  @Override
+  void infeasiblePath() {
+    super.infeasiblePath();
+  }
+
+  @Override
   @Disabled
   void largeEFSMPE() {
     super.largeEFSMPE();

@@ -87,22 +87,6 @@ public class PathExpressionWithPruningFPAlgo<State, Parameter, Context extends I
       return secondPass(unique);
     }
 
-    private IRegEx<Transition> makeUnique(IRegEx<Transition> regEx) {
-      if (regEx instanceof RegEx.Plain) {
-        return new RegEx.Plain(((RegEx.Plain) regEx).v);
-      } else if (regEx instanceof RegEx.Concatenate) {
-        RegEx.Concatenate concat = (RegEx.Concatenate) regEx;
-        return new RegEx.Concatenate<>(makeUnique(concat.a), makeUnique(concat.b));
-      } else if (regEx instanceof RegEx.Star) {
-        RegEx.Star star = (RegEx.Star) regEx;
-        return new RegEx.Star<>(makeUnique(star.a));
-      } else if (regEx instanceof RegEx.Union) {
-        RegEx.Union union = (RegEx.Union) regEx;
-        return new RegEx.Union<>(makeUnique(union.a), makeUnique(union.b));
-      } else {
-        throw new IllegalArgumentException("Regex unknown " + regEx.getClass());
-      }
-    }
 
     private Set<ContextHolder> firstPass(IRegEx<Transition> regEx, ContextHolder context, boolean allowPruning) {
       if (regEx instanceof RegEx.Plain) {
@@ -192,7 +176,6 @@ public class PathExpressionWithPruningFPAlgo<State, Parameter, Context extends I
         throw new IllegalArgumentException("Regex unknown " + regEx.getClass());
       }
     }
-
 
 
     private void markForSecondPass(RegEx.Concatenate<Transition> concat) {

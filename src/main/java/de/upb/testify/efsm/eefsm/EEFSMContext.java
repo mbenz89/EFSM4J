@@ -1,6 +1,5 @@
 package de.upb.testify.efsm.eefsm;
 
-import com.google.common.base.Objects;
 import de.upb.testify.efsm.IEFSMContext;
 
 import java.util.Arrays;
@@ -72,19 +71,12 @@ public class EEFSMContext<ContextObject> implements IEFSMContext<EEFSMContext<Co
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    EEFSMContext<?> that = (EEFSMContext<?>) o;
-    return Objects.equal(internalSet, that.internalSet);
+    return internalSet.equals(o);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(internalSet);
+    return internalSet.hashCode();
   }
 
   @Override

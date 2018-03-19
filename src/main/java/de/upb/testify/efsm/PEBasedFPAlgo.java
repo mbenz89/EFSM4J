@@ -141,10 +141,11 @@ public abstract class PEBasedFPAlgo<State, Parameter, Context extends IEFSMConte
         return Collections.emptySet();
       }
     } else if (expr instanceof RegEx.Star) {
-      return Collections.singleton(c);
+      return Sets.union(Collections.singleton(c.snapshot()), pathExists(((RegEx.Star) expr).a, c.snapshot()));
+      // return Collections.singleton(c);
     } else if (expr instanceof RegEx.Union) {
       Set<Context> left = pathExists(((RegEx.Union) expr).a, c.snapshot());
-      Set<Context> right = pathExists(((RegEx.Union) expr).a, c.snapshot());
+      Set<Context> right = pathExists(((RegEx.Union) expr).b, c.snapshot());
       return Sets.union(left, right);
     } else {
       throw new IllegalArgumentException("Expr of unknown type: " + expr.getClass());
@@ -156,7 +157,7 @@ public abstract class PEBasedFPAlgo<State, Parameter, Context extends IEFSMConte
    *
    * @param c
    * @param t
-   * @return If the transition is feasible in the given context and the operation was applied.
+   * @return True, if the transition is feasible in the given context and the operation was applied.
    */
   protected boolean applyOperationIfFeasible(Context c, Transition t) {
     if (t.domainGuard(c)) {
@@ -165,6 +166,24 @@ public abstract class PEBasedFPAlgo<State, Parameter, Context extends IEFSMConte
     }
     return false;
   }
+
+  protected IRegEx<Transition> makeUnique(IRegEx<Transition> regEx) {
+    if (regEx instanceof RegEx.Plain) {
+      return new RegEx.Plain(((RegEx.Plain) regEx).v);
+    } else if (regEx instanceof RegEx.Concatenate) {
+      RegEx.Concatenate concat = (RegEx.Concatenate) regEx;
+      return new RegEx.Concatenate<>(makeUnique(concat.a), makeUnique(concat.b));
+    } else if (regEx instanceof RegEx.Star) {
+      RegEx.Star star = (RegEx.Star) regEx;
+      return new RegEx.Star<>(makeUnique(star.a));
+    } else if (regEx instanceof RegEx.Union) {
+      RegEx.Union union = (RegEx.Union) regEx;
+      return new RegEx.Union<>(makeUnique(union.a), makeUnique(union.b));
+    } else {
+      throw new IllegalArgumentException("Regex unknown " + regEx.getClass());
+    }
+  }
+
 
   /**
    * Implements the LabeledGraph interface, needed for the path expression computation. Edge labels of the wrapper are actual edges of the eefsm instead of the input, to make mapping the paths back easier.
