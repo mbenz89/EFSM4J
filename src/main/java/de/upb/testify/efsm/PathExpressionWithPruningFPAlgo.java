@@ -5,10 +5,9 @@ import com.google.common.collect.Sets;
 import pathexpression.IRegEx;
 import pathexpression.RegEx;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Manuel Benz
@@ -24,7 +23,7 @@ public class PathExpressionWithPruningFPAlgo<State, Parameter, Context extends I
   }
 
   @Override
-  protected Collection<EFSMPath<State, Parameter, Context, Transition>> expressionToPath(Configuration<State, Context> config, IRegEx<Transition> pathExpression) {
+  protected Stream<EFSMPath<State, Parameter, Context, Transition>> expressionToPath(Configuration<State, Context> config, IRegEx<Transition> pathExpression) {
     // TODO check for empty pe
     IRegEx<Transition> prunedPE = new PEPruner().prune(pathExpression, config.getContext());
 
@@ -35,10 +34,10 @@ public class PathExpressionWithPruningFPAlgo<State, Parameter, Context extends I
 
     Set<EFSMPath<State, Parameter, Context, Transition>> res = generatePaths(prunedPE, new EFSMPath<>(efsm));
     if (res != null) {
-      return res.stream().filter(p -> p.isFeasible(config.getContext())).collect(Collectors.toSet());
+      return res.stream().filter(p -> p.isFeasible(config.getContext()));
     }
 
-    return res;
+    return null;
   }
 
   private Set<EFSMPath<State, Parameter, Context, Transition>> generatePaths(IRegEx<Transition> expr, EFSMPath<State, Parameter, Context, Transition> pred) {
@@ -108,9 +107,7 @@ public class PathExpressionWithPruningFPAlgo<State, Parameter, Context extends I
     private Set<ContextHolder> firstPass(IRegEx<Transition> regEx, ContextHolder context, boolean allowPruning) {
       if (regEx instanceof RegEx.Plain) {
         Transition t = ((RegEx.Plain<Transition>) regEx).v;
-        Context cc = context.c;
-        if (t.domainGuard(cc)) {
-          t.operation(t.getExpectedInput(), cc);
+        if (applyOperationIfFeasible(context.c, t)) {
           return Collections.singleton(context);
         } else {
           return null;
@@ -158,9 +155,9 @@ public class PathExpressionWithPruningFPAlgo<State, Parameter, Context extends I
         return res;
       } else if (regEx instanceof RegEx.Star) {
         RegEx.Star<Transition> star = (RegEx.Star<Transition>) regEx;
-        Set<ContextHolder> starRes =  null;//firstPass(star.a, context.propagate(), allowPruning);
+        Set<ContextHolder> starRes = null;//firstPass(star.a, context.propagate(), allowPruning);
         if (starRes == null || starRes.equals(context)) {
-          if (true||allowPruning) {
+          if (true || allowPruning) {
             markForSecondPass(star);
           }
           return Collections.singleton(context);
@@ -195,6 +192,8 @@ public class PathExpressionWithPruningFPAlgo<State, Parameter, Context extends I
         throw new IllegalArgumentException("Regex unknown " + regEx.getClass());
       }
     }
+
+
 
     private void markForSecondPass(RegEx.Concatenate<Transition> concat) {
       concat.a = null;

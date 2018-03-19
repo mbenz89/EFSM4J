@@ -11,11 +11,11 @@ import java.util.List;
  * @author Manuel Benz
  * created on 06.03.18
  */
-public class AllPath<State, Input, ContextObject> extends JGraphBasedFPALgo<State, Input, EEFSMContext<ContextObject>, ETransition<State, Input, ContextObject>> {
+public class AllPathFPAlgo<State, Input, ContextObject> extends JGraphBasedFPALgo<State, Input, EEFSMContext<ContextObject>, ETransition<State, Input, ContextObject>> {
 
   private final AllDirectedPaths<State, ETransition<State, Input, ContextObject>> allDirectedPaths;
 
-  public AllPath(EEFSM<State, Input, ContextObject> efsm) {
+  public AllPathFPAlgo(EEFSM<State, Input, ContextObject> efsm) {
     super(efsm);
     allDirectedPaths = new AllDirectedPaths<>(baseGraph);
   }

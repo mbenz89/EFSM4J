@@ -9,11 +9,11 @@ import org.junit.jupiter.api.Disabled;
  * @author Manuel Benz
  * created on 19.03.18
  */
-class BacktrackEEFSMFPAlgoTest extends AbstractEFSMFPAlgoTest {
+class AllPathFPAlgoTest extends AbstractEFSMFPAlgoTest {
 
   @Override
   protected IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> getAlgo(EEFSM<State, Param, Object> eefsm) {
-    return new BacktrackEEFSMFPAlgo<>(eefsm);
+    return new AllPathFPAlgo<>(eefsm);
   }
 
   @Override

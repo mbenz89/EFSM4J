@@ -4,11 +4,9 @@ import com.google.common.collect.Sets;
 import pathexpression.IRegEx;
 import pathexpression.RegEx;
 
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Manuel Benz
@@ -26,8 +24,8 @@ public class PEAllPath<State, Parameter, Context extends IEFSMContext<Context>, 
   }
 
   @Override
-  protected Collection<EFSMPath<State, Parameter, Context, Transition>> expressionToPath(Configuration<State, Context> config, IRegEx<Transition> pathExpression) {
-    return expressionToPath(new EFSMPath<>(efsm), pathExpression, config, 0).stream().map(p -> p.path).sorted(Comparator.comparing(EFSMPath::getLength)).collect(Collectors.toList());
+  protected Stream<EFSMPath<State, Parameter, Context, Transition>> expressionToPath(Configuration<State, Context> config, IRegEx<Transition> pathExpression) {
+    return expressionToPath(new EFSMPath<>(efsm), pathExpression, config, 0).stream().map(ps -> ps.path);
   }
 
   private Set<PathState> expressionToPath(EFSMPath<State, Parameter, Context, Transition> pred, IRegEx<Transition> expr, Configuration<State, Context> config, int depth) {

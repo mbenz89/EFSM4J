@@ -2,6 +2,7 @@ package de.upb.testify.efsm.eefsm;
 
 import de.upb.testify.efsm.IFeasiblePathAlgo;
 import de.upb.testify.efsm.Param;
+import de.upb.testify.efsm.PathExpressionWithPruningFPAlgo;
 import de.upb.testify.efsm.State;
 import org.junit.jupiter.api.Disabled;
 
@@ -9,11 +10,11 @@ import org.junit.jupiter.api.Disabled;
  * @author Manuel Benz
  * created on 19.03.18
  */
-class BacktrackEEFSMFPAlgoTest extends AbstractEFSMFPAlgoTest {
+class PathExpressionWithPruningFPAlgoTest extends AbstractEFSMFPAlgoTest {
 
   @Override
   protected IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> getAlgo(EEFSM<State, Param, Object> eefsm) {
-    return new BacktrackEEFSMFPAlgo<>(eefsm);
+    return new PathExpressionWithPruningFPAlgo<>(eefsm);
   }
 
   @Override
