@@ -74,6 +74,7 @@ class BacktrackEEFSMFPAlgoTest {
     //  Assertions.assertEquals(18, path.getLength());
     Assertions.assertEquals(example.oC1, path.getSrc());
     Assertions.assertEquals(example.Hx, path.getTgt());
+    Assertions.assertTrue(path.isFeasible(example.initialContext));
 
 
     System.out.println(path);

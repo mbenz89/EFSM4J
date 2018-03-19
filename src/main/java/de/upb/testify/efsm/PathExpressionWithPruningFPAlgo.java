@@ -8,6 +8,7 @@ import pathexpression.RegEx;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author Manuel Benz
@@ -27,14 +28,14 @@ public class PathExpressionWithPruningFPAlgo<State, Parameter, Context extends I
     // TODO check for empty pe
     IRegEx<Transition> prunedPE = new PEPruner().prune(pathExpression, config.getContext());
 
-    if (prunedPE == null) {
+    if (prunedPE == null || prunedPE instanceof RegEx.EmptySet) {
       // there is no feasible path
       return null;
     }
 
     Set<EFSMPath<State, Parameter, Context, Transition>> res = generatePaths(prunedPE, new EFSMPath<>(efsm));
     if (res != null) {
-      assert res.stream().allMatch(p -> p.isFeasible(config.getContext()));
+      return res.stream().filter(p -> p.isFeasible(config.getContext())).collect(Collectors.toSet());
     }
 
     return res;
@@ -81,15 +82,30 @@ public class PathExpressionWithPruningFPAlgo<State, Parameter, Context extends I
      * @return
      */
     public IRegEx<Transition> prune(IRegEx<Transition> unpruned, Context initialContext) {
-      firstPass(unpruned, new ContextHolder(initialContext));
-      return secondPass(unpruned);
+      IRegEx<Transition> unique = makeUnique(unpruned);
+      Set<ContextHolder> contexts = firstPass(unique, new ContextHolder(initialContext), true);
+      System.out.println("max contexts: " + contexts.size());
+      return secondPass(unique);
     }
 
-    private Set<ContextHolder> firstPass(IRegEx<Transition> regEx, ContextHolder context) {
-      if (regEx == null || regEx instanceof RegEx.EmptySet) {
-        return null;
+    private IRegEx<Transition> makeUnique(IRegEx<Transition> regEx) {
+      if (regEx instanceof RegEx.Plain) {
+        return new RegEx.Plain(((RegEx.Plain) regEx).v);
+      } else if (regEx instanceof RegEx.Concatenate) {
+        RegEx.Concatenate concat = (RegEx.Concatenate) regEx;
+        return new RegEx.Concatenate<>(makeUnique(concat.a), makeUnique(concat.b));
+      } else if (regEx instanceof RegEx.Star) {
+        RegEx.Star star = (RegEx.Star) regEx;
+        return new RegEx.Star<>(makeUnique(star.a));
+      } else if (regEx instanceof RegEx.Union) {
+        RegEx.Union union = (RegEx.Union) regEx;
+        return new RegEx.Union<>(makeUnique(union.a), makeUnique(union.b));
+      } else {
+        throw new IllegalArgumentException("Regex unknown " + regEx.getClass());
       }
+    }
 
+    private Set<ContextHolder> firstPass(IRegEx<Transition> regEx, ContextHolder context, boolean allowPruning) {
       if (regEx instanceof RegEx.Plain) {
         Transition t = ((RegEx.Plain<Transition>) regEx).v;
         Context cc = context.c;
@@ -97,53 +113,80 @@ public class PathExpressionWithPruningFPAlgo<State, Parameter, Context extends I
           t.operation(t.getExpectedInput(), cc);
           return Collections.singleton(context);
         } else {
-          // we can mark this context since it is not feasible anymore
-          markForSecondPass(context);
           return null;
         }
       } else if (regEx instanceof RegEx.Concatenate) {
         RegEx.Concatenate<Transition> concat = (RegEx.Concatenate<Transition>) regEx;
-        Set<ContextHolder> lefts = firstPass(concat.a, context);
+        // left side of the concat can be pruned but only if we are not in a right side of another concat
+        Set<ContextHolder> lefts = firstPass(concat.a, context, allowPruning);
 
         if (lefts == null) {
+          if (allowPruning) {
+            markForSecondPass(concat);
+          }
           return lefts;
         }
 
         Set<ContextHolder> res = Sets.newHashSet();
+        // right side of a concat can only be pruned if we are not already in a right side that cannot be pruned and we have only one element to pass
+        int numLefts = lefts.size();
+        int numNulls = 0;
+        boolean allowPruningHere = allowPruning && numLefts == 1;
+
         for (ContextHolder left : lefts) {
-          Set<ContextHolder> right = firstPass(concat.b, left);
+          Set<ContextHolder> right = firstPass(concat.b, left, allowPruningHere);
           if (right != null) {
             res.addAll(right);
+          } else {
+            numNulls++;
+          }
+
+          // if until the last context none of the lefts returned a feasible context, we can allow pruning for the last iteration
+          if (numNulls - 1 == numLefts) {
+            allowPruningHere = true;
           }
         }
 
-        // if we haven't found any feasible contexts from concatenating left and right, we can savely return null here
+        // if we haven't found any feasible contexts from concatenating left and right, we can safely return null here
         if (res.isEmpty()) {
+          if (allowPruning) {
+            markForSecondPass(concat);
+          }
           return null;
         }
 
         return res;
       } else if (regEx instanceof RegEx.Star) {
         RegEx.Star<Transition> star = (RegEx.Star<Transition>) regEx;
-        Set<ContextHolder> starRes = firstPass(star.a, context.propagate(star));
-        if (starRes == null) {
-          markForSecondPass(star);
+        Set<ContextHolder> starRes =  null;//firstPass(star.a, context.propagate(), allowPruning);
+        if (starRes == null || starRes.equals(context)) {
+          if (true||allowPruning) {
+            markForSecondPass(star);
+          }
           return Collections.singleton(context);
         } else {
           return Sets.union(Collections.singleton(context), starRes);
         }
       } else if (regEx instanceof RegEx.Union) {
         RegEx.Union<Transition> union = (RegEx.Union<Transition>) regEx;
-        Set<ContextHolder> left = firstPass(union.getFirst(), context.propagateLeft(union));
-        Set<ContextHolder> right = firstPass(union.getSecond(), context.propagateRight(union));
+        Set<ContextHolder> left = firstPass(union.getFirst(), context.propagateLeft(union), allowPruning);
+        Set<ContextHolder> right = firstPass(union.getSecond(), context.propagateRight(union), allowPruning);
 
         if (left == null && right == null) {
+          if (allowPruning) {
+            markForSecondPass(union, true);
+            markForSecondPass(union, false);
+          }
           return null;
         } else if (left == null) {
-          markForSecondPass(union, true);
+          if (allowPruning) {
+            markForSecondPass(union, true);
+          }
           return right;
         } else if (right == null) {
-          markForSecondPass(union, false);
+          if (allowPruning) {
+            markForSecondPass(union, false);
+          }
           return left;
         } else {
           return Sets.union(left, right);
@@ -151,6 +194,11 @@ public class PathExpressionWithPruningFPAlgo<State, Parameter, Context extends I
       } else {
         throw new IllegalArgumentException("Regex unknown " + regEx.getClass());
       }
+    }
+
+    private void markForSecondPass(RegEx.Concatenate<Transition> concat) {
+      concat.a = null;
+      concat.b = null;
     }
 
     private void markForSecondPass(RegEx.Star<Transition> star) {
@@ -164,20 +212,6 @@ public class PathExpressionWithPruningFPAlgo<State, Parameter, Context extends I
         union.b = null;
       }
     }
-
-    private void markForSecondPass(ContextHolder context) {
-      if (context.union != null) {
-        markForSecondPass(context.union, context.left);
-        context.union = null;
-      } else if (context.star != null) {
-        markForSecondPass(context.star);
-        context.star = null;
-      } else {
-        throw new IllegalStateException("Neither star nor union registered to this context");
-      }
-
-    }
-
 
     private IRegEx<Transition> secondPass(IRegEx<Transition> regEx) {
       if (regEx == null || regEx instanceof RegEx.Plain) {
@@ -223,7 +257,6 @@ public class PathExpressionWithPruningFPAlgo<State, Parameter, Context extends I
 
     private class ContextHolder {
       private final Context c;
-      private RegEx.Star<Transition> star;
       private RegEx.Union<Transition> union;
       private boolean left;
 
@@ -233,13 +266,19 @@ public class PathExpressionWithPruningFPAlgo<State, Parameter, Context extends I
 
       private ContextHolder(ContextHolder parent, RegEx.Union<Transition> union, boolean left) {
         this.c = parent.c.snapshot();
-        this.union = union;
+        // we always keep the origin of this context
+        if (parent.union == null) {
+          this.union = union;
+        } else {
+          this.union = parent.union;
+        }
         this.left = left;
       }
 
-      public ContextHolder(ContextHolder parent, RegEx.Star<Transition> star) {
+      public ContextHolder(ContextHolder parent) {
         this.c = parent.c.snapshot();
-        this.star = star;
+        this.union = parent.union;
+        this.left = parent.left;
       }
 
       @Override
@@ -267,8 +306,8 @@ public class PathExpressionWithPruningFPAlgo<State, Parameter, Context extends I
         return new ContextHolder(this, union, false);
       }
 
-      public ContextHolder propagate(RegEx.Star<Transition> star) {
-        return new ContextHolder(this, star);
+      public ContextHolder propagate() {
+        return new ContextHolder(this);
       }
     }
   }
