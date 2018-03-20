@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import pathexpression.IRegEx;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
+import java.io.IOException;
 import java.util.stream.Stream;
 
 /**
@@ -60,10 +61,11 @@ class PEBasedFPAlgoTest {
 
 
   @Test
-  void largeEFSMPE() {
+  void largeEFSMPE() throws IOException {
     LargeInterComponentExample example = new LargeInterComponentExample();
     EEFSM<State, Param, Object> e = example.eefsm;
 
+   // new EFSMDotExporter(e).writeOut(Paths.get("./target/large.dot"));
 
     PEBasedFPAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp = getAlgo(e);
     Assertions.assertTrue(sfp.pathExists(example.tgt));
@@ -76,6 +78,11 @@ class PEBasedFPAlgoTest {
     EEFSM<State, Param, Object> e = example.eefsm;
 
     PEBasedFPAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp = getAlgo(e);
+    Assertions.assertTrue(sfp.pathExists(example.example1.oR2));
+    Assertions.assertTrue(sfp.pathExists(example.example2.oR2));
+    Assertions.assertTrue(sfp.pathExists(example.example3.oR2));
+    Assertions.assertTrue(sfp.pathExists(example.example4.oR2));
+    Assertions.assertTrue(sfp.pathExists(example.example5.oR2));
     Assertions.assertTrue(sfp.pathExists(example.example6.oR2));
   }
 
@@ -88,4 +95,23 @@ class PEBasedFPAlgoTest {
     e.forceConfiguration(new Configuration<>(example.example6.oR2, new EEFSMContext<>()));
     Assertions.assertFalse(sfp.pathExists(example.example1.oR1));
   }
+
+  @Test
+  void mediumEFSMPE() {
+    MediumInterComponentExample example = new MediumInterComponentExample();
+    EEFSM<State, Param, Object> eefsm = example.eefsm;
+
+    PEBasedFPAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp = getAlgo(eefsm);
+    Assertions.assertTrue(sfp.pathExists(example.example1.oR1));
+    Assertions.assertTrue(sfp.pathExists(example.example1.UIy));
+    Assertions.assertTrue(sfp.pathExists(example.example1.Hf));
+    Assertions.assertTrue(sfp.pathExists(example.example1.oR2));
+    Assertions.assertTrue(sfp.pathExists(example.example2.oC1));
+    Assertions.assertTrue(sfp.pathExists(example.example2.Hc));
+    Assertions.assertTrue(sfp.pathExists(example.example2.oSta1));
+    Assertions.assertTrue(sfp.pathExists(example.example2.oR1));
+    Assertions.assertTrue(sfp.pathExists(example.example2.UI));
+    Assertions.assertTrue(sfp.pathExists(example.example2.oR2));
+  }
+
 }

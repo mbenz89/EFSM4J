@@ -2,6 +2,7 @@ package de.upb.testify.efsm;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Sets;
+import org.jgrapht.ListenableGraph;
 import org.jgrapht.graph.DirectedMultigraph;
 import org.jgrapht.io.DOTExporter;
 import org.jgrapht.io.ExportException;
@@ -14,11 +15,12 @@ import pathexpression.PathExpressionComputer;
 import pathexpression.RegEx;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -142,8 +144,8 @@ public abstract class PEBasedFPAlgo<State extends Comparable<State>, Parameter, 
         return Collections.emptySet();
       }
     } else if (expr instanceof RegEx.Star) {
-     // return Sets.union(Collections.singleton(c.snapshot()), pathExists(((RegEx.Star) expr).a, c.snapshot()));
-       return Collections.singleton(c);
+      return Sets.union(Collections.singleton(c.snapshot()), pathExists(((RegEx.Star) expr).a, c.snapshot()));
+      // return Collections.singleton(c);
     } else if (expr instanceof RegEx.Union) {
       Set<Context> left = pathExists(((RegEx.Union) expr).a, c.snapshot());
       Set<Context> right = pathExists(((RegEx.Union) expr).b, c.snapshot());
@@ -204,12 +206,17 @@ public abstract class PEBasedFPAlgo<State extends Comparable<State>, Parameter, 
     @Override
     public Set<State> getNodes() {
       // We return an ordered set here to make the path generation deterministic
-      return new TreeSet<>(efsm.getStates());
-    }
+      ArrayList<State> states = new ArrayList<>(efsm.getStates());
+      ListenableGraph<State, Transition> baseGraph = efsm.getBaseGraph();
+      states.sort(new Comparator<State>() {
+        @Override
+        public int compare(State o1, State o2) {
+          return Integer.compare(baseGraph.inDegreeOf(o1), baseGraph.inDegreeOf(o2));
+        }
+      });
 
-    @Override
-    public Transition epsilon() {
-      return null;
+
+      return new LinkedHashSet<>(states);
     }
 
     public void toDot(Path out) {

@@ -71,12 +71,19 @@ public class EEFSMContext<ContextObject> implements IEFSMContext<EEFSMContext<Co
 
   @Override
   public boolean equals(Object o) {
-    return internalSet.equals(o);
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    EEFSMContext<?> that = (EEFSMContext<?>) o;
+    return com.google.common.base.Objects.equal(internalSet, that.internalSet);
   }
 
   @Override
   public int hashCode() {
-    return internalSet.hashCode();
+    return com.google.common.base.Objects.hashCode(internalSet);
   }
 
   @Override

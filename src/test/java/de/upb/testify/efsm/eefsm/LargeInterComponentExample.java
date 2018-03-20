@@ -11,11 +11,11 @@ import de.upb.testify.efsm.State;
  */
 public class LargeInterComponentExample {
   BasicInterComponentExample example1 = new BasicInterComponentExample();
-  BasicInterComponentExample example2 = new BasicInterComponentExample();
-  BasicInterComponentExample example3 = new BasicInterComponentExample();
-  BasicInterComponentExample example4 = new BasicInterComponentExample();
-  BasicInterComponentExample example5 = new BasicInterComponentExample();
-  BasicInterComponentExample example6 = new BasicInterComponentExample();
+  BasicInterComponentExample example2 = new BasicInterComponentExample(2);
+  BasicInterComponentExample example3 = new BasicInterComponentExample(3);
+  BasicInterComponentExample example4 = new BasicInterComponentExample(4);
+  BasicInterComponentExample example5 = new BasicInterComponentExample(5);
+  BasicInterComponentExample example6 = new BasicInterComponentExample(6);
 
   ContextVar additionalContext = new ContextVar("add");
   State tgt = new State("tgt");

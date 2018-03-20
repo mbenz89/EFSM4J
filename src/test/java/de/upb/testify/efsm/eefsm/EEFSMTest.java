@@ -140,4 +140,39 @@ class EEFSMTest {
 
     Assertions.assertEquals(new Configuration<>(example.oR2, context), eefsm.transitionAndDrop());
   }
+
+  @Test
+  void mediumExampleTest() {
+    MediumInterComponentExample example = new MediumInterComponentExample();
+    EEFSM<State, Param, Object> eefsm = example.eefsm;
+    Assertions.assertNotNull(eefsm.transition(example.example1.HcEntry));
+    Assertions.assertNotNull(eefsm.transition(example.example1.oSta1Entry));
+    Assertions.assertNotNull(eefsm.transition(example.example1.oR1Entry));
+    Assertions.assertNotNull(eefsm.transition(example.example1.UIClick));
+    Assertions.assertNotNull(eefsm.transition(example.example1.HEntry));
+    Assertions.assertNotNull(eefsm.transition(example.example1.oC2Entry));
+    Assertions.assertNotNull(eefsm.transition(example.example1.oSta2Entry));
+    Assertions.assertNotNull(eefsm.transition(example.example1.oR2Entry));
+    Assertions.assertNotNull(eefsm.transition(example.example1.UIyClick));
+    Assertions.assertNotNull(eefsm.transition(example.example1.HyEntry));
+    Assertions.assertNotNull(eefsm.transition());
+    Assertions.assertNotNull(eefsm.transition(example.example1.UIfClick));
+    Assertions.assertNotNull(eefsm.transition(example.example1.HfEntry));
+    Assertions.assertNotNull(eefsm.transition(example.e2Entry));
+    Assertions.assertNotNull(eefsm.transition(example.example2.HcEntry));
+    Assertions.assertNotNull(eefsm.transition(example.example2.oSta1Entry));
+    Assertions.assertNotNull(eefsm.transition(example.example2.oR1Entry));
+    Assertions.assertNotNull(eefsm.transition(example.example2.UIClick));
+    Assertions.assertNotNull(eefsm.transition(example.example2.HEntry));
+    Assertions.assertNotNull(eefsm.transition(example.example2.oC2Entry));
+    Assertions.assertNotNull(eefsm.transition(example.example2.oSta2Entry));
+    Assertions.assertNotNull(eefsm.transition(example.example2.oR2Entry));
+
+
+    EEFSMContext<Super> context = new EEFSMContext<>(example.example1.Le, example.example1.Hc, example.example2.Hc);
+    Assertions.assertEquals(new Configuration<>(example.example2.oR2, context), eefsm.getConfiguration());
+
+  }
+
+
 }
