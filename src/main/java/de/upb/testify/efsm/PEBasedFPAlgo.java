@@ -28,7 +28,7 @@ import java.util.stream.Stream;
  * @author Manuel Benz
  * created on 13.03.18
  */
-public abstract class PEBasedFPAlgo<State extends Comparable<State>, Parameter, Context extends IEFSMContext<Context>, Transition extends de.upb.testify.efsm.Transition<State, Parameter, Context>> implements IFeasiblePathAlgo<State, Parameter, Context, Transition> {
+public abstract class PEBasedFPAlgo<State, Parameter, Context extends IEFSMContext<Context>, Transition extends de.upb.testify.efsm.Transition<State, Parameter, Context>> implements IFeasiblePathAlgo<State, Parameter, Context, Transition> {
   private final static Logger logger = LoggerFactory.getLogger(PEBasedFPAlgo.class);
 
   protected final PathExpressionComputer<State, Transition> peComputer;

@@ -12,7 +12,7 @@ import java.util.stream.Stream;
  * @author Manuel Benz
  * created on 07.03.18
  */
-public class PEAllPath<State extends Comparable<State>, Parameter, Context extends IEFSMContext<Context>, Transition extends de.upb.testify.efsm.Transition<State, Parameter, Context>> extends PEBasedFPAlgo<State, Parameter, Context, Transition> {
+public class PEAllPath<State, Parameter, Context extends IEFSMContext<Context>, Transition extends de.upb.testify.efsm.Transition<State, Parameter, Context>> extends PEBasedFPAlgo<State, Parameter, Context, Transition> {
 
   public PEAllPath(EFSM<State, Parameter, Context, Transition> efsm) {
     super(efsm, Integer.MAX_VALUE);
@@ -52,10 +52,10 @@ public class PEAllPath<State extends Comparable<State>, Parameter, Context exten
       }
     } else if (expr instanceof RegEx.Star) {
       // we decide to take the loop once and not at all
-      //  Set<PathState> a = expressionToPath(pred, ((RegEx.Star<Transition>) expr).a, config);
+      Set<PathState> a = expressionToPath(pred, ((RegEx.Star<Transition>) expr).a, config, depth + 1);
       // the previous path for not having an of the star typed input
-      // return Sets.union(Collections.singleton(new PathState(pred, config)), a);
-      return Collections.singleton(new PathState(pred, config));
+      return Sets.union(Collections.singleton(new PathState(pred, config)), a);
+      //return Collections.singleton(new PathState(pred, config));
     } else if (expr instanceof RegEx.Union) {
       Set<PathState> lefts = expressionToPath(pred, ((RegEx.Union<Transition>) expr).getFirst(), config, depth + 1);
       Set<PathState> rights = expressionToPath(pred, ((RegEx.Union<Transition>) expr).getSecond(), config, depth + 1);

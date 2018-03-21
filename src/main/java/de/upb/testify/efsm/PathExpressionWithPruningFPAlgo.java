@@ -13,7 +13,7 @@ import java.util.stream.Stream;
  * @author Manuel Benz
  * created on 13.03.18
  */
-public class PathExpressionWithPruningFPAlgo<State extends Comparable<State>, Parameter, Context extends IEFSMContext<Context>, Transition extends de.upb.testify.efsm.Transition<State, Parameter, Context>> extends PEBasedFPAlgo<State, Parameter, Context, Transition> {
+public class PathExpressionWithPruningFPAlgo<State, Parameter, Context extends IEFSMContext<Context>, Transition extends de.upb.testify.efsm.Transition<State, Parameter, Context>> extends PEBasedFPAlgo<State, Parameter, Context, Transition> {
   public PathExpressionWithPruningFPAlgo(EFSM<State, Parameter, Context, Transition> efsm) {
     super(efsm);
   }
@@ -83,7 +83,6 @@ public class PathExpressionWithPruningFPAlgo<State extends Comparable<State>, Pa
     public IRegEx<Transition> prune(IRegEx<Transition> unpruned, Context initialContext) {
       IRegEx<Transition> unique = makeUnique(unpruned);
       Set<ContextHolder> contexts = firstPass(unique, new ContextHolder(initialContext), true);
-      System.out.println("max contexts: " + contexts.size());
       return secondPass(unique);
     }
 

@@ -72,7 +72,7 @@ import java.util.stream.Collectors;
  * @author Manuel Benz
  * created on 01.02.18
  */
-public class EFSMDebugger<State extends Comparable<State>, Transition extends de.upb.testify.efsm.Transition<State, ?, ?>> extends Application implements PropertyChangeListener {
+public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transition<State, ?, ?>> extends Application implements PropertyChangeListener {
   // region fields and constants
   public static final float STROKE_WIDTH_HIGHLIGHTED = 4f;
   public static final Dimension TOOLBAR_BUTTON_SIZE = new Dimension(20, 20);
@@ -116,11 +116,11 @@ public class EFSMDebugger<State extends Comparable<State>, Transition extends de
 
   // region setup
 
-  public synchronized static <State extends Comparable<State>, Transition extends de.upb.testify.efsm.Transition<State, ?, ?>> EFSMDebugger<State, Transition> startDebugger(EFSM<State, ?, ?, Transition> efsm, boolean startInControlMode) {
+  public synchronized static <State, Transition extends de.upb.testify.efsm.Transition<State, ?, ?>> EFSMDebugger<State, Transition> startDebugger(EFSM<State, ?, ?, Transition> efsm, boolean startInControlMode) {
     return startDebugger(efsm, startInControlMode, state -> state.toString(), transition -> transition.toString());
   }
 
-  public synchronized static <State extends Comparable<State>, Transition extends de.upb.testify.efsm.Transition<State, ?, ?>> EFSMDebugger<State, Transition> startDebugger(EFSM<State, ?, ?, Transition> efsm, boolean startInControlMode, Function<State, String> stateLabeler, Function<Transition, String> transitionLabeler) {
+  public synchronized static <State, Transition extends de.upb.testify.efsm.Transition<State, ?, ?>> EFSMDebugger<State, Transition> startDebugger(EFSM<State, ?, ?, Transition> efsm, boolean startInControlMode, Function<State, String> stateLabeler, Function<Transition, String> transitionLabeler) {
     new Thread(() -> {
       // Have to run in a thread because launch doesn't return
       Application.launch(EFSMDebugger.class);
@@ -772,7 +772,7 @@ public class EFSMDebugger<State extends Comparable<State>, Transition extends de
 
   // region JGraphXAdapter
 
-  private final class MyJGraphXAdapter<State extends Comparable<State>, Transition extends de.upb.testify.efsm.Transition<State, ?, ?>> extends JGraphXAdapter<State, Transition> {
+  private final class MyJGraphXAdapter<State, Transition extends de.upb.testify.efsm.Transition<State, ?, ?>> extends JGraphXAdapter<State, Transition> {
 
     public MyJGraphXAdapter(EFSM<State, ?, ?, Transition> efsm) {
       super(efsm.getBaseGraph());
