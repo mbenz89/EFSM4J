@@ -228,7 +228,7 @@ public abstract class PathExpressionBasedFeasiblePathAlgorithm<State, Parameter,
       // For some reason ordering the node set hugely speeds up the path finding (Tarjan may know why)
       ArrayList<State> states = new ArrayList<>(efsm.getStates());
       ListenableGraph<State, Transition> baseGraph = efsm.getBaseGraph();
-      states.sort(Comparator.comparingInt(baseGraph::inDegreeOf));
+      states.sort(Comparator.comparingInt(baseGraph::outDegreeOf));
       return new LinkedHashSet<>(states);
     }
 

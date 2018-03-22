@@ -14,7 +14,7 @@ public class BasicInterComponentExample {
   public EEFSM<State, Param, Object> eefsm;
 
   // loi enable is the only context var that is not a state
-  ContextVar Le = new ContextVar("Le");
+  ContextVar Le;
 
   State oC1;
   State oSta1;
@@ -35,24 +35,24 @@ public class BasicInterComponentExample {
   State Hf;
   State B2;
 
-  Param HcEntry = new Param("HcEntry");
-  Param oSta1Entry = new Param("oSta1Entry");
-  Param oR1Entry = new Param("oR1Entry");
-  Param UIxClick = new Param("UIxClick");
-  Param HxEntry = new Param("HxEntry");
-  Param UIClick = new Param("UIClick");
-  Param HEntry = new Param("HEntry");
-  Param oC2Entry = new Param("oC2Entry");
-  Param oSta2Entry = new Param("oSta2Entry");
-  Param oR2Entry = new Param("oR2Entry");
-  Param oD1Entry = new Param("oD1Entry");
-  Param oSto1Entry = new Param("oSto1Entry");
-  Param UIyClick = new Param("UIyClick");
-  Param UIfClick = new Param("UIfClick");
-  Param HyEntry = new Param("HyEntry");
-  Param HfEntry = new Param("HfEntry");
-  Param EvtBack = new Param("EvtBack");
-  Param oC1Entry = new Param("oC1Entry");
+  Param HcEntry;
+  Param oSta1Entry;
+  Param oR1Entry;
+  Param UIxClick;
+  Param HxEntry;
+  Param UIClick;
+  Param HEntry;
+  Param oC2Entry;
+  Param oSta2Entry;
+  Param oR2Entry;
+  Param oD1Entry;
+  Param oSto1Entry;
+  Param UIyClick;
+  Param UIfClick;
+  Param HyEntry;
+  Param HfEntry;
+  Param EvtBack;
+  Param oC1Entry;
 
   ETransition<State, Param, Object> oC1ToHc;
   ETransition<State, Param, Object> hCToOsta1;
@@ -116,28 +116,47 @@ public class BasicInterComponentExample {
     initialState = oC1;
     loiState = Hx;
 
+    HcEntry = new Param("HcEntry" + v);
     oC1ToHc = new ETransitionbuilder<State, Param, Object>().fireOnInput(HcEntry).build();
+    oSta1Entry = new Param("oSta1Entry" + v);
     hCToOsta1 = new ETransitionbuilder<State, Param, Object>().fireOnInput(oSta1Entry).addToContext(Hc).build();
     oC1ToOsta1 = new ETransitionbuilder<State, Param, Object>().fireOnInput(oSta1Entry).build();
+    oR1Entry = new Param("oR1Entry" + v);
     oSta1ToOr1 = new ETransitionbuilder<State, Param, Object>().fireOnInput(oR1Entry).build();
+    UIxClick = new Param("UIxClick" + v);
+    Le = new ContextVar("Le" + v);
     oR1ToUix = new ETransitionbuilder<State, Param, Object>().fireOnInput(UIxClick).fireIfInContext(Le).build();
+    HxEntry = new Param("HxEntry" + v);
     uiXToHx = new ETransitionbuilder<State, Param, Object>().fireOnInput(HxEntry).build();
     hXToOr1 = new ETransitionbuilder<State, Param, Object>().build();
+    UIClick = new Param("UIClick" + v);
     oR1ToUi = new ETransitionbuilder<State, Param, Object>().fireOnInput(UIClick).fireIfInContext(Hc).build();
+    HEntry = new Param("HEntry" + v);
     uiToH = new ETransitionbuilder<State, Param, Object>().fireOnInput(HEntry).build();
+    oC2Entry = new Param("oC2Entry" + v);
     hToOc2 = new ETransitionbuilder<State, Param, Object>().fireOnInput(oC2Entry).build();
+    oSta2Entry = new Param("oSta2Entry" + v);
     oC2ToOSta2 = new ETransitionbuilder<State, Param, Object>().fireOnInput(oSta2Entry).build();
+    oR2Entry = new Param("oR2Entry" + v);
     oSta2ToOr2 = new ETransitionbuilder<State, Param, Object>().fireOnInput(oR2Entry).build();
+    oSto1Entry = new Param("oSto1Entry" + v);
     oR2ToOSto1 = new ETransitionbuilder<State, Param, Object>().fireOnInput(oSto1Entry).addToContext(oR2).build();
+    oD1Entry = new Param("oD1Entry" + v);
     oSto1ToOD1 = new ETransitionbuilder<State, Param, Object>().fireOnInput(oD1Entry).build();
     oSto1ToOR2 = new ETransitionbuilder<State, Param, Object>().fireIfInContext(oR2).addToContext(oSto1).removeFromContext(oR2).build();
+    UIyClick = new Param("UIyClick" + v);
     oR2ToUIy = new ETransitionbuilder<State, Param, Object>().fireOnInput(UIyClick).addToContext(Le).build();
+    HyEntry = new Param("HyEntry" + v);
     uiYToHy = new ETransitionbuilder<State, Param, Object>().fireOnInput(HyEntry).build();
     hyToOr2 = new ETransitionbuilder<State, Param, Object>().build();
+    UIfClick = new Param("UIfClick" + v);
     oR2ToUIF = new ETransitionbuilder<State, Param, Object>().fireOnInput(UIfClick).build();
+    HfEntry = new Param("HfEntry" + v);
     uiFToHf = new ETransitionbuilder<State, Param, Object>().fireOnInput(HfEntry).build();
     hfToOr2 = new ETransitionbuilder<State, Param, Object>().build();
+    EvtBack = new Param("EvtBack" + v);
     oR2ToB2 = new ETransitionbuilder<State, Param, Object>().fireOnInput(EvtBack).build();
+    oC1Entry = new Param("oC1Entry" + v);
     b2ToOC1 = new ETransitionbuilder<State, Param, Object>().fireOnInput(oC1Entry).fireIfInContext(oSto1).removeFromContext(oSto1, Hc).build();
     b2ToOr1 = new ETransitionbuilder<State, Param, Object>().fireOnInput(oR1Entry).fireIfNotInContext(oSto1).build();
 

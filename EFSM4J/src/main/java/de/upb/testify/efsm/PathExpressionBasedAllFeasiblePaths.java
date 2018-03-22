@@ -9,6 +9,8 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 /**
+ * This algorithm is complex and shouldn't be used for larger graphs since it will take forever.
+ *
  * @author Manuel Benz
  * created on 07.03.18
  */
