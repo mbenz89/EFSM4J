@@ -25,5 +25,4 @@ public class EpsilonTransition<State, Parameter, Context> extends SimpleTransiti
     return false;
   }
 
-
 }

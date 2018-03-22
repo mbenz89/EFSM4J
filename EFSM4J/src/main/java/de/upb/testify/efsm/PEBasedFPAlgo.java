@@ -47,10 +47,6 @@ public abstract class PEBasedFPAlgo<State, Parameter, Context extends IEFSMConte
     this.efsm = efsm;
   }
 
-
-  /**
-   * Returns the shortest path
-   */
   @Override
   public EFSMPath<State, Parameter, Context, Transition> getPath(Configuration<State, Context> config, State tgt) {
     List<EFSMPath<State, Parameter, Context, Transition>> paths = getPaths(config, tgt);
@@ -66,15 +62,21 @@ public abstract class PEBasedFPAlgo<State, Parameter, Context extends IEFSMConte
   }
 
   /**
-   * Returns a list of feasible paths in ascending order of length. Note: These can be all or a subset of all feasible paths depending on the implementation!
+   * {@inheritDoc}
+   *
+   * @return A set of feasible path (not necessarily all) or null if non exists in ascending order of length
    */
+  @Override
   public List<EFSMPath<State, Parameter, Context, Transition>> getPaths(State tgt) {
     return getPaths(efsm.getConfiguration(), tgt);
   }
 
   /**
-   * Returns a list of feasible paths in ascending order of length. Note: These can be all or a subset of all feasible paths depending on the implementation!
+   * {@inheritDoc}
+   *
+   * @return A set of feasible path (not necessarily all) or null if non exists in ascending order of length
    */
+  @Override
   public List<EFSMPath<State, Parameter, Context, Transition>> getPaths(Configuration<State, Context> config, State tgt) {
     Stopwatch sw = Stopwatch.createStarted();
     IRegEx<Transition> pathExpression = peComputer.getExpressionBetween(config.getState(), tgt);
@@ -82,7 +84,7 @@ public abstract class PEBasedFPAlgo<State, Parameter, Context extends IEFSMConte
     if (pathExpression == null || pathExpression instanceof RegEx.EmptySet) {
       return null;
     }
-    return expressionToPath(config, pathExpression).sorted(Comparator.comparing(EFSMPath::getLength)).collect(Collectors.toList());
+    return expressionToPath(config, pathExpression).sorted(Comparator.comparingInt(EFSMPath::getLength)).collect(Collectors.toList());
   }
 
   /**
@@ -100,6 +102,7 @@ public abstract class PEBasedFPAlgo<State, Parameter, Context extends IEFSMConte
    * @param tgt
    * @return
    */
+  @Override
   public boolean pathExists(Configuration<State, Context> config, State tgt) {
     return pathExists(config, peComputer.getExpressionBetween(config.getState(), tgt));
   }
@@ -113,6 +116,7 @@ public abstract class PEBasedFPAlgo<State, Parameter, Context extends IEFSMConte
    * @param tgt
    * @return
    */
+  @Override
   public boolean pathExists(State tgt) {
     return pathExists(efsm.getConfiguration(), tgt);
   }
@@ -217,18 +221,10 @@ public abstract class PEBasedFPAlgo<State, Parameter, Context extends IEFSMConte
 
     @Override
     public Set<State> getNodes() {
-      // We return an ordered set here to make the path generation deterministic
-      // For some reason this also hugely speeds up the path finding
+      // For some reason ordering the node set hugely speeds up the path finding (Tarjan may know why)
       ArrayList<State> states = new ArrayList<>(efsm.getStates());
       ListenableGraph<State, Transition> baseGraph = efsm.getBaseGraph();
-      states.sort(new Comparator<State>() {
-        @Override
-        public int compare(State o1, State o2) {
-          return Integer.compare(baseGraph.inDegreeOf(o1), baseGraph.inDegreeOf(o2));
-        }
-      });
-
-
+      states.sort(Comparator.comparingInt(baseGraph::inDegreeOf));
       return new LinkedHashSet<>(states);
     }
 

@@ -21,11 +21,6 @@ public class PathExpressionBasedShortestFeasiblePath<State, Parameter, Context e
     super(efsm, Integer.MAX_VALUE);
   }
 
-
-  public PathExpressionBasedShortestFeasiblePath(EFSM<State, Parameter, Context, Transition> efsm, int maxDepth) {
-    super(efsm, maxDepth);
-  }
-
   @Override
   protected Stream<EFSMPath<State, Parameter, Context, Transition>> expressionToPath(Configuration<State, Context> config, IRegEx<Transition> pathExpression) {
     return expressionToPath(pathExpression, new ContextWithPath(config.getContext())).stream().map(cp -> new EFSMPath<>(efsm, cp.path));
