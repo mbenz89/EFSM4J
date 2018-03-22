@@ -68,6 +68,8 @@ class PEBasedFPAlgoTest {
     //new EFSMDotExporter(e).writeOut(Paths.get("./target/large.dot"));
 
     PEBasedFPAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp = getAlgo(e);
+    Assertions.assertTrue(sfp.pathExists(example.example6.oR1));
+    Assertions.assertTrue(sfp.pathExists(example.example3.oD1));
     Assertions.assertTrue(sfp.pathExists(example.tgt));
   }
 

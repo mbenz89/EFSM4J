@@ -107,19 +107,43 @@ abstract class AbstractEFSMFPAlgoTest {
     }
 
     IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp = getAlgo(e);
-    EFSMPath<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> path = sfp.getPath(example.tgt);
+
+    EFSMPath<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> path = sfp.getPath(example.example6.oR1);
+
+    Assertions.assertNotNull(path);
+    Assertions.assertEquals(example.example1.initialState, path.getSrc());
+    Assertions.assertEquals(example.example6.oR1, example.example6.oR1);
+    Assertions.assertTrue(path.isFeasible(example.initialContext));
+
+    e.transition(path);
+
+    Configuration<State, EEFSMContext<Object>> config = e.getConfiguration();
+    Assertions.assertEquals(example.example6.oR1, config.getState());
+    Assertions.assertTrue(config.getContext().elementOf(example.additionalContext));
+
+    path = sfp.getPath(example.tgt);
+
+    Assertions.assertNotNull(path);
+    Assertions.assertEquals(example.example6.oR1, path.getSrc());
+    Assertions.assertEquals(example.tgt, path.getTgt());
+    Assertions.assertTrue(path.isFeasible(config.getContext()));
+
+    e.transition(path);
+
+    Assertions.assertEquals(e.getConfiguration().getState(), example.tgt);
+
+    e.reset();
+
+    path = sfp.getPath(example.tgt);
 
     Assertions.assertNotNull(path);
     Assertions.assertEquals(example.example1.initialState, path.getSrc());
     Assertions.assertEquals(example.tgt, path.getTgt());
     Assertions.assertTrue(path.isFeasible(example.initialContext));
 
-    Iterator<Param> inputsToTrigger = path.getInputsToTrigger();
-    while (inputsToTrigger.hasNext()) {
-      e.transition(inputsToTrigger.next());
-    }
+    e.transition(path);
 
-    Assertions.assertTrue(e.getConfiguration().getState().equals(example.tgt));
+    Assertions.assertEquals(e.getConfiguration().getState(), example.tgt);
   }
 
   @Test
@@ -135,7 +159,7 @@ abstract class AbstractEFSMFPAlgoTest {
     Assertions.assertNotNull(path);
     Assertions.assertEquals(example.example1.initialState, path.getSrc());
     Assertions.assertEquals(example.example6.oR2, path.getTgt());
-    Assertions.assertTrue(path.isFeasible(example.initialContext),() -> "path: " + path);
+    Assertions.assertTrue(path.isFeasible(example.initialContext), () -> "path: " + path);
 
     Iterator<Param> inputsToTrigger = path.getInputsToTrigger();
     while (inputsToTrigger.hasNext()) {
@@ -154,7 +178,6 @@ abstract class AbstractEFSMFPAlgoTest {
     IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp = getAlgo(e);
 
     EFSMPath<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> path = sfp.getPath(example.example6.oR2);
-
 
 
     Assertions.assertNotNull(path);

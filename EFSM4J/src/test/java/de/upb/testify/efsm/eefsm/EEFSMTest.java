@@ -186,7 +186,7 @@ class EEFSMTest {
     Assertions.assertNotNull(eefsm.transition(example.example1.oR2Entry));
     Assertions.assertNotNull(eefsm.transition(example.example1.UIyClick));
     Assertions.assertNotNull(eefsm.transition(example.example1.HyEntry));
-    Assertions.assertNotNull(eefsm.transition(null));
+    Assertions.assertNotNull(eefsm.transition());
     Assertions.assertNotNull(eefsm.transition(example.example1.UIfClick));
     Assertions.assertNotNull(eefsm.transition(example.example1.HfEntry));
     Assertions.assertNotNull(eefsm.transition(example.e2Entry));
@@ -200,7 +200,7 @@ class EEFSMTest {
     Assertions.assertNotNull(eefsm.transition(example.example2.oR2Entry));
     Assertions.assertNotNull(eefsm.transition(example.example2.UIyClick));
     Assertions.assertNotNull(eefsm.transition(example.example2.HyEntry));
-    Assertions.assertNotNull(eefsm.transition(null));
+    Assertions.assertNotNull(eefsm.transition());
     Assertions.assertNotNull(eefsm.transition(example.example2.UIfClick));
     Assertions.assertNotNull(eefsm.transition(example.example2.HfEntry));
     Assertions.assertNotNull(eefsm.transition(example.e3Entry));

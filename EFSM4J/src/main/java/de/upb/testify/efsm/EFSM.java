@@ -7,6 +7,9 @@ import org.jgrapht.graph.DirectedMultigraph;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -99,9 +102,28 @@ public class EFSM<State, Parameter, Context extends IEFSMContext<Context>, Trans
    * @return The output for the taken transition or null if the input is not accepted in the current configuration
    */
   public Set<Parameter> transition() {
-    return transition(null);
+    return transition((Parameter) null);
   }
 
+
+  public List<Set<Parameter>> transition(EFSMPath<State, Parameter, Context, Transition> path) {
+    List<Set<Parameter>> res = new ArrayList<>(path.getLength());
+    Iterator<Parameter> inputsToTrigger = path.getInputsToTrigger();
+    while (inputsToTrigger.hasNext()) {
+      Set<Parameter> out = transition(inputsToTrigger.next());
+      if (out == null) {
+        return null;
+      } else {
+        res.add(out);
+      }
+    }
+    return res;
+  }
+
+
+  public Configuration transitionAndDrop(EFSMPath<State, Parameter, Context, Transition> path) {
+    return transition(path) == null ? null : getConfiguration();
+  }
 
   /**
    * Checks if the given input leads to a new configuration, returns the new configuration or null otherwise.
@@ -123,7 +145,7 @@ public class EFSM<State, Parameter, Context extends IEFSMContext<Context>, Trans
    * @return The configuration after taking one of the possible transitions for the empty input or null if the input is not accepted in the current configuration
    */
   public Configuration transitionAndDrop() {
-    return transitionAndDrop(null);
+    return transitionAndDrop((Parameter) null);
   }
 
   public Configuration<State, Context> getConfiguration() {
