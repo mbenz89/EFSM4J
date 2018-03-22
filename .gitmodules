@@ -1,3 +1,4 @@
 [submodule "PathExpression"]
 	path = PathExpression
 	url = https://github.com/johspaeth/PathExpression.git
+	branch = master
