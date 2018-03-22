@@ -6,5 +6,9 @@ package de.upb.testify.efsm;
  */
 public interface IEFSMContext<Context> {
 
+  /**
+   * Creates a hard copy of this context which can live and change independently
+   * @return
+   */
   Context snapshot();
 }

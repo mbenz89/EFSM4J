@@ -25,6 +25,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
+ * A path expression based algorithm to compute feasible paths of an EFSM.
+ * <p>
+ * Note: For this algorithm it is important that the EFMS's {@link IEFSMContext} implementation implements {@link Object#hashCode()} and {@link Object#equals(Object)}, so that equal context's can be merged.
+ *
  * @author Manuel Benz
  * created on 13.03.18
  */

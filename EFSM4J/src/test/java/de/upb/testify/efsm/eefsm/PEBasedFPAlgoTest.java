@@ -6,7 +6,6 @@ import de.upb.testify.efsm.PEBasedFPAlgo;
 import de.upb.testify.efsm.Param;
 import de.upb.testify.efsm.State;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import pathexpression.IRegEx;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
@@ -62,12 +61,11 @@ class PEBasedFPAlgoTest {
 
 
   @Test
-  @Disabled
   void largeEFSMPE() throws IOException {
     LargeInterComponentExample example = new LargeInterComponentExample();
     EEFSM<State, Param, Object> e = example.eefsm;
 
-   // new EFSMDotExporter(e).writeOut(Paths.get("./target/large.dot"));
+    //new EFSMDotExporter(e).writeOut(Paths.get("./target/large.dot"));
 
     PEBasedFPAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp = getAlgo(e);
     Assertions.assertTrue(sfp.pathExists(example.tgt));
