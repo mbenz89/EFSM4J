@@ -15,7 +15,7 @@ import java.util.stream.Stream;
  * @author Manuel Benz
  * created on 07.03.18
  */
-public class PathExpressionBasedShortestFeasiblePath<State, Parameter, Context extends IEFSMContext<Context>, Transition extends de.upb.testify.efsm.Transition<State, Parameter, Context>> extends PEBasedFPAlgo<State, Parameter, Context, Transition> {
+public class PathExpressionBasedShortestFeasiblePath<State, Parameter, Context extends IEFSMContext<Context>, Transition extends de.upb.testify.efsm.Transition<State, Parameter, Context>> extends PathExpressionBasedFeasiblePathAlgorithm<State, Parameter, Context, Transition> {
 
   public PathExpressionBasedShortestFeasiblePath(EFSM<State, Parameter, Context, Transition> efsm) {
     super(efsm, Integer.MAX_VALUE);
