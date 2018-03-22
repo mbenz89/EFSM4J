@@ -16,7 +16,7 @@ import java.util.Iterator;
  * @author Manuel Benz
  * created on 26.02.18
  */
-class EFSMDebuggerTest {
+public  class EFSMDebuggerTest {
 
   private BasicInterComponentExample example;
 

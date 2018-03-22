@@ -64,7 +64,8 @@ public class ETransition<State, Input, ContextObject> extends Transition<State, 
 
   @Override
   protected boolean inputGuard(Input input) {
-    if (expectedInput == null || expectedInput.equals(input)) {
+    // we accept epsilon (expectedInput=null) by checking if expected input is input
+    if (expectedInput == input || (expectedInput != null && expectedInput.equals(input))) {
       return true;
     }
     return false;
@@ -129,7 +130,7 @@ public class ETransition<State, Input, ContextObject> extends Transition<State, 
 
     builder.append("\n");
 //FIXME return builder
-   // return builder.toString();
+    // return builder.toString();
     return Objects.toString(expectedInput, "-");
   }
 }

@@ -22,7 +22,7 @@ public class AllPathFPAlgo<State, Input, ContextObject> extends JGraphBasedFPALg
 
   @Override
   public EEFSMPath<State, Input, ContextObject> getPath(Configuration<State, EEFSMContext<ContextObject>> config, State tgt) {
-    List<GraphPath<State, ETransition<State, Input, ContextObject>>> allPaths = allDirectedPaths.getAllPaths(config.getState(), tgt, false, 20);
+    List<GraphPath<State, ETransition<State, Input, ContextObject>>> allPaths = allDirectedPaths.getAllPaths(config.getState(), tgt, false, 70);
     for (GraphPath<State, ETransition<State, Input, ContextObject>> allPath : allPaths) {
       EEFSMPath<State, Input, ContextObject> eefsmPath = new EEFSMPath((EEFSM) efsm, allPath);
       if (eefsmPath.isFeasible(config.getContext())) {

@@ -79,6 +79,9 @@ public abstract class PEBasedFPAlgo<State, Parameter, Context extends IEFSMConte
     Stopwatch sw = Stopwatch.createStarted();
     IRegEx<Transition> pathExpression = peComputer.getExpressionBetween(config.getState(), tgt);
     logger.trace("Path-expression building took {}", sw);
+    if (pathExpression == null || pathExpression instanceof RegEx.EmptySet) {
+      return null;
+    }
     return expressionToPath(config, pathExpression).sorted(Comparator.comparing(EFSMPath::getLength)).collect(Collectors.toList());
   }
 
@@ -170,6 +173,15 @@ public abstract class PEBasedFPAlgo<State, Parameter, Context extends IEFSMConte
     return false;
   }
 
+  /**
+   * Returns a copy of this regex where no regex is the same underlying java object.
+   * E.g., normally a sub-regex like (a*) would be the same underlying object when used in different
+   * locations of the whole regex. This function creates a new object for each usage of the same
+   * sub-regex.
+   *
+   * @param regEx
+   * @return
+   */
   protected IRegEx<Transition> makeUnique(IRegEx<Transition> regEx) {
     if (regEx instanceof RegEx.Plain) {
       return new RegEx.Plain(((RegEx.Plain) regEx).v);
@@ -206,6 +218,7 @@ public abstract class PEBasedFPAlgo<State, Parameter, Context extends IEFSMConte
     @Override
     public Set<State> getNodes() {
       // We return an ordered set here to make the path generation deterministic
+      // For some reason this also hugely speeds up the path finding
       ArrayList<State> states = new ArrayList<>(efsm.getStates());
       ListenableGraph<State, Transition> baseGraph = efsm.getBaseGraph();
       states.sort(new Comparator<State>() {

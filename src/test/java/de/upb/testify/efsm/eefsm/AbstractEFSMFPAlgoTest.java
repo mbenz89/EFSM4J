@@ -110,6 +110,8 @@ abstract class AbstractEFSMFPAlgoTest {
     EFSMPath<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> path = sfp.getPath(example.tgt);
 
     Assertions.assertNotNull(path);
+    Assertions.assertEquals(example.example1.initialState, path.getSrc());
+    Assertions.assertEquals(example.tgt, path.getTgt());
     Assertions.assertTrue(path.isFeasible(example.initialContext));
 
     Iterator<Param> inputsToTrigger = path.getInputsToTrigger();
@@ -130,12 +132,17 @@ abstract class AbstractEFSMFPAlgoTest {
 
     EFSMPath<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> path = sfp.getPath(example.example6.oR2);
 
+    Assertions.assertNotNull(path);
+    Assertions.assertEquals(example.example1.initialState, path.getSrc());
+    Assertions.assertEquals(example.example6.oR2, path.getTgt());
+    Assertions.assertTrue(path.isFeasible(example.initialContext),() -> "path: " + path);
+
     Iterator<Param> inputsToTrigger = path.getInputsToTrigger();
     while (inputsToTrigger.hasNext()) {
       e.transition(inputsToTrigger.next());
     }
 
-    Assertions.assertTrue(e.getConfiguration().getState().equals(example.example6.oR2));
+    Assertions.assertEquals(example.example6.oR2, e.getConfiguration().getState());
   }
 
   @Test
@@ -148,15 +155,39 @@ abstract class AbstractEFSMFPAlgoTest {
 
     EFSMPath<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> path = sfp.getPath(example.example6.oR2);
 
+
+
+    Assertions.assertNotNull(path);
+    Assertions.assertEquals(example.example1.initialState, path.getSrc());
+    Assertions.assertEquals(example.example6.oR2, path.getTgt());
+    Assertions.assertTrue(path.isFeasible(example.initialContext));
+
     Iterator<Param> inputsToTrigger = path.getInputsToTrigger();
     while (inputsToTrigger.hasNext()) {
       e.transition(inputsToTrigger.next());
     }
 
-    Assertions.assertTrue(e.getConfiguration().getState().equals(example.example6.oR2));
 
     path = sfp.getPath(example.example1.oR1);
 
     Assertions.assertNull(path);
+  }
+
+  @Test
+  void mediumEFSMPE() {
+    MediumInterComponentExample example = new MediumInterComponentExample();
+    EEFSM<State, Param, Object> eefsm = example.eefsm;
+
+    IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp = getAlgo(eefsm);
+    Assertions.assertNotNull(sfp.getPath(example.example1.oR1));
+    Assertions.assertNotNull(sfp.getPath(example.example1.UIy));
+    Assertions.assertNotNull(sfp.getPath(example.example1.Hf));
+    Assertions.assertNotNull(sfp.getPath(example.example1.oR2));
+    Assertions.assertNotNull(sfp.getPath(example.example2.oC1));
+    Assertions.assertNotNull(sfp.getPath(example.example2.Hc));
+    Assertions.assertNotNull(sfp.getPath(example.example2.oSta1));
+    Assertions.assertNotNull(sfp.getPath(example.example2.oR1));
+    Assertions.assertNotNull(sfp.getPath(example.example2.UI));
+    Assertions.assertNotNull(sfp.getPath(example.example2.oR2));
   }
 }
