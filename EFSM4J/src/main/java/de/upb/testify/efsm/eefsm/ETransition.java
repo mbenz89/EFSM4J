@@ -129,8 +129,7 @@ public class ETransition<State, Input, ContextObject> extends Transition<State, 
     }
 
     builder.append("\n");
-//FIXME return builder
-    // return builder.toString();
-    return Objects.toString(expectedInput, "-");
+
+    return builder.toString();
   }
 }
