@@ -155,11 +155,12 @@ public abstract class PathExpressionBasedFeasiblePathAlgorithm<State, Parameter,
         return Collections.emptySet();
       }
     } else if (expr instanceof RegEx.Star) {
-      return Sets.union(Collections.singleton(c.snapshot()), pathExists(((RegEx.Star) expr).a, c.snapshot()));
+      return Sets.union(Collections.singleton(c.snapshot()), pathExists(((RegEx.Star) expr).a, c));
       // return Collections.singleton(c);
     } else if (expr instanceof RegEx.Union) {
+      // we can save half of the context copies by only snapshotting the first
       Set<Context> left = pathExists(((RegEx.Union) expr).a, c.snapshot());
-      Set<Context> right = pathExists(((RegEx.Union) expr).b, c.snapshot());
+      Set<Context> right = pathExists(((RegEx.Union) expr).b, c);
       return Sets.union(left, right);
     } else {
       throw new IllegalArgumentException("Expr of unknown type: " + expr.getClass());

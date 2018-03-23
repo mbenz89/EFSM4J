@@ -48,11 +48,11 @@ public class PathExpressionBasedShortestFeasiblePath<State, Parameter, Context e
         return Collections.emptySet();
       }
     } else if (expr instanceof RegEx.Star) {
-      return merge(Collections.singleton(cp.snapshot()), expressionToPath(((RegEx.Star) expr).a, cp.snapshot()));
+      return merge(Collections.singleton(cp.snapshot()), expressionToPath(((RegEx.Star) expr).a, cp));
     } else if (expr instanceof RegEx.Union) {
       RegEx.Union union = (RegEx.Union) expr;
       Set left = expressionToPath(union.a, cp.snapshot());
-      Set right = expressionToPath(union.b, cp.snapshot());
+      Set right = expressionToPath(union.b, cp);
       return merge(left, right);
     } else {
       throw new IllegalArgumentException("Expr of unknown type: " + expr.getClass());
