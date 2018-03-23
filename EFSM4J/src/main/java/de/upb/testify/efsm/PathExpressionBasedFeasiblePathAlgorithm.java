@@ -25,7 +25,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * A path expression based algorithm to compute feasible paths of an EFSM.
+ * A path expression based algorithm to compute feasible paths of an EFSM. The algorithm is not sound! For star regex, it only considers not taking the star and taking it once.
+ * This might lead to wrong results in many cases, but oftentimes works very fast.
  * <p>
  * Note: For this algorithm it is important that the EFMS's {@link IEFSMContext} implementation implements {@link Object#hashCode()} and {@link Object#equals(Object)}, so that equal context's can be merged.
  *
@@ -155,8 +156,19 @@ public abstract class PathExpressionBasedFeasiblePathAlgorithm<State, Parameter,
         return Collections.emptySet();
       }
     } else if (expr instanceof RegEx.Star) {
+      /** Complete variant but too slow
+       Set<Context> worklist = Collections.singleton(c), res = Collections.emptySet();
+       do {
+       res = new HashSet<>(worklist);
+       for (Context re : worklist) {
+       worklist = pathExists(((RegEx.Star) expr).a, re.snapshot());
+       }
+       worklist = Sets.union(worklist, res);
+       } while (!res.equals(worklist) && !worklist.isEmpty());
+
+       return res;
+       **/
       return Sets.union(Collections.singleton(c.snapshot()), pathExists(((RegEx.Star) expr).a, c));
-      // return Collections.singleton(c);
     } else if (expr instanceof RegEx.Union) {
       // we can save half of the context copies by only snapshotting the first
       Set<Context> left = pathExists(((RegEx.Union) expr).a, c.snapshot());
@@ -229,7 +241,7 @@ public abstract class PathExpressionBasedFeasiblePathAlgorithm<State, Parameter,
       // For some reason ordering the node set hugely speeds up the path finding (Tarjan may know why)
       ArrayList<State> states = new ArrayList<>(efsm.getStates());
       ListenableGraph<State, Transition> baseGraph = efsm.getBaseGraph();
-      states.sort(Comparator.comparingInt(baseGraph::outDegreeOf));
+      states.sort(Comparator.comparingInt(baseGraph::outDegreeOf).thenComparing(Comparator.comparingInt(baseGraph::inDegreeOf).reversed()));
       return new LinkedHashSet<>(states);
     }
 

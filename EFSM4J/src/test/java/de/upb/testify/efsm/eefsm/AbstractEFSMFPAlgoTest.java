@@ -147,6 +147,25 @@ abstract class AbstractEFSMFPAlgoTest {
   }
 
   @Test
+  void largeEFSMPE3() {
+    LargeInterComponentExample example = new LargeInterComponentExample();
+    EEFSM<State, Param, Object> e = example.eefsm;
+
+
+    IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp = getAlgo(e);
+
+    EFSMPath<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> path = sfp.getPath(example.tgt);
+
+    Assertions.assertNotNull(path);
+    Assertions.assertEquals(example.example1.initialState, path.getSrc());
+    Assertions.assertEquals(example.tgt, path.getTgt());
+    Assertions.assertTrue(path.isFeasible(example.initialContext));
+
+    e.transition(path);
+
+    Assertions.assertEquals(e.getConfiguration().getState(), example.tgt);
+  }
+  @Test
   void largeEFSMPE2() {
     LargeInterComponentExample example = new LargeInterComponentExample();
     EEFSM<State, Param, Object> e = example.eefsm;
