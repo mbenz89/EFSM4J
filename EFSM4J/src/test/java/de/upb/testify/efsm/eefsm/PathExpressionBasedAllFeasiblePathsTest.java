@@ -35,4 +35,10 @@ class PathExpressionBasedAllFeasiblePathsTest extends AbstractEFSMFPAlgoTest {
   void largeEFSMPE_InfeasibleAfterPath() {
     super.largeEFSMPE_InfeasibleAfterPath();
   }
+
+  @Override
+  @Disabled
+  void largeEFSMPE3() {
+    super.largeEFSMPE3();
+  }
 }

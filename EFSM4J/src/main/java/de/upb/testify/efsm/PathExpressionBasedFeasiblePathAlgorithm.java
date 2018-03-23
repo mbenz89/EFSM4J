@@ -156,18 +156,18 @@ public abstract class PathExpressionBasedFeasiblePathAlgorithm<State, Parameter,
         return Collections.emptySet();
       }
     } else if (expr instanceof RegEx.Star) {
-      /** Complete variant but too slow
-       Set<Context> worklist = Collections.singleton(c), res = Collections.emptySet();
-       do {
-       res = new HashSet<>(worklist);
-       for (Context re : worklist) {
-       worklist = pathExists(((RegEx.Star) expr).a, re.snapshot());
-       }
-       worklist = Sets.union(worklist, res);
-       } while (!res.equals(worklist) && !worklist.isEmpty());
+      // Complete variant but too slow
+      /* Set<Context> worklist = Collections.singleton(c), res;
+      do {
+        res = new HashSet<>(worklist);
+        for (Context re : worklist) {
+          worklist = pathExists(((RegEx.Star) expr).a, re.snapshot());
+        }
+        worklist = Sets.union(worklist, res);
+      } while (res.size() != worklist.size());
 
-       return res;
-       **/
+      return res;
+      */
       return Sets.union(Collections.singleton(c.snapshot()), pathExists(((RegEx.Star) expr).a, c));
     } else if (expr instanceof RegEx.Union) {
       // we can save half of the context copies by only snapshotting the first
