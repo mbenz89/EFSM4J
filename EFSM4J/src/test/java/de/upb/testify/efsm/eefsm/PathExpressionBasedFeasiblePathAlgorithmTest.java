@@ -6,7 +6,6 @@ import de.upb.testify.efsm.Param;
 import de.upb.testify.efsm.PathExpressionBasedFeasiblePathAlgorithm;
 import de.upb.testify.efsm.State;
 import pathexpression.IRegEx;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.stream.Stream;
 
@@ -22,7 +21,7 @@ class PathExpressionBasedFeasiblePathAlgorithmTest extends AbstractEFSMPathExist
     return new PathExpressionBasedFeasiblePathAlgorithm<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>>(eefsm) {
       @Override
       protected Stream<EFSMPath<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>>> expressionToPath(Configuration<State, EEFSMContext<Object>> config, IRegEx<ETransition<State, Param, Object>> pathExpression) {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
       }
     };
   }

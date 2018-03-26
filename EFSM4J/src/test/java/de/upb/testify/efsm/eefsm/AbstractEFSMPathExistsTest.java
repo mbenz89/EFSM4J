@@ -77,7 +77,10 @@ public abstract class AbstractEFSMPathExistsTest {
     EEFSM<State, Param, Object> e = example.eefsm;
 
     IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp = getAlgo(e);
-    e.forceConfiguration(new Configuration<>(example.example6.oR2, new EEFSMContext<>()));
+    e.forceConfiguration(new Configuration<>(example.example6.oR2,
+        new EEFSMContext<>(example.example1.Hc, example.example2.Hc, example.example3.Hc,
+            example.example4.Hc, example.example5.Hc, example.example6.Hc, example.example1.Le,
+            example.example2.Le, example.example3.oSto1, example.example5.oSto1, example.additionalContext)));
     Assertions.assertFalse(sfp.pathExists(example.example1.oR1));
   }
 

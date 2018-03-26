@@ -6,10 +6,10 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.Sets;
 import de.upb.testify.efsm.Configuration;
+import de.upb.testify.efsm.DirectedConnectivityInspector;
 import de.upb.testify.efsm.EFSMPath;
 import de.upb.testify.efsm.JGraphBasedFPALgo;
 import org.jgrapht.GraphPath;
-import org.jgrapht.alg.ConnectivityInspector;
 import org.jgrapht.alg.interfaces.ShortestPathAlgorithm;
 import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
 import org.jgrapht.graph.DirectedMultigraph;
@@ -47,7 +47,7 @@ public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context> exte
    * Maps a state of the EEFSM to all possible configurations in the exploded EEFSM
    */
   private final Multimap<State, Configuration<State, EEFSMContext<Context>>> stateToConfigs;
-  private final ConnectivityInspector<Configuration<State, EEFSMContext<Context>>, TransitionWrapper> connectivityInspector;
+  private final DirectedConnectivityInspector<Configuration<State, EEFSMContext<Context>>, TransitionWrapper> connectivityInspector;
   private final ShortestPathAlgorithm<Configuration<State, EEFSMContext<Context>>, TransitionWrapper> shortestPath;
   /**
    * Exploded graph where ich node is a configuration of the original eefsm.
@@ -62,7 +62,7 @@ public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context> exte
     Stopwatch sw = Stopwatch.createStarted();
     explode(eefsm);
     logger.trace("Exploding EEFSM took {}", sw);
-    connectivityInspector = new ConnectivityInspector<>(explodedEEFSM);
+    connectivityInspector = new DirectedConnectivityInspector<>(explodedEEFSM);
     shortestPath = new DijkstraShortestPath<>(explodedEEFSM);
     // explodedGraphToDot(Paths.get("target/exploded.dot"));
   }
@@ -105,6 +105,11 @@ public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context> exte
    */
   @Override
   public List<EFSMPath<State, Parameter, EEFSMContext<Context>, ETransition<State, Parameter, Context>>> getPaths(Configuration<State, EEFSMContext<Context>> config, State tgt) {
+    // the given configuration might not exist in the exploded graph which means there is not even a single path to it.
+    if (!explodedEEFSM.containsVertex(config)) {
+      return null;
+    }
+
     Collection<Configuration<State, EEFSMContext<Context>>> tgtConfigs = stateToConfigs.get(tgt);
     List<EFSMPath<State, Parameter, EEFSMContext<Context>, ETransition<State, Parameter, Context>>> res = new ArrayList<>(tgtConfigs.size());
 
@@ -132,6 +137,10 @@ public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context> exte
 
   @Override
   public boolean pathExists(Configuration<State, EEFSMContext<Context>> config, State tgt) {
+    if (!explodedEEFSM.containsVertex(config)) {
+      return false;
+    }
+
     for (Configuration<State, EEFSMContext<Context>> tgtConfig : stateToConfigs.get(tgt)) {
       if (connectivityInspector.pathExists(config, tgtConfig)) {
         return true;
