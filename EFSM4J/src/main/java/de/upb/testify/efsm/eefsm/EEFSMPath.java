@@ -3,6 +3,8 @@ package de.upb.testify.efsm.eefsm;
 import de.upb.testify.efsm.EFSMPath;
 import org.jgrapht.GraphPath;
 
+import java.util.List;
+
 /**
  * @author Manuel Benz
  * created on 02.03.18
@@ -19,7 +21,11 @@ public class EEFSMPath<State, Input, ContextObject> extends EFSMPath<State, Inpu
 
   protected EEFSMPath(EEFSM<State, Input, ContextObject> eefsm, GraphPath<State, ETransition<State, Input, ContextObject>> basePath) {
     super(eefsm, basePath);
-  } 
+  }
+
+  protected EEFSMPath(EEFSM<State, Input, ContextObject> eefsm, List<ETransition<State, Input, ContextObject>> basePath) {
+    super(eefsm, basePath);
+  }
 
 
   @Override
