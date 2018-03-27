@@ -1,12 +1,11 @@
 package de.upb.testify.efsm.eefsm;
 
-import de.upb.testify.efsm.Configuration;
+import de.upb.testify.efsm.EFSM;
 import de.upb.testify.efsm.EFSMDebugger;
 import de.upb.testify.efsm.EFSMPath;
 import de.upb.testify.efsm.Param;
 import de.upb.testify.efsm.State;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -16,23 +15,19 @@ import java.util.Iterator;
  * @author Manuel Benz
  * created on 26.02.18
  */
-public  class EFSMDebuggerTest {
+public class EFSMDebuggerTest {
 
-  private BasicInterComponentExample example;
 
-  public static void debugThis(BasicInterComponentExample example, EFSMPath<State, Param, EEFSMContext<Object>,ETransition<State,Param,Object>> path) {
-    EEFSM<State, Param, Object> eefsm = example.eefsm;
-    Assertions.assertTrue(path.isFeasible(example.initialContext));
-
-    EFSMDebugger<State, ETransition<State, Param, Object>> debugger = EFSMDebugger.startDebugger(eefsm, true, state -> state.toString(), t -> t.toString());
+  public static void debugThis(EFSMPath<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> path) {
+    EFSM<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> efsm = path.getEfsm();
+    EFSMDebugger<State, ETransition<State, Param, Object>> debugger = EFSMDebugger.startDebugger(efsm, true, state -> state.toString(), t -> t.toString());
     debugger.highlightPath(path);
+    debugger.highlightStates(path.getTgt());
 
     Iterator<Param> iterator = path.getInputsToTrigger();
     while (iterator.hasNext()) {
-      Assertions.assertNotNull(eefsm.transition(iterator.next()), "Transition failed in configuration: " + eefsm.getConfiguration());
+      Assertions.assertNotNull(efsm.transition(iterator.next()), "Transition failed in configuration: " + efsm.getConfiguration());
     }
-
-    Assertions.assertEquals(new Configuration<>(example.Hx, new EEFSMContext<>(example.Le, example.Hc)), eefsm.getConfiguration());
 
 
     while (true) {
@@ -44,14 +39,11 @@ public  class EFSMDebuggerTest {
     }
   }
 
-  @BeforeEach
-  void setUp() {
-    example = new BasicInterComponentExample();
-  }
 
   @Test
   @Disabled
   void staticPath() {
+    BasicInterComponentExample example = new BasicInterComponentExample();
     EEFSMPath path = new EEFSMPath<>(example.eefsm);
     path.append(example.oC1ToHc);
     path.append(example.hCToOsta1);
@@ -74,6 +66,15 @@ public  class EFSMDebuggerTest {
     path.append(example.oR1ToUix);
     path.append(example.uiXToHx);
 
-    debugThis(example, path);
+    debugThis(path);
+  }
+
+  @Test
+  @Disabled
+  void largeEFSMComputed() {
+    LargeInterComponentExample example = new LargeInterComponentExample();
+    EFSMPath<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> path = new GraphExplosionFeasiblePathAlgorithm<>(example.eefsm).getPath(example.tgt);
+
+    debugThis(path);
   }
 }

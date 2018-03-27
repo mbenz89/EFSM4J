@@ -37,7 +37,7 @@ abstract class AbstractEFSMFPAlgoTest {
     Assertions.assertEquals(example.Hx, path.getTgt());
 
     if (debugger) {
-      EFSMDebuggerTest.debugThis(example, path);
+      EFSMDebuggerTest.debugThis(path);
     }
   }
 
@@ -77,7 +77,7 @@ abstract class AbstractEFSMFPAlgoTest {
 
 
     if (debugger) {
-      EFSMDebuggerTest.debugThis(example, path);
+      EFSMDebuggerTest.debugThis(path);
     }
   }
 

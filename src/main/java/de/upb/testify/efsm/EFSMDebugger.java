@@ -77,9 +77,9 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
   public static final float STROKE_WIDTH_HIGHLIGHTED = 4f;
   public static final Dimension TOOLBAR_BUTTON_SIZE = new Dimension(20, 20);
   public static final Color COLOR_ROOT_VERTEX = Color.BLUE;
-  public static final Color COLOR_LOI_VERTEX = Color.GREEN;
   public static final Color COLOR_LAST_VERTEX = Color.RED;
   public static final Color COLOR_CUR_VERTEX = Color.SPRINGGREEN;
+  public static final Color COLOR_TARGET_VERTEX = Color.GREEN;
   private final static Logger logger = LoggerFactory.getLogger(EFSMDebugger.class);
   private static final Dimension DEFAULT_WINDOW_SIZE = new Dimension(1200, 800);
   private static EFSMDebugger instance;
@@ -300,12 +300,48 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
   }
 
   public void highlightPath(EFSMPath<State, ?, ?, Transition> path) {
-    // reset highlighting
-    if(highlightedPath != null){
+    HashMap<Transition, mxICell> edgeToCellMap = jgxAdapter.getEdgeToCellMap();
 
+    mxIGraphModel model = jgxAdapter.getModel();
+
+    model.beginUpdate();
+
+    // reset highlighting
+    if (highlightedPath != null) {
+      for (Transition transition : path) {
+        mxICell mxICell = edgeToCellMap.get(transition);
+        model.setStyle(mxICell, new SB(mxICell).set(mxConstants.STYLE_STROKECOLOR, Color.BLACK).build());
+      }
     }
 
     highlightedPath = path;
+
+    for (Transition transition : path) {
+      mxICell mxICell = edgeToCellMap.get(transition);
+      model.setStyle(mxICell, new SB(mxICell).set(mxConstants.STYLE_STROKECOLOR, Color.BLUE).build());
+    }
+
+    model.endUpdate();
+  }
+
+  /**
+   * Can be used to highlight important states from client side. (No unhighlighting supported yet.)
+   *
+   * @param states
+   */
+  public void highlightStates(State... states) {
+    HashMap<State, mxICell> vertexToCellMap = jgxAdapter.getVertexToCellMap();
+
+    mxIGraphModel model = jgxAdapter.getModel();
+    model.beginUpdate();
+    for (State state : states) {
+      mxICell mxICell = vertexToCellMap.get(state);
+      model.setStyle(mxICell, new SB(mxICell)
+          .set(mxConstants.STYLE_STROKECOLOR, COLOR_TARGET_VERTEX)
+          .set(mxConstants.STYLE_STROKEWIDTH, String.valueOf(STROKE_WIDTH_HIGHLIGHTED)).build());
+    }
+
+    model.endUpdate();
   }
 
   // endregion
@@ -569,13 +605,12 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
   private TreeItem<Object> createTreeItem(Object value) {
     TreeItem<Object> item = new TreeItem<Object>(value) {
 
-      private final List<TreeItem<Object>> children = new ArrayList<>();
       private boolean childrenComputed = false;
 
       {
         expandedProperty().addListener((obs, wasExpanded, isNowExpanded) -> {
           if (!isNowExpanded) { // remove child nodes...
-            children.clear();
+            super.getChildren().clear();
             childrenComputed = false;
           }
         });
@@ -583,6 +618,7 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
 
       @Override
       public ObservableList<TreeItem<Object>> getChildren() {
+        List<TreeItem<Object>> children = new ArrayList<>();
         Object value = getValue();
         if (!childrenComputed) {
           Class<?> aClass;
@@ -630,22 +666,27 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
 
       @Override
       public boolean isLeaf() {
-        return !isValueOfInterest(getValue());
+        try {
+          return !isValueOfInterest(getValue());
+        } catch (IllegalAccessException e) {
+          return false;
+        }
       }
 
-      private boolean isValueOfInterest(Object value) {
+      private boolean isValueOfInterest(Object value) throws IllegalAccessException {
         if (value == null) {
           return false;
         }
         // we do not want to show the whole jdk
         Class<?> aClass = value.getClass();
         Package aPackage = aClass.getPackage();
+
         return (aPackage != null
             && aPackage.getName().startsWith("de.upb.testify")
             || aPackage.getName().startsWith("soot"))
             || aClass.isArray()
-            || value instanceof Field && ((Field) value).getType().isArray()
-            || value instanceof Field && Iterable.class.isAssignableFrom(((Field) value).getType());
+            || (value instanceof Field && ((Field) value).getType().isArray() && ((Field) value).get(getParent().getValue()) != null)
+            || (value instanceof Field && Iterable.class.isAssignableFrom(((Field) value).getType()) && ((Field) value).get(getParent().getValue()) != null);
       }
     };
 
