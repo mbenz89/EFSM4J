@@ -18,8 +18,10 @@ public abstract class Transition<State, Parameter, Context> {
   }
 
   /**
-   * Assumes {@link Transition#isFeasible(Object, Context)} was called and returned true to work properly
+   * Assumes {@link Transition#isFeasible(Parameter, Context)} was called and returned true to work properly
    *
+   * @param input
+   * @param context
    * @return A set of output values
    */
   public Set<Parameter> take(Parameter input, Context context) {
@@ -33,7 +35,7 @@ public abstract class Transition<State, Parameter, Context> {
   }
 
   /**
-   * Tries to take the transition by calling {@link Transition#isFeasible(Object, Context)} itself and returning null if the transition cannot be taken.
+   * Tries to take the transition by calling {@link Transition#isFeasible(Parameter, Context)} itself and returning null if the transition cannot be taken.
    *
    * @param input
    * @param context
