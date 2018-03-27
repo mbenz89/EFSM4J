@@ -18,8 +18,8 @@ cache:
     - ~/.m2/repository
 
 before_install:
-  - chmod +x deploy.sh
-  - chmod +x before-deploy.sh
+  - chmod +x ./cd/deploy.sh
+  - chmod +x ./cd/before-deploy.sh
 
 after_success:
   - ./cd/before-deploy.sh
