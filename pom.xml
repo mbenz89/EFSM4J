@@ -26,7 +26,6 @@
     </scm>
 
     <modules>
-        <module>PathExpression</module>
         <module>EFSM4J</module>
     </modules>
 
