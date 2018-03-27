@@ -102,6 +102,7 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
   private Function<Object, String> transitionLabeler;
   private mxICell curState;
   private boolean initialized;
+  private EFSMPath<State, ?, ?, Transition> highlightedPath;
 
   // endregion
 
@@ -298,6 +299,14 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     }
   }
 
+  public void highlightPath(EFSMPath<State, ?, ?, Transition> path) {
+    // reset highlighting
+    if(highlightedPath != null){
+
+    }
+
+    highlightedPath = path;
+  }
 
   // endregion
 

@@ -25,6 +25,7 @@ public  class EFSMDebuggerTest {
     Assertions.assertTrue(path.isFeasible(example.initialContext));
 
     EFSMDebugger<State, ETransition<State, Param, Object>> debugger = EFSMDebugger.startDebugger(eefsm, true, state -> state.toString(), t -> t.toString());
+    debugger.highlightPath(path);
 
     Iterator<Param> iterator = path.getInputsToTrigger();
     while (iterator.hasNext()) {
