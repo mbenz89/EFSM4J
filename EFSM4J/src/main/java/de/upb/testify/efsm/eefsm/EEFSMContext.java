@@ -15,6 +15,8 @@ import java.util.stream.Collectors;
 public class EEFSMContext<ContextObject> implements IEFSMContext<EEFSMContext<ContextObject>> {
 
   private final HashSet<ContextObject> internalSet = new HashSet<>();
+  private boolean hashInvalidated = true;
+  private int cachedHash;
 
   public EEFSMContext(ContextObject... o) {
     union(o);
@@ -34,34 +36,42 @@ public class EEFSMContext<ContextObject> implements IEFSMContext<EEFSMContext<Co
 
   public void union(ContextObject o) {
     internalSet.add(o);
+    hashInvalidated = true;
   }
 
   public void union(ContextObject... o) {
     Collections.addAll(internalSet, o);
+    hashInvalidated = true;
   }
 
   public void union(Collection<ContextObject> o) {
     internalSet.addAll(o);
+    hashInvalidated = true;
   }
 
   public void union(EEFSMContext c) {
     internalSet.addAll(c.internalSet);
+    hashInvalidated = true;
   }
 
   public void remove(ContextObject o) {
     internalSet.remove(o);
+    hashInvalidated = true;
   }
 
   public void remove(ContextObject... o) {
     internalSet.removeAll(Arrays.asList(o));
+    hashInvalidated = true;
   }
 
   public void remove(Collection<ContextObject> o) {
     internalSet.removeAll(o);
+    hashInvalidated = true;
   }
 
   public void remove(EEFSMContext c) {
     internalSet.removeAll(c.internalSet);
+    hashInvalidated = true;
   }
 
   @Override
@@ -83,7 +93,12 @@ public class EEFSMContext<ContextObject> implements IEFSMContext<EEFSMContext<Co
 
   @Override
   public int hashCode() {
-    return com.google.common.base.Objects.hashCode(internalSet);
+    if (hashInvalidated) {
+      cachedHash = com.google.common.base.Objects.hashCode(internalSet);
+      hashInvalidated = false;
+    }
+
+    return cachedHash;
   }
 
   @Override
