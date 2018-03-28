@@ -23,7 +23,7 @@ class GraphExplosionFeasiblePathAlgorithmTest extends AbstractEFSMFPAlgoTest {
     LargeInterComponentExample example = new LargeInterComponentExample();
     EEFSM<State, Param, Object> e = example.eefsm;
     IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp = getAlgo(e);
-    for (int i = 0; i < 1000; i++) {
+    for (int i = 0; i < 300; i++) {
       sfp.getPath(example.example6.oR2);
     }
   }
