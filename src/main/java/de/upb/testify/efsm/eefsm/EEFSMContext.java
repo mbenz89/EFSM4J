@@ -6,7 +6,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.stream.Collectors;
 
 /**
@@ -104,6 +103,9 @@ public class EEFSMContext<ContextObject> implements IEFSMContext<EEFSMContext<Co
 
   @Override
   public EEFSMContext<ContextObject> snapshot() {
-    return new EEFSMContext<>(internalSet);
+    EEFSMContext<ContextObject> res = new EEFSMContext<>(internalSet);
+    res.hashInvalidated = hashInvalidated;
+    res.cachedHash = cachedHash;
+    return res;
   }
 }
