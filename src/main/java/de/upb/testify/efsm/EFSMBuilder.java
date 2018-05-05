@@ -5,11 +5,13 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * @author Manuel Benz
- * created on 20.02.18
- */
-public class EFSMBuilder<State, Parameter, Context extends IEFSMContext<Context>, Transition extends de.upb.testify.efsm.Transition<State, Parameter, Context>, EFSM extends de.upb.testify.efsm.EFSM<State, Parameter, Context, Transition>> {
+/** @author Manuel Benz created on 20.02.18 */
+public class EFSMBuilder<
+    State,
+    Parameter,
+    Context extends IEFSMContext<Context>,
+    Transition extends de.upb.testify.efsm.Transition<State, Parameter, Context>,
+    EFSM extends de.upb.testify.efsm.EFSM<State, Parameter, Context, Transition>> {
   private final Class<EFSM> efsmTypeClass;
   private Set<State> states = new HashSet<>();
   private State initialState;
@@ -44,7 +46,8 @@ public class EFSMBuilder<State, Parameter, Context extends IEFSMContext<Context>
     return this;
   }
 
-  public EFSMBuilder<State, Parameter, Context, Transition, EFSM> withTransition(State src, State tgt, Transition t) {
+  public EFSMBuilder<State, Parameter, Context, Transition, EFSM> withTransition(
+      State src, State tgt, Transition t) {
     states.add(src);
     states.add(tgt);
 
@@ -55,12 +58,15 @@ public class EFSMBuilder<State, Parameter, Context extends IEFSMContext<Context>
     return this;
   }
 
-  public EFSMBuilder<State, Parameter, Context, Transition, EFSM> withInitialContext(Context initialContext) {
+  public EFSMBuilder<State, Parameter, Context, Transition, EFSM> withInitialContext(
+      Context initialContext) {
     this.initialContext = initialContext;
     return this;
   }
 
   public EFSM build() {
+    // FIXME instead of checking, we should just enfore passing those by using the build method for
+    // it
     if (initialState == null) {
       throw new IllegalStateException("Initial state not set");
     }
@@ -78,7 +84,6 @@ public class EFSMBuilder<State, Parameter, Context extends IEFSMContext<Context>
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-
   }
 
   private Constructor<EFSM> getConstructor() {
@@ -88,11 +93,13 @@ public class EFSMBuilder<State, Parameter, Context extends IEFSMContext<Context>
         continue;
       }
 
-      if (parameterTypes[0].isAssignableFrom(states.getClass()) && parameterTypes[1].isAssignableFrom(initialState.getClass()) && parameterTypes[2].isAssignableFrom(initialContext.getClass()) && parameterTypes[3].isAssignableFrom(transitions.getClass())) {
+      if (parameterTypes[0].isAssignableFrom(states.getClass())
+          && parameterTypes[1].isAssignableFrom(initialState.getClass())
+          && parameterTypes[2].isAssignableFrom(initialContext.getClass())
+          && parameterTypes[3].isAssignableFrom(transitions.getClass())) {
         return (Constructor<EFSM>) constructor;
       }
     }
     return null;
   }
-
 }
