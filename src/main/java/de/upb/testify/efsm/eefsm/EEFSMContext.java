@@ -8,10 +8,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.stream.Collectors;
 
-/**
- * @author Manuel Benz
- * created on 22.02.18
- */
+/** @author Manuel Benz created on 22.02.18 */
 public class EEFSMContext<ContextObject> implements IEFSMContext<EEFSMContext<ContextObject>> {
 
   private final HashSet<ContextObject> internalSet = new HashSet<>();
@@ -24,6 +21,10 @@ public class EEFSMContext<ContextObject> implements IEFSMContext<EEFSMContext<Co
 
   public EEFSMContext(Collection<ContextObject> col) {
     internalSet.addAll(col);
+  }
+
+  public static EEFSMContext<Object> emptyContext() {
+    return new EEFSMContext<>();
   }
 
   public boolean elementOf(ContextObject o) {
@@ -76,7 +77,9 @@ public class EEFSMContext<ContextObject> implements IEFSMContext<EEFSMContext<Co
 
   @Override
   public String toString() {
-    return "{" + internalSet.stream().map(ContextObject::toString).collect(Collectors.joining(", ")) + "}";
+    return "{"
+        + internalSet.stream().map(ContextObject::toString).collect(Collectors.joining(", "))
+        + "}";
   }
 
   @Override
