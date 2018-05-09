@@ -4,11 +4,13 @@ import org.jgrapht.ListenableGraph;
 
 import java.util.List;
 
-/**
- * @author Manuel Benz
- * created on 02.03.18
- */
-public abstract class JGraphBasedFPALgo<State, Parameter, Context extends IEFSMContext<Context>, Transition extends de.upb.testify.efsm.Transition<State, Parameter, Context>> implements IFeasiblePathAlgo<State, Parameter, Context, Transition> {
+/** @author Manuel Benz created on 02.03.18 */
+public abstract class JGraphBasedFPALgo<
+        State,
+        Parameter,
+        Context extends IEFSMContext<Context>,
+        Transition extends de.upb.testify.efsm.Transition<State, Parameter, Context>>
+    implements IFeasiblePathAlgo<State, Parameter, Context, Transition> {
 
   protected final ListenableGraph<State, Transition> baseGraph;
   protected final EFSM<State, Parameter, Context, Transition> efsm;

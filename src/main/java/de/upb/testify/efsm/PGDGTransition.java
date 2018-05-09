@@ -1,12 +1,13 @@
 package de.upb.testify.efsm;
 
 /**
- * gPi-gD transitions are those transitions that have both an input parameter guard and a domain guard, gPi =? NIL and gD ?= NIL
+ * gPi-gD transitions are those transitions that have both an input parameter guard and a domain
+ * guard, gPi =? NIL and gD ?= NIL
  *
- * @author Manuel Benz
- * created on 20.02.18
+ * @author Manuel Benz created on 20.02.18
  */
-public abstract class PGDGTransition<State, Parameter, Context> extends Transition<State, Parameter, Context> {
+public abstract class PGDGTransition<State, Parameter, Context>
+    extends Transition<State, Parameter, Context> {
 
   @Override
   public boolean hasDomainGuard() {

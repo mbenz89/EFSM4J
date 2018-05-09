@@ -11,24 +11,24 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Iterator;
 
-/**
- * @author Manuel Benz
- * created on 26.02.18
- */
+/** @author Manuel Benz created on 26.02.18 */
 public class EFSMDebuggerTest {
 
-
-  public static void debugThis(EFSMPath<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> path) {
-    EFSM<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> efsm = path.getEfsm();
-    EFSMDebugger<State, ETransition<State, Param, Object>> debugger = EFSMDebugger.startDebugger(efsm, true, state -> state.toString(), t -> t.toString());
+  public static void debugThis(
+      EFSMPath<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> path) {
+    EFSM<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> efsm =
+        path.getEfsm();
+    EFSMDebugger<State, ETransition<State, Param, Object>> debugger =
+        EFSMDebugger.startDebugger(efsm, true, state -> state.toString(), t -> t.toString());
     debugger.highlightPath(path);
     debugger.highlightStates(path.getTgt());
 
     Iterator<Param> iterator = path.getInputsToTrigger();
     while (iterator.hasNext()) {
-      Assertions.assertNotNull(efsm.transition(iterator.next()), "Transition failed in configuration: " + efsm.getConfiguration());
+      Assertions.assertNotNull(
+          efsm.transition(iterator.next()),
+          "Transition failed in configuration: " + efsm.getConfiguration());
     }
-
 
     while (true) {
       try {
@@ -38,7 +38,6 @@ public class EFSMDebuggerTest {
       }
     }
   }
-
 
   @Test
   @Disabled
@@ -73,7 +72,8 @@ public class EFSMDebuggerTest {
   @Disabled
   void largeEFSMComputed() {
     LargeInterComponentExample example = new LargeInterComponentExample();
-    EFSMPath<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> path = new GraphExplosionFeasiblePathAlgorithm<>(example.eefsm).getPath(example.tgt);
+    EFSMPath<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> path =
+        new GraphExplosionFeasiblePathAlgorithm<>(example.eefsm).getPath(example.tgt);
 
     debugThis(path);
   }

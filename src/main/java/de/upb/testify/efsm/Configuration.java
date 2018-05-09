@@ -2,10 +2,7 @@ package de.upb.testify.efsm;
 
 import com.google.common.base.Objects;
 
-/**
- * @author Manuel Benz
- * created on 24.02.18
- */
+/** @author Manuel Benz created on 24.02.18 */
 public class Configuration<State, Context> {
   private final State curState;
   private final Context context;
@@ -37,8 +34,7 @@ public class Configuration<State, Context> {
       return false;
     }
     Configuration that = (Configuration) o;
-    return Objects.equal(curState, that.curState) &&
-        Objects.equal(context, that.context);
+    return Objects.equal(curState, that.curState) && Objects.equal(context, that.context);
   }
 
   @Override

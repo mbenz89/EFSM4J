@@ -1,11 +1,7 @@
 package de.upb.testify.efsm.eefsm;
 
-/**
- * @author Manuel Benz
- * created on 22.02.18
- */
+/** @author Manuel Benz created on 22.02.18 */
 public class ETransitionbuilder<State, Input, ContextObject> {
-
 
   private ContextObject[] removeFromContext = null;
   private ContextObject expetedContext = null;
@@ -13,8 +9,7 @@ public class ETransitionbuilder<State, Input, ContextObject> {
   private boolean elementOf = false;
   private ContextObject[] addToContext = null;
 
-  public ETransitionbuilder() {
-  }
+  public ETransitionbuilder() {}
 
   public ETransitionbuilder<State, Input, ContextObject> fireOnInput(Input expectedInput) {
     this.expectedInput = expectedInput;
@@ -33,18 +28,20 @@ public class ETransitionbuilder<State, Input, ContextObject> {
     return this;
   }
 
-  public ETransitionbuilder<State, Input, ContextObject> addToContext(ContextObject... addToContext) {
+  public ETransitionbuilder<State, Input, ContextObject> addToContext(
+      ContextObject... addToContext) {
     this.addToContext = addToContext;
     return this;
   }
 
-
-  public ETransitionbuilder<State, Input, ContextObject> removeFromContext(ContextObject... removeFromContext) {
+  public ETransitionbuilder<State, Input, ContextObject> removeFromContext(
+      ContextObject... removeFromContext) {
     this.removeFromContext = removeFromContext;
     return this;
   }
 
   public ETransition<State, Input, ContextObject> build() {
-    return new ETransition<>(expectedInput, expetedContext, elementOf, addToContext, removeFromContext);
+    return new ETransition<>(
+        expectedInput, expetedContext, elementOf, addToContext, removeFromContext);
   }
 }

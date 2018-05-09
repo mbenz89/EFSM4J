@@ -4,10 +4,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 
-/**
- * @author Manuel Benz
- * created on 26.02.18
- */
+/** @author Manuel Benz created on 26.02.18 */
 public class Context extends HashSet<Object> implements IEFSMContext<Context> {
 
   public Context(Collection<?> c) {
@@ -22,6 +19,4 @@ public class Context extends HashSet<Object> implements IEFSMContext<Context> {
   public Context snapshot() {
     return new Context(this);
   }
-
-
 }
