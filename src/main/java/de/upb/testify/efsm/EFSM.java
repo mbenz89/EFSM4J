@@ -175,7 +175,7 @@ public class EFSM<State, Parameter, Context extends IEFSMContext<Context>, Trans
   }
 
   public void reset() {
-    forceConfiguration(new Configuration<>(initialState, initialContext.snapshot()));
+    forceConfiguration(new Configuration<>(initialState, initialContext));
   }
 
   protected ListenableGraph<State, Transition> getBaseGraph() {
