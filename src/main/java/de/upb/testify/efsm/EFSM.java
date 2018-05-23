@@ -33,7 +33,7 @@ public class EFSM<State, Parameter, Context extends IEFSMContext<Context>, Trans
     this.curContext = initalContext.snapshot();
     this.initialContext = initalContext.snapshot();
 
-    baseGraph = new DefaultListenableGraph<>(new DirectedMultigraph<State, Transition>((src, tgt) -> {
+    baseGraph = new DefaultListenableGraph<>(new DirectedPseudograph<State, Transition>((src, tgt) -> {
       throw new IllegalStateException("Edges should not be added without a transition object. We cannot infer a specific transition object due to generics.");
     }), true);
 
