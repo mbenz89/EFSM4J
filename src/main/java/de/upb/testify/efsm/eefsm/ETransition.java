@@ -13,11 +13,11 @@ public class ETransition<State, Input, ContextObject>
     extends Transition<State, Input, EEFSMContext<ContextObject>> {
 
   public static final String ℂ = "\u2102";
-  private final Input expectedInput;
-  private final ContextObject expectedContext;
-  private final boolean elementOf;
-  private final ContextObject[] addToContext;
-  private final ContextObject[] removeFromContext;
+  protected final Input expectedInput;
+  protected final ContextObject expectedContext;
+  protected final boolean elementOf;
+  protected final ContextObject[] addToContext;
+  protected final ContextObject[] removeFromContext;
 
   public ETransition(
       Input expectedInput,

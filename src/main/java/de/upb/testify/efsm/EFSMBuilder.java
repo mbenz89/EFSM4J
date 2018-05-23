@@ -71,6 +71,23 @@ public class EFSMBuilder<
     return this;
   }
 
+  public EFSMBuilder<State, Parameter, Context, Transition, EFSM> replaceTransition(
+      Transition old, Transition newT) {
+    Preconditions.checkArgument(
+        base.containsEdge(old), "Transition to replace does not exist in EFSM");
+
+    base.removeEdge(old);
+
+    final State src = old.getSrc();
+    final State tgt = old.getTgt();
+
+    newT.setSrc(src);
+    newT.setTgt(tgt);
+
+    base.addEdge(src, tgt, newT);
+    return this;
+  }
+
   public EFSM build(State initialState, Context initialContext) {
     Preconditions.checkNotNull(initialState);
     Preconditions.checkNotNull(initialContext);
