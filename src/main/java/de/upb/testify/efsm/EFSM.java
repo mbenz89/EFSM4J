@@ -3,7 +3,7 @@ package de.upb.testify.efsm;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jgrapht.ListenableGraph;
 import org.jgrapht.graph.DefaultListenableGraph;
-import org.jgrapht.graph.DirectedMultigraph;
+import org.jgrapht.graph.DirectedPseudograph;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
