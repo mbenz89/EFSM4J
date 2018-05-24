@@ -3,7 +3,7 @@ package de.upb.testify.efsm;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jgrapht.ListenableGraph;
 import org.jgrapht.graph.DefaultListenableGraph;
-import org.jgrapht.graph.DirectedMultigraph;
+import org.jgrapht.graph.DirectedPseudograph;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -33,7 +33,7 @@ public class EFSM<State, Parameter, Context extends IEFSMContext<Context>, Trans
     this.curContext = initalContext.snapshot();
     this.initialContext = initalContext.snapshot();
 
-    baseGraph = new DefaultListenableGraph<>(new DirectedMultigraph<State, Transition>((src, tgt) -> {
+    baseGraph = new DefaultListenableGraph<>(new DirectedPseudograph<State, Transition>((src, tgt) -> {
       throw new IllegalStateException("Edges should not be added without a transition object. We cannot infer a specific transition object due to generics.");
     }), true);
 
