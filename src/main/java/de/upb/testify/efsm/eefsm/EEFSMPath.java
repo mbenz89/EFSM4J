@@ -1,33 +1,29 @@
 package de.upb.testify.efsm.eefsm;
 
-import de.upb.testify.efsm.EFSMPath;
+import java.util.List;
+
 import org.jgrapht.GraphPath;
 
-import java.util.List;
+import de.upb.testify.efsm.EFSMPath;
 
 /** @author Manuel Benz created on 02.03.18 */
 public class EEFSMPath<State, Input, ContextObject>
-    extends EFSMPath<
-        State, Input, EEFSMContext<ContextObject>, ETransition<State, Input, ContextObject>> {
+    extends EFSMPath<State, Input, EEFSMContext<ContextObject>, ETransition<State, Input, ContextObject>> {
 
   protected EEFSMPath(EEFSM<State, Input, ContextObject> eefsm) {
     super(eefsm);
   }
 
-  protected EEFSMPath(
-      EEFSM<State, Input, ContextObject> eefsm, EEFSMPath<State, Input, ContextObject> basePath) {
+  protected EEFSMPath(EEFSM<State, Input, ContextObject> eefsm, EEFSMPath<State, Input, ContextObject> basePath) {
     super(eefsm, basePath);
   }
 
-  protected EEFSMPath(
-      EEFSM<State, Input, ContextObject> eefsm,
+  protected EEFSMPath(EEFSM<State, Input, ContextObject> eefsm,
       GraphPath<State, ETransition<State, Input, ContextObject>> basePath) {
     super(eefsm, basePath);
   }
 
-  protected EEFSMPath(
-      EEFSM<State, Input, ContextObject> eefsm,
-      List<ETransition<State, Input, ContextObject>> basePath) {
+  protected EEFSMPath(EEFSM<State, Input, ContextObject> eefsm, List<ETransition<State, Input, ContextObject>> basePath) {
     super(eefsm, basePath);
   }
 
@@ -50,9 +46,8 @@ public class EEFSMPath<State, Input, ContextObject>
   }
 
   @Override
-  protected void append(
-      EFSMPath<State, Input, EEFSMContext<ContextObject>, ETransition<State, Input, ContextObject>>
-          other) {
+  protected void
+      append(EFSMPath<State, Input, EEFSMContext<ContextObject>, ETransition<State, Input, ContextObject>> other) {
     super.append(other);
   }
 
@@ -62,9 +57,8 @@ public class EEFSMPath<State, Input, ContextObject>
   }
 
   @Override
-  protected void prepend(
-      EFSMPath<State, Input, EEFSMContext<ContextObject>, ETransition<State, Input, ContextObject>>
-          other) {
+  protected void
+      prepend(EFSMPath<State, Input, EEFSMContext<ContextObject>, ETransition<State, Input, ContextObject>> other) {
     super.prepend(other);
   }
 

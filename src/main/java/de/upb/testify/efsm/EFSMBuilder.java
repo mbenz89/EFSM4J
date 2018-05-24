@@ -1,19 +1,17 @@
 package de.upb.testify.efsm;
 
 import com.google.common.base.Preconditions;
-import org.jgrapht.Graph;
-import org.jgrapht.Graphs;
-import org.jgrapht.graph.DirectedPseudograph;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.TypeVariable;
 import java.util.Arrays;
 
+import org.jgrapht.Graph;
+import org.jgrapht.Graphs;
+import org.jgrapht.graph.DirectedPseudograph;
+
 /** @author Manuel Benz created on 20.02.18 */
-public class EFSMBuilder<
-    State,
-    Parameter,
-    Context extends IEFSMContext<Context>,
+public class EFSMBuilder<State, Parameter, Context extends IEFSMContext<Context>,
     Transition extends de.upb.testify.efsm.Transition<State, Parameter, Context>,
     EFSM extends de.upb.testify.efsm.EFSM<State, Parameter, Context, Transition>> {
 
@@ -21,13 +19,9 @@ public class EFSMBuilder<
   private final Graph<State, Transition> base;
 
   public EFSMBuilder(Class<EFSM> efsmTypeClass) {
-    this(
-        efsmTypeClass,
-        new DirectedPseudograph<>(
-            (state, v1) -> {
-              throw new UnsupportedOperationException(
-                  "Should always be created with concrete edge tyoe");
-            }));
+    this(efsmTypeClass, new DirectedPseudograph<>((state, v1) -> {
+      throw new UnsupportedOperationException("Should always be created with concrete edge tyoe");
+    }));
   }
 
   /**
@@ -59,8 +53,7 @@ public class EFSMBuilder<
     return this;
   }
 
-  public EFSMBuilder<State, Parameter, Context, Transition, EFSM> withTransition(
-      State src, State tgt, Transition t) {
+  public EFSMBuilder<State, Parameter, Context, Transition, EFSM> withTransition(State src, State tgt, Transition t) {
     base.addVertex(src);
     base.addVertex(tgt);
 
@@ -71,10 +64,8 @@ public class EFSMBuilder<
     return this;
   }
 
-  public EFSMBuilder<State, Parameter, Context, Transition, EFSM> replaceTransition(
-      Transition old, Transition newT) {
-    Preconditions.checkArgument(
-        base.containsEdge(old), "Transition to replace does not exist in EFSM");
+  public EFSMBuilder<State, Parameter, Context, Transition, EFSM> replaceTransition(Transition old, Transition newT) {
+    Preconditions.checkArgument(base.containsEdge(old), "Transition to replace does not exist in EFSM");
 
     base.removeEdge(old);
 
@@ -113,8 +104,7 @@ public class EFSMBuilder<
 
       final TypeVariable<Class<EFSM>>[] typeParameters = efsmTypeClass.getTypeParameters();
 
-      if (parameterTypes[0].isAssignableFrom(base.getClass())
-          && parameterTypes[1].isAssignableFrom(initialState.getClass())
+      if (parameterTypes[0].isAssignableFrom(base.getClass()) && parameterTypes[1].isAssignableFrom(initialState.getClass())
           && parameterTypes[2].isAssignableFrom(initialContext.getClass())) {
         return (Constructor<EFSM>) constructor;
       }

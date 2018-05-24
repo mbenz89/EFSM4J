@@ -1,16 +1,15 @@
 package de.upb.testify.efsm.eefsm;
 
-import de.upb.testify.efsm.Transition;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+import de.upb.testify.efsm.Transition;
+
 /** @author Manuel Benz created on 22.02.18 */
-public class ETransition<State, Input, ContextObject>
-    extends Transition<State, Input, EEFSMContext<ContextObject>> {
+public class ETransition<State, Input, ContextObject> extends Transition<State, Input, EEFSMContext<ContextObject>> {
 
   public static final String ℂ = "\u2102";
   protected final Input expectedInput;
@@ -19,11 +18,7 @@ public class ETransition<State, Input, ContextObject>
   protected final ContextObject[] addToContext;
   protected final ContextObject[] removeFromContext;
 
-  public ETransition(
-      Input expectedInput,
-      ContextObject expectedContext,
-      boolean elementOf,
-      ContextObject[] addToContext,
+  public ETransition(Input expectedInput, ContextObject expectedContext, boolean elementOf, ContextObject[] addToContext,
       ContextObject[] removeFromContext) {
     this.expectedInput = expectedInput;
     this.expectedContext = expectedContext;
@@ -78,9 +73,7 @@ public class ETransition<State, Input, ContextObject>
   @Override
   protected boolean domainGuard(EEFSMContext<ContextObject> eefsmContext) {
     if (expectedContext == null
-        || (elementOf
-            ? eefsmContext.elementOf(expectedContext)
-            : eefsmContext.notElementOf(expectedContext))) {
+        || (elementOf ? eefsmContext.elementOf(expectedContext) : eefsmContext.notElementOf(expectedContext))) {
       return true;
     }
     return false;
@@ -116,8 +109,7 @@ public class ETransition<State, Input, ContextObject>
   public String toString() {
     StringBuilder builder = new StringBuilder();
 
-    builder.append(
-        Objects.toString(expectedInput, "-") + " \uFF0F " + Objects.toString(expectedContext, "-"));
+    builder.append(Objects.toString(expectedInput, "-") + " \uFF0F " + Objects.toString(expectedContext, "-"));
     if (expectedContext != null) {
       builder.append((elementOf ? " \u2208 " : " \u2209 ") + ℂ);
     }
@@ -129,8 +121,7 @@ public class ETransition<State, Input, ContextObject>
         builder.append("(" + ℂ + " \u222A " + Arrays.toString(addToContext) + ")");
       }
       if (removeFromContext != null) {
-        builder.append(
-            (addToContext == null ? ℂ : "") + " \u2216 " + Arrays.toString(removeFromContext));
+        builder.append((addToContext == null ? ℂ : "") + " \u2216 " + Arrays.toString(removeFromContext));
       }
     } else {
       builder.append("-");

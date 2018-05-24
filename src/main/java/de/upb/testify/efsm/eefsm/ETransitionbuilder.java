@@ -47,24 +47,18 @@ public class ETransitionbuilder<State, Input, ContextObject> {
     return this;
   }
 
-  public ETransitionbuilder<State, Input, ContextObject> addToContext(
-      ContextObject... addToContext) {
+  public ETransitionbuilder<State, Input, ContextObject> addToContext(ContextObject... addToContext) {
     this.addToContext.addAll(Arrays.asList(addToContext));
     return this;
   }
 
-  public ETransitionbuilder<State, Input, ContextObject> removeFromContext(
-      ContextObject... removeFromContext) {
+  public ETransitionbuilder<State, Input, ContextObject> removeFromContext(ContextObject... removeFromContext) {
     this.removeFromContext.addAll(Arrays.asList(removeFromContext));
     return this;
   }
 
   public ETransition<State, Input, ContextObject> build() {
-    return new ETransition<>(
-        expectedInput,
-        expetedContext,
-        elementOf,
-        (ContextObject[]) addToContext.toArray(),
+    return new ETransition<>(expectedInput, expetedContext, elementOf, (ContextObject[]) addToContext.toArray(),
         (ContextObject[]) removeFromContext.toArray());
   }
 }

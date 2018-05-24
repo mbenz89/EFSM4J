@@ -1,17 +1,18 @@
 package de.upb.testify.efsm.eefsm;
 
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.Set;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import de.upb.testify.efsm.Configuration;
 import de.upb.testify.efsm.EFSMDotExporter;
 import de.upb.testify.efsm.Param;
 import de.upb.testify.efsm.State;
 import de.upb.testify.efsm.Super;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.Set;
 
 /** @author Manuel Benz created on 22.02.18 */
 class EEFSMTest {
@@ -39,16 +40,13 @@ class EEFSMTest {
   void transition() {
     EEFSM<State, Param, Object> eefsm = example.eefsm;
     eefsm.transition(example.HcEntry);
-    Assertions.assertEquals(
-        new Configuration(example.Hc, new EEFSMContext<>()), eefsm.getConfiguration());
+    Assertions.assertEquals(new Configuration(example.Hc, new EEFSMContext<>()), eefsm.getConfiguration());
   }
 
   @Test
   void transitionAndDrop() {
     EEFSM<State, Param, Object> eefsm = example.eefsm;
-    Assertions.assertEquals(
-        new Configuration(example.Hc, new EEFSMContext<>()),
-        eefsm.transitionAndDrop(example.HcEntry));
+    Assertions.assertEquals(new Configuration(example.Hc, new EEFSMContext<>()), eefsm.transitionAndDrop(example.HcEntry));
   }
 
   @Test
@@ -71,9 +69,7 @@ class EEFSMTest {
     eefsm.transition(example.HcEntry);
     eefsm.transition(example.oSta1Entry);
 
-    Assertions.assertEquals(
-        new Configuration<>(example.oSta1, new EEFSMContext<>(example.Hc)),
-        eefsm.getConfiguration());
+    Assertions.assertEquals(new Configuration<>(example.oSta1, new EEFSMContext<>(example.Hc)), eefsm.getConfiguration());
   }
 
   @Test
@@ -83,13 +79,11 @@ class EEFSMTest {
     eefsm.transition(example.oSta1Entry);
     eefsm.transition(example.oR1Entry);
 
-    Assertions.assertEquals(
-        new Configuration<>(example.oR1, new EEFSMContext<>(example.Hc)), eefsm.getConfiguration());
+    Assertions.assertEquals(new Configuration<>(example.oR1, new EEFSMContext<>(example.Hc)), eefsm.getConfiguration());
     Assertions.assertTrue(eefsm.canTransition(example.UIClick));
     Assertions.assertFalse(eefsm.canTransition());
 
-    Assertions.assertEquals(
-        new Configuration<>(example.UI, new EEFSMContext<>(example.Hc)),
+    Assertions.assertEquals(new Configuration<>(example.UI, new EEFSMContext<>(example.Hc)),
         eefsm.transitionAndDrop(example.UIClick));
   }
 
@@ -116,8 +110,7 @@ class EEFSMTest {
     Assertions.assertTrue(context.notElementOf(example.oSto1));
     Assertions.assertTrue(eefsm.canTransition(example.oR1Entry));
 
-    Assertions.assertEquals(
-        new Configuration<>(example.oR1, context), eefsm.transitionAndDrop(example.oR1Entry));
+    Assertions.assertEquals(new Configuration<>(example.oR1, context), eefsm.transitionAndDrop(example.oR1Entry));
   }
 
   @Test
@@ -135,8 +128,7 @@ class EEFSMTest {
     EEFSMContext<State> context = new EEFSMContext<>(example.Hc);
     Assertions.assertEquals(new Configuration<>(example.oR2, context), eefsm.getConfiguration());
     context.union(example.oR2);
-    Assertions.assertEquals(
-        new Configuration<>(example.oSto1, context), eefsm.transitionAndDrop(example.oSto1Entry));
+    Assertions.assertEquals(new Configuration<>(example.oSto1, context), eefsm.transitionAndDrop(example.oSto1Entry));
     Assertions.assertTrue(eefsm.canTransition(example.oD1Entry));
     Assertions.assertTrue(eefsm.canTransition());
 
@@ -173,10 +165,8 @@ class EEFSMTest {
     Assertions.assertNotNull(eefsm.transition(example.example2.oSta2Entry));
     Assertions.assertNotNull(eefsm.transition(example.example2.oR2Entry));
 
-    EEFSMContext<Super> context =
-        new EEFSMContext<>(example.example1.Le, example.example1.Hc, example.example2.Hc);
-    Assertions.assertEquals(
-        new Configuration<>(example.example2.oR2, context), eefsm.getConfiguration());
+    EEFSMContext<Super> context = new EEFSMContext<>(example.example1.Le, example.example1.Hc, example.example2.Hc);
+    Assertions.assertEquals(new Configuration<>(example.example2.oR2, context), eefsm.getConfiguration());
   }
 
   @Test
@@ -212,10 +202,8 @@ class EEFSMTest {
     Assertions.assertNotNull(eefsm.transition(example.example2.HfEntry));
     Assertions.assertNotNull(eefsm.transition(example.e3Entry));
 
-    EEFSMContext<Super> context =
-        new EEFSMContext<>(
-            example.example1.Le, example.example2.Le, example.example1.Hc, example.example2.Hc);
-    Assertions.assertEquals(
-        new Configuration<>(example.example3.oC1, context), eefsm.getConfiguration());
+    EEFSMContext<Super> context
+        = new EEFSMContext<>(example.example1.Le, example.example2.Le, example.example1.Hc, example.example2.Hc);
+    Assertions.assertEquals(new Configuration<>(example.example3.oC1, context), eefsm.getConfiguration());
   }
 }

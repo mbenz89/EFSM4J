@@ -1,12 +1,12 @@
 package de.upb.testify.efsm.eefsm;
 
-import de.upb.testify.efsm.IEFSMContext;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.stream.Collectors;
+
+import de.upb.testify.efsm.IEFSMContext;
 
 /** @author Manuel Benz created on 22.02.18 */
 public class EEFSMContext<ContextObject> implements IEFSMContext<EEFSMContext<ContextObject>> {
@@ -77,9 +77,7 @@ public class EEFSMContext<ContextObject> implements IEFSMContext<EEFSMContext<Co
 
   @Override
   public String toString() {
-    return "{"
-        + internalSet.stream().map(ContextObject::toString).collect(Collectors.joining(", "))
-        + "}";
+    return "{" + internalSet.stream().map(ContextObject::toString).collect(Collectors.joining(", ")) + "}";
   }
 
   @Override

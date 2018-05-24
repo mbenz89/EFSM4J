@@ -8,8 +8,7 @@ import java.util.Set;
  *
  * @author Manuel Benz created on 20.02.18
  */
-public class EpsilonTransition<State, Parameter, Context>
-    extends SimpleTransition<State, Parameter, Context> {
+public class EpsilonTransition<State, Parameter, Context> extends SimpleTransition<State, Parameter, Context> {
   @Override
   protected Parameter getExpectedInput() {
     return null;
