@@ -3,11 +3,7 @@ package de.upb.testify.efsm;
 import java.util.Collections;
 import java.util.Set;
 
-
-/**
- * @author Manuel Benz
- * created on 20.02.18
- */
+/** @author Manuel Benz created on 20.02.18 */
 public abstract class Transition<State, Parameter, Context> {
 
   private State src;
@@ -18,7 +14,8 @@ public abstract class Transition<State, Parameter, Context> {
   }
 
   /**
-   * Assumes {@link Transition#isFeasible(Parameter, Context)} was called and returned true to work properly
+   * Assumes {@link Transition#isFeasible(Parameter, Context)} was called and returned true to work
+   * properly
    *
    * @param input
    * @param context
@@ -35,7 +32,8 @@ public abstract class Transition<State, Parameter, Context> {
   }
 
   /**
-   * Tries to take the transition by calling {@link Transition#isFeasible(Parameter, Context)} itself and returning null if the transition cannot be taken.
+   * Tries to take the transition by calling {@link Transition#isFeasible(Parameter, Context)}
+   * itself and returning null if the transition cannot be taken.
    *
    * @param input
    * @param context
@@ -67,6 +65,7 @@ public abstract class Transition<State, Parameter, Context> {
 
   /**
    * The expected input to trigger the transition or null if the empty input is expected.
+   *
    * @return
    */
   protected abstract Parameter getExpectedInput();
@@ -82,7 +81,6 @@ public abstract class Transition<State, Parameter, Context> {
   protected abstract boolean domainGuard(Context context);
 
   protected abstract Set<Parameter> operation(Parameter input, Context context);
-
 
   public abstract boolean hasOperation();
 

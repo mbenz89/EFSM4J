@@ -6,14 +6,12 @@ import de.upb.testify.efsm.State;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-/**
- * @author Manuel Benz
- * created on 26.03.18
- */
+/** @author Manuel Benz created on 26.03.18 */
 class GraphExplosionFeasiblePathAlgorithmTest extends AbstractEFSMFPAlgoTest {
 
   @Override
-  protected IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> getAlgo(EEFSM<State, Param, Object> eefsm) {
+  protected IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>>
+      getAlgo(EEFSM<State, Param, Object> eefsm) {
     return new GraphExplosionFeasiblePathAlgorithm<>(eefsm);
   }
 
@@ -22,10 +20,10 @@ class GraphExplosionFeasiblePathAlgorithmTest extends AbstractEFSMFPAlgoTest {
   void doItOften() {
     LargeInterComponentExample example = new LargeInterComponentExample();
     EEFSM<State, Param, Object> e = example.eefsm;
-    IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp = getAlgo(e);
+    IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp =
+        getAlgo(e);
     for (int i = 0; i < 300; i++) {
       sfp.getPath(example.example6.oR2);
     }
   }
-
 }

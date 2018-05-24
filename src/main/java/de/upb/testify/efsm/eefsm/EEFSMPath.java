@@ -5,28 +5,31 @@ import org.jgrapht.GraphPath;
 
 import java.util.List;
 
-/**
- * @author Manuel Benz
- * created on 02.03.18
- */
-public class EEFSMPath<State, Input, ContextObject> extends EFSMPath<State, Input, EEFSMContext<ContextObject>, ETransition<State, Input, ContextObject>> {
+/** @author Manuel Benz created on 02.03.18 */
+public class EEFSMPath<State, Input, ContextObject>
+    extends EFSMPath<
+        State, Input, EEFSMContext<ContextObject>, ETransition<State, Input, ContextObject>> {
 
   protected EEFSMPath(EEFSM<State, Input, ContextObject> eefsm) {
     super(eefsm);
   }
 
-  protected EEFSMPath(EEFSM<State, Input, ContextObject> eefsm, EEFSMPath<State, Input, ContextObject> basePath) {
+  protected EEFSMPath(
+      EEFSM<State, Input, ContextObject> eefsm, EEFSMPath<State, Input, ContextObject> basePath) {
     super(eefsm, basePath);
   }
 
-  protected EEFSMPath(EEFSM<State, Input, ContextObject> eefsm, GraphPath<State, ETransition<State, Input, ContextObject>> basePath) {
+  protected EEFSMPath(
+      EEFSM<State, Input, ContextObject> eefsm,
+      GraphPath<State, ETransition<State, Input, ContextObject>> basePath) {
     super(eefsm, basePath);
   }
 
-  protected EEFSMPath(EEFSM<State, Input, ContextObject> eefsm, List<ETransition<State, Input, ContextObject>> basePath) {
+  protected EEFSMPath(
+      EEFSM<State, Input, ContextObject> eefsm,
+      List<ETransition<State, Input, ContextObject>> basePath) {
     super(eefsm, basePath);
   }
-
 
   @Override
   public boolean isFeasible(EEFSMContext<ContextObject> context) {
@@ -47,7 +50,9 @@ public class EEFSMPath<State, Input, ContextObject> extends EFSMPath<State, Inpu
   }
 
   @Override
-  protected void append(EFSMPath<State, Input, EEFSMContext<ContextObject>, ETransition<State, Input, ContextObject>> other) {
+  protected void append(
+      EFSMPath<State, Input, EEFSMContext<ContextObject>, ETransition<State, Input, ContextObject>>
+          other) {
     super.append(other);
   }
 
@@ -57,7 +62,9 @@ public class EEFSMPath<State, Input, ContextObject> extends EFSMPath<State, Inpu
   }
 
   @Override
-  protected void prepend(EFSMPath<State, Input, EEFSMContext<ContextObject>, ETransition<State, Input, ContextObject>> other) {
+  protected void prepend(
+      EFSMPath<State, Input, EEFSMContext<ContextObject>, ETransition<State, Input, ContextObject>>
+          other) {
     super.prepend(other);
   }
 

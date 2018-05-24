@@ -12,7 +12,7 @@ import de.upb.testify.efsm.JGraphBasedFPALgo;
 import org.jgrapht.GraphPath;
 import org.jgrapht.alg.interfaces.ShortestPathAlgorithm;
 import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
-import org.jgrapht.graph.DirectedMultigraph;
+import org.jgrapht.graph.DirectedPseudograph;
 import org.jgrapht.io.DOTExporter;
 import org.jgrapht.io.ExportException;
 import org.jgrapht.io.IntegerComponentNameProvider;
@@ -31,34 +31,42 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Computes feasible paths based on an exploded graph where ich node is a feasible configuration of the original EEFSM.
- * Uses Dijkstra's shortest path algorithm to compute the set of shortest paths for the exploded EEFSM.
- * <p>
- * Note: This algorithm is complete.
+ * Computes feasible paths based on an exploded graph where ich node is a feasible configuration of
+ * the original EEFSM. Uses Dijkstra's shortest path algorithm to compute the set of shortest paths
+ * for the exploded EEFSM.
  *
- * @author Manuel Benz
- * created on 26.03.18
+ * <p>Note: This algorithm is complete.
+ *
+ * @author Manuel Benz created on 26.03.18
  */
-public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context> extends JGraphBasedFPALgo<State, Parameter, EEFSMContext<Context>, ETransition<State, Parameter, Context>> {
+public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context>
+    extends JGraphBasedFPALgo<
+        State, Parameter, EEFSMContext<Context>, ETransition<State, Parameter, Context>> {
 
-  private static final Logger logger = LoggerFactory.getLogger(GraphExplosionFeasiblePathAlgorithm.class);
+  private static final Logger logger =
+      LoggerFactory.getLogger(GraphExplosionFeasiblePathAlgorithm.class);
 
-  /**
-   * Maps a state of the EEFSM to all possible configurations in the exploded EEFSM
-   */
+  /** Maps a state of the EEFSM to all possible configurations in the exploded EEFSM */
   private final Multimap<State, Configuration<State, EEFSMContext<Context>>> stateToConfigs;
-  private final DirectedConnectivityInspector<Configuration<State, EEFSMContext<Context>>, TransitionWrapper> connectivityInspector;
-  private final ShortestPathAlgorithm<Configuration<State, EEFSMContext<Context>>, TransitionWrapper> shortestPath;
-  /**
-   * Exploded graph where ich node is a configuration of the original eefsm.
-   */
-  private DirectedMultigraph<Configuration<State, EEFSMContext<Context>>, TransitionWrapper> explodedEEFSM = new DirectedMultigraph<>((s, t) -> {
-    throw new UnsupportedOperationException();
-  });
+
+  private final DirectedConnectivityInspector<
+          Configuration<State, EEFSMContext<Context>>, TransitionWrapper>
+      connectivityInspector;
+  private final ShortestPathAlgorithm<
+          Configuration<State, EEFSMContext<Context>>, TransitionWrapper>
+      shortestPath;
+  /** Exploded graph where ich node is a configuration of the original eefsm. */
+  private DirectedPseudograph<Configuration<State, EEFSMContext<Context>>, TransitionWrapper>
+      explodedEEFSM =
+          new DirectedPseudograph<>(
+              (s, t) -> {
+                throw new UnsupportedOperationException();
+              });
 
   public GraphExplosionFeasiblePathAlgorithm(EEFSM<State, Parameter, Context> eefsm) {
     super(eefsm);
-    stateToConfigs = MultimapBuilder.hashKeys(baseGraph.vertexSet().size()).arrayListValues().build();
+    stateToConfigs =
+        MultimapBuilder.hashKeys(baseGraph.vertexSet().size()).arrayListValues().build();
     Stopwatch sw = Stopwatch.createStarted();
     explode(eefsm);
     logger.trace("Exploding EEFSM took {}", sw);
@@ -73,8 +81,10 @@ public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context> exte
    *
    * @return The shortest feasible path from source to target.
    */
-  public EFSMPath<State, Parameter, EEFSMContext<Context>, ETransition<State, Parameter, Context>> getPath(Configuration<State, EEFSMContext<Context>> config, State tgt) {
-    List<EFSMPath<State, Parameter, EEFSMContext<Context>, ETransition<State, Parameter, Context>>> paths = getPaths(config, tgt);
+  public EFSMPath<State, Parameter, EEFSMContext<Context>, ETransition<State, Parameter, Context>>
+      getPath(Configuration<State, EEFSMContext<Context>> config, State tgt) {
+    List<EFSMPath<State, Parameter, EEFSMContext<Context>, ETransition<State, Parameter, Context>>>
+        paths = getPaths(config, tgt);
     return paths == null ? null : Iterables.getFirst(paths, null);
   }
 
@@ -84,39 +94,53 @@ public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context> exte
    * @return The shortest feasible path from current to target.
    */
   @Override
-  public EFSMPath<State, Parameter, EEFSMContext<Context>, ETransition<State, Parameter, Context>> getPath(State tgt) {
+  public EFSMPath<State, Parameter, EEFSMContext<Context>, ETransition<State, Parameter, Context>>
+      getPath(State tgt) {
     return super.getPath(tgt);
   }
 
   /**
    * {@inheritDoc}
    *
-   * @return A ascending sorted list of shortest feasible path through different configurations, i.e., every returned path is the shortest feasible path for its terminal configuration but leads to a different terminal configuration.
+   * @return A ascending sorted list of shortest feasible path through different configurations,
+   *     i.e., every returned path is the shortest feasible path for its terminal configuration but
+   *     leads to a different terminal configuration.
    */
   @Override
-  public List<EFSMPath<State, Parameter, EEFSMContext<Context>, ETransition<State, Parameter, Context>>> getPaths(State tgt) {
+  public List<
+          EFSMPath<State, Parameter, EEFSMContext<Context>, ETransition<State, Parameter, Context>>>
+      getPaths(State tgt) {
     return super.getPaths(tgt);
   }
 
   /**
    * {@inheritDoc}
    *
-   * @return A ascending sorted list of shortest feasible path through different configurations, i.e., every returned path is the shortest feasible path for its terminal configuration but leads to a different terminal configuration.
+   * @return A ascending sorted list of shortest feasible path through different configurations,
+   *     i.e., every returned path is the shortest feasible path for its terminal configuration but
+   *     leads to a different terminal configuration.
    */
   @Override
-  public List<EFSMPath<State, Parameter, EEFSMContext<Context>, ETransition<State, Parameter, Context>>> getPaths(Configuration<State, EEFSMContext<Context>> config, State tgt) {
-    // the given configuration might not exist in the exploded graph which means there is not even a single path to it.
+  public List<
+          EFSMPath<State, Parameter, EEFSMContext<Context>, ETransition<State, Parameter, Context>>>
+      getPaths(Configuration<State, EEFSMContext<Context>> config, State tgt) {
+    // the given configuration might not exist in the exploded graph which means there is not even a
+    // single path to it.
     if (!explodedEEFSM.containsVertex(config)) {
       return null;
     }
 
     Collection<Configuration<State, EEFSMContext<Context>>> tgtConfigs = stateToConfigs.get(tgt);
-    List<EFSMPath<State, Parameter, EEFSMContext<Context>, ETransition<State, Parameter, Context>>> res = new ArrayList<>(tgtConfigs.size());
+    List<EFSMPath<State, Parameter, EEFSMContext<Context>, ETransition<State, Parameter, Context>>>
+        res = new ArrayList<>(tgtConfigs.size());
 
-    ShortestPathAlgorithm.SingleSourcePaths<Configuration<State, EEFSMContext<Context>>, TransitionWrapper> paths = shortestPath.getPaths(config);
+    ShortestPathAlgorithm.SingleSourcePaths<
+            Configuration<State, EEFSMContext<Context>>, TransitionWrapper>
+        paths = shortestPath.getPaths(config);
 
     for (Configuration<State, EEFSMContext<Context>> tgtConfig : tgtConfigs) {
-      GraphPath<Configuration<State, EEFSMContext<Context>>, TransitionWrapper> path = paths.getPath(tgtConfig);
+      GraphPath<Configuration<State, EEFSMContext<Context>>, TransitionWrapper> path =
+          paths.getPath(tgtConfig);
       if (path != null) {
         res.add(toEFSMPath(path));
       }
@@ -130,8 +154,10 @@ public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context> exte
     return res;
   }
 
-  private EFSMPath<State, Parameter, EEFSMContext<Context>, ETransition<State, Parameter, Context>> toEFSMPath(GraphPath<Configuration<State, EEFSMContext<Context>>, TransitionWrapper> path) {
-    List<ETransition<State, Parameter, Context>> edges = path.getEdgeList().stream().map(e -> e.t).collect(Collectors.toList());
+  private EFSMPath<State, Parameter, EEFSMContext<Context>, ETransition<State, Parameter, Context>>
+      toEFSMPath(GraphPath<Configuration<State, EEFSMContext<Context>>, TransitionWrapper> path) {
+    List<ETransition<State, Parameter, Context>> edges =
+        path.getEdgeList().stream().map(e -> e.t).collect(Collectors.toList());
     return new EEFSMPath((EEFSM) efsm, edges);
   }
 
@@ -150,13 +176,20 @@ public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context> exte
   }
 
   private void explode(EEFSM<State, Parameter, Context> eefsm) {
-    Set<State> rootNodes = baseGraph.vertexSet().stream().filter(v -> baseGraph.inDegreeOf(v) == 0).collect(Collectors.toSet());
+    Set<State> rootNodes =
+        baseGraph
+            .vertexSet()
+            .stream()
+            .filter(v -> baseGraph.inDegreeOf(v) == 0)
+            .collect(Collectors.toSet());
 
     Configuration<State, EEFSMContext<Context>> initialConfig = eefsm.getInitialConfiguration();
-    Sets.SetView<State> rootNodesWithInitialState = Sets.union(Collections.singleton(initialConfig.getState()), rootNodes);
+    Sets.SetView<State> rootNodesWithInitialState =
+        Sets.union(Collections.singleton(initialConfig.getState()), rootNodes);
 
     for (State root : rootNodesWithInitialState) {
-      Configuration<State, EEFSMContext<Context>> newConfig = new Configuration<>(root, initialConfig.getContext());
+      Configuration<State, EEFSMContext<Context>> newConfig =
+          new Configuration<>(root, initialConfig.getContext());
       explodedEEFSM.addVertex(newConfig);
       dfsExplode(newConfig);
     }
@@ -172,10 +205,12 @@ public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context> exte
       if (t.domainGuard(curContext)) {
         EEFSMContext<Context> contextSnapshot = curContext.snapshot();
         t.operation(t.getExpectedInput(), contextSnapshot);
-        Configuration<State, EEFSMContext<Context>> newConfig = new Configuration<>(t.getTgt(), contextSnapshot);
+        Configuration<State, EEFSMContext<Context>> newConfig =
+            new Configuration<>(t.getTgt(), contextSnapshot);
         boolean newVertex = explodedEEFSM.addVertex(newConfig);
         explodedEEFSM.addEdge(curConfig, newConfig, new TransitionWrapper(t));
-        // if the graph already contains this node, we just closed a loop and can stop recursion here
+        // if the graph already contains this node, we just closed a loop and can stop recursion
+        // here
         if (newVertex) {
           dfsExplode(newConfig);
         }
@@ -186,15 +221,14 @@ public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context> exte
   public void explodedGraphToDot(Path outFile) {
     try {
       new DOTExporter(
-          new IntegerComponentNameProvider(),
-          new StringComponentNameProvider<>(),
-          new StringComponentNameProvider<>()
-      ).exportGraph(explodedEEFSM, outFile.toFile());
+              new IntegerComponentNameProvider(),
+              new StringComponentNameProvider<>(),
+              new StringComponentNameProvider<>())
+          .exportGraph(explodedEEFSM, outFile.toFile());
     } catch (ExportException e) {
       throw new RuntimeException(e);
     }
   }
-
 
   private final class TransitionWrapper {
     private final ETransition<State, Parameter, Context> t;

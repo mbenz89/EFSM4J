@@ -8,24 +8,28 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-/**
- * @author Manuel Benz
- * created on 22.02.18
- */
-public class ETransition<State, Input, ContextObject> extends Transition<State, Input, EEFSMContext<ContextObject>> {
+/** @author Manuel Benz created on 22.02.18 */
+public class ETransition<State, Input, ContextObject>
+    extends Transition<State, Input, EEFSMContext<ContextObject>> {
 
   public static final String ℂ = "\u2102";
-  private final Input expectedInput;
-  private final ContextObject expectedContext;
-  private final boolean elementOf;
-  private final ContextObject[] addToContext;
-  private final ContextObject[] removeFromContext;
+  protected final Input expectedInput;
+  protected final ContextObject expectedContext;
+  protected final boolean elementOf;
+  protected final ContextObject[] addToContext;
+  protected final ContextObject[] removeFromContext;
 
-  public ETransition(Input expectedInput, ContextObject expectedContext, boolean elementOf, ContextObject[] addToContext, ContextObject[] removeFromContext) {
+  public ETransition(
+      Input expectedInput,
+      ContextObject expectedContext,
+      boolean elementOf,
+      ContextObject[] addToContext,
+      ContextObject[] removeFromContext) {
     this.expectedInput = expectedInput;
     this.expectedContext = expectedContext;
     this.elementOf = elementOf;
-    // ensure that these arrays are not empty, so that later checks against null ensure there are not operations
+    // ensure that these arrays are not empty, so that later checks against null ensure there are
+    // not operations
     this.addToContext = sanitize(addToContext);
     this.removeFromContext = sanitize(removeFromContext);
   }
@@ -73,7 +77,10 @@ public class ETransition<State, Input, ContextObject> extends Transition<State, 
 
   @Override
   protected boolean domainGuard(EEFSMContext<ContextObject> eefsmContext) {
-    if (expectedContext == null || (elementOf ? eefsmContext.elementOf(expectedContext) : eefsmContext.notElementOf(expectedContext))) {
+    if (expectedContext == null
+        || (elementOf
+            ? eefsmContext.elementOf(expectedContext)
+            : eefsmContext.notElementOf(expectedContext))) {
       return true;
     }
     return false;
@@ -105,12 +112,12 @@ public class ETransition<State, Input, ContextObject> extends Transition<State, 
     return expectedInput != null;
   }
 
-
   @Override
   public String toString() {
     StringBuilder builder = new StringBuilder();
 
-    builder.append(Objects.toString(expectedInput, "-") + " \uFF0F " + Objects.toString(expectedContext, "-"));
+    builder.append(
+        Objects.toString(expectedInput, "-") + " \uFF0F " + Objects.toString(expectedContext, "-"));
     if (expectedContext != null) {
       builder.append((elementOf ? " \u2208 " : " \u2209 ") + ℂ);
     }
@@ -122,7 +129,8 @@ public class ETransition<State, Input, ContextObject> extends Transition<State, 
         builder.append("(" + ℂ + " \u222A " + Arrays.toString(addToContext) + ")");
       }
       if (removeFromContext != null) {
-        builder.append((addToContext == null ? ℂ : "") + " \u2216 " + Arrays.toString(removeFromContext));
+        builder.append(
+            (addToContext == null ? ℂ : "") + " \u2216 " + Arrays.toString(removeFromContext));
       }
     } else {
       builder.append("-");

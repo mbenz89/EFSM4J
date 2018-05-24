@@ -6,10 +6,10 @@ import java.util.Set;
 /**
  * A {@see SimpleTransition} that has no operation und thus neither output nor context changes
  *
- * @author Manuel Benz
- * created on 20.02.18
+ * @author Manuel Benz created on 20.02.18
  */
-public class EpsilonTransition<State, Parameter, Context> extends SimpleTransition<State, Parameter, Context> {
+public class EpsilonTransition<State, Parameter, Context>
+    extends SimpleTransition<State, Parameter, Context> {
   @Override
   protected Parameter getExpectedInput() {
     return null;
@@ -24,5 +24,4 @@ public class EpsilonTransition<State, Parameter, Context> extends SimpleTransiti
   public boolean hasOperation() {
     return false;
   }
-
 }

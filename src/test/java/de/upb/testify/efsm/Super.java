@@ -1,9 +1,6 @@
 package de.upb.testify.efsm;
 
-/**
- * @author Manuel Benz
- * created on 20.02.18
- */
+/** @author Manuel Benz created on 20.02.18 */
 public abstract class Super {
   private final String id;
 
