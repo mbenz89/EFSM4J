@@ -40,20 +40,20 @@ public class EFSMBuilder<State, Parameter, Context extends IEFSMContext<Context>
   }
 
   public EFSMBuilder<State, Parameter, Context, Transition, EFSM> withEFSM(EFSM s) {
-    if (s != null) {
-      Graphs.addGraph(base, s.getBaseGraph());
-    }
+    Preconditions.checkNotNull(s);
+    Graphs.addGraph(base, s.getBaseGraph());
     return this;
   }
 
   public EFSMBuilder<State, Parameter, Context, Transition, EFSM> withState(State... s) {
-    if (s != null) {
-      Graphs.addAllVertices(base, Arrays.asList(s));
-    }
+    Preconditions.checkNotNull(s);
+    Graphs.addAllVertices(base, Arrays.asList(s));
     return this;
   }
 
   public EFSMBuilder<State, Parameter, Context, Transition, EFSM> withTransition(State src, State tgt, Transition t) {
+    Preconditions.checkArgument(!base.containsEdge(t), "Transition already in EFSM");
+
     base.addVertex(src);
     base.addVertex(tgt);
 
