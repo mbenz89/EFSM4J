@@ -26,8 +26,9 @@ public class ETransitionbuilder<State, Input, ContextObject> {
     this.expectedInput = base.expectedInput;
     this.expetedContext = base.expectedContext;
     this.elementOf = base.elementOf;
-    this.addToContext = new ArrayList(Arrays.asList(base.addToContext));
-    this.removeFromContext = new ArrayList(Arrays.asList(base.removeFromContext));
+    this.addToContext = base.addToContext == null ? new ArrayList<>() : new ArrayList(Arrays.asList(base.addToContext));
+    this.removeFromContext
+        = base.removeFromContext == null ? new ArrayList<>() : new ArrayList(Arrays.asList(base.removeFromContext));
   }
 
   public ETransitionbuilder<State, Input, ContextObject> fireOnInput(Input expectedInput) {
