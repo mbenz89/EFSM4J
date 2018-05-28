@@ -27,12 +27,22 @@ public class EEFSMContext<ContextObject> implements IEFSMContext<EEFSMContext<Co
     return new EEFSMContext<>();
   }
 
-  public boolean elementOf(ContextObject o) {
-    return internalSet.contains(o);
+  public boolean elementOf(ContextObject... contextVars) {
+    for (ContextObject contextObject : contextVars) {
+      if (!internalSet.contains(contextObject)) {
+        return false;
+      }
+    }
+    return true;
   }
 
-  public boolean notElementOf(ContextObject o) {
-    return !internalSet.contains(o);
+  public boolean notElementOf(ContextObject... contextVars) {
+    for (ContextObject contextObject : contextVars) {
+      if (internalSet.contains(contextObject)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   public void union(ContextObject o) {

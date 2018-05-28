@@ -13,18 +13,18 @@ public class ETransition<State, Input, ContextObject> extends Transition<State, 
 
   public static final String ℂ = "\u2102";
   protected final Input expectedInput;
-  protected final ContextObject expectedContext;
-  protected final boolean elementOf;
   protected final ContextObject[] addToContext;
   protected final ContextObject[] removeFromContext;
+  protected final ContextObject[] inContext;
+  protected final ContextObject[] notInContext;
 
-  public ETransition(Input expectedInput, ContextObject expectedContext, boolean elementOf, ContextObject[] addToContext,
-      ContextObject[] removeFromContext) {
+  protected ETransition(Input expectedInput, ContextObject[] inContext, ContextObject[] notInContext,
+      ContextObject[] addToContext, ContextObject[] removeFromContext) {
     this.expectedInput = expectedInput;
-    this.expectedContext = expectedContext;
-    this.elementOf = elementOf;
     // ensure that these arrays are not empty, so that later checks against null ensure there are
     // not operations
+    this.inContext = sanitize(inContext);
+    this.notInContext = sanitize(notInContext);
     this.addToContext = sanitize(addToContext);
     this.removeFromContext = sanitize(removeFromContext);
   }
@@ -53,12 +53,12 @@ public class ETransition<State, Input, ContextObject> extends Transition<State, 
     return Optional.ofNullable(removeFromContext);
   }
 
-  protected ContextObject getExpectedContext() {
-    return expectedContext;
+  protected Optional<ContextObject[]> getInContext() {
+    return Optional.ofNullable(inContext);
   }
 
-  protected boolean isElementOfGuard() {
-    return elementOf;
+  protected Optional<ContextObject[]> getNotInContext() {
+    return Optional.ofNullable(notInContext);
   }
 
   @Override
@@ -72,11 +72,12 @@ public class ETransition<State, Input, ContextObject> extends Transition<State, 
 
   @Override
   protected boolean domainGuard(EEFSMContext<ContextObject> eefsmContext) {
-    if (expectedContext == null
-        || (elementOf ? eefsmContext.elementOf(expectedContext) : eefsmContext.notElementOf(expectedContext))) {
-      return true;
+    if ((inContext != null && !eefsmContext.elementOf(inContext))
+        || (notInContext != null && !eefsmContext.notElementOf(notInContext))) {
+      return false;
     }
-    return false;
+
+    return true;
   }
 
   @Override
@@ -97,7 +98,7 @@ public class ETransition<State, Input, ContextObject> extends Transition<State, 
 
   @Override
   public boolean hasDomainGuard() {
-    return expectedContext != null;
+    return inContext != null || notInContext != null;
   }
 
   @Override
@@ -109,9 +110,17 @@ public class ETransition<State, Input, ContextObject> extends Transition<State, 
   public String toString() {
     StringBuilder builder = new StringBuilder();
 
-    builder.append(Objects.toString(expectedInput, "-") + " \uFF0F " + Objects.toString(expectedContext, "-"));
-    if (expectedContext != null) {
-      builder.append((elementOf ? " \u2208 " : " \u2209 ") + ℂ);
+    builder.append(Objects.toString(expectedInput, "-") + " \uFF0F ");
+    if (inContext != null) {
+      builder.append(Objects.toString(inContext) + " \u2208 " + ℂ);
+    }
+    if (notInContext != null) {
+      builder.append(" " + Objects.toString(notInContext) + " \u2209 " + ℂ);
+    }
+    //
+
+    if (inContext == null && notInContext == null) {
+      builder.append("-");
     }
     builder.append("\n");
     builder.append(String.join("", Collections.nCopies(builder.length() + 5, "-")) + "\n");

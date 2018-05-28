@@ -2,19 +2,22 @@ package de.upb.testify.efsm.eefsm;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /** @author Manuel Benz created on 22.02.18 */
 public class ETransitionbuilder<State, Input, ContextObject> {
 
   private Input expectedInput = null;
-  private ContextObject expetedContext = null;
-  private boolean elementOf = false;
-  private ArrayList<ContextObject> addToContext = null;
-  private ArrayList<ContextObject> removeFromContext = null;
+  private List<ContextObject> addToContext = null;
+  private List<ContextObject> removeFromContext = null;
+  private List<ContextObject> inContext = null;
+  private List<ContextObject> notInContext = null;
 
   public ETransitionbuilder() {
     this.addToContext = new ArrayList<>();
     this.removeFromContext = new ArrayList<>();
+    this.inContext = new ArrayList<>();
+    this.notInContext = new ArrayList<>();
   }
 
   /**
@@ -24,11 +27,14 @@ public class ETransitionbuilder<State, Input, ContextObject> {
    */
   public ETransitionbuilder(ETransition<State, Input, ContextObject> base) {
     this.expectedInput = base.expectedInput;
-    this.expetedContext = base.expectedContext;
-    this.elementOf = base.elementOf;
-    this.addToContext = base.addToContext == null ? new ArrayList<>() : new ArrayList(Arrays.asList(base.addToContext));
-    this.removeFromContext
-        = base.removeFromContext == null ? new ArrayList<>() : new ArrayList(Arrays.asList(base.removeFromContext));
+    this.inContext = listFromArray(base.inContext);
+    this.notInContext = listFromArray(base.notInContext);
+    this.addToContext = listFromArray(base.addToContext);
+    this.removeFromContext = listFromArray(base.removeFromContext);
+  }
+
+  private List<ContextObject> listFromArray(ContextObject[] array) {
+    return array == null ? new ArrayList<>() : new ArrayList<>(Arrays.asList(array));
   }
 
   public ETransitionbuilder<State, Input, ContextObject> fireOnInput(Input expectedInput) {
@@ -36,15 +42,13 @@ public class ETransitionbuilder<State, Input, ContextObject> {
     return this;
   }
 
-  public ETransitionbuilder<State, Input, ContextObject> fireIfInContext(ContextObject o) {
-    this.expetedContext = o;
-    this.elementOf = true;
+  public ETransitionbuilder<State, Input, ContextObject> fireIfInContext(ContextObject... contextVariables) {
+    inContext.addAll(Arrays.asList(contextVariables));
     return this;
   }
 
-  public ETransitionbuilder<State, Input, ContextObject> fireIfNotInContext(ContextObject o) {
-    this.expetedContext = o;
-    this.elementOf = false;
+  public ETransitionbuilder<State, Input, ContextObject> fireIfNotInContext(ContextObject... contextVariables) {
+    notInContext.addAll(Arrays.asList(contextVariables));
     return this;
   }
 
@@ -59,7 +63,7 @@ public class ETransitionbuilder<State, Input, ContextObject> {
   }
 
   public ETransition<State, Input, ContextObject> build() {
-    return new ETransition<>(expectedInput, expetedContext, elementOf, (ContextObject[]) addToContext.toArray(),
-        (ContextObject[]) removeFromContext.toArray());
+    return new ETransition<>(expectedInput, (ContextObject[]) inContext.toArray(), (ContextObject[]) notInContext.toArray(),
+        (ContextObject[]) addToContext.toArray(), (ContextObject[]) removeFromContext.toArray());
   }
 }
