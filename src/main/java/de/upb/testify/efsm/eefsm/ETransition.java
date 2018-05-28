@@ -112,16 +112,20 @@ public class ETransition<State, Input, ContextObject> extends Transition<State, 
 
     builder.append(Objects.toString(expectedInput, "-") + " \uFF0F ");
     if (inContext != null) {
-      builder.append(Objects.toString(inContext) + " \u2208 " + ℂ);
+      builder.append(Arrays.toString(inContext) + " \u2208 " + ℂ);
     }
-    if (notInContext != null) {
-      builder.append(" " + Objects.toString(notInContext) + " \u2209 " + ℂ);
-    }
-    //
 
     if (inContext == null && notInContext == null) {
       builder.append("-");
+    } else if (inContext != null && notInContext != null) {
+      builder.append(" ^ ");
     }
+
+    if (notInContext != null) {
+      builder.append(" " + Arrays.toString(notInContext) + " \u2209 " + ℂ);
+    }
+    //
+
     builder.append("\n");
     builder.append(String.join("", Collections.nCopies(builder.length() + 5, "-")) + "\n");
     if (addToContext != null || removeFromContext != null) {
