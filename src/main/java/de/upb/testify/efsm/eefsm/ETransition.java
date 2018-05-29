@@ -30,14 +30,14 @@ public class ETransition<State, Input, ContextObject> extends Transition<State, 
   }
 
   /**
-   * Returns null if the given array is null or empty, the given array otherwise.
+   * Returns null if the given array is null or empty, the given array without null values otherwise.
    *
    * @param array
    * @param <T>
    * @return
    */
-  private <T> T[] sanitize(T[] array) {
-    return array == null || array.length == 0 ? null : array;
+  private static <T> T[] sanitize(T[] array) {
+    return array == null || array.length == 0 ? null : (T[]) Arrays.stream(array).filter(t -> t != null).toArray();
   }
 
   @Override
