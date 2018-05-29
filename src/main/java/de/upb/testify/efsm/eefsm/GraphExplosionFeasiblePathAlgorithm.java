@@ -52,7 +52,9 @@ public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context>
 
   private final DirectedConnectivityInspector<Configuration<State, EEFSMContext<Context>>,
       TransitionWrapper> connectivityInspector;
+
   private final ShortestPathAlgorithm<Configuration<State, EEFSMContext<Context>>, TransitionWrapper> shortestPath;
+
   /** Exploded graph where ich node is a configuration of the original eefsm. */
   private DirectedPseudograph<Configuration<State, EEFSMContext<Context>>, TransitionWrapper> explodedEEFSM
       = new DirectedPseudograph<>((s, t) -> {
@@ -64,7 +66,8 @@ public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context>
     stateToConfigs = MultimapBuilder.hashKeys(baseGraph.vertexSet().size()).arrayListValues().build();
     Stopwatch sw = Stopwatch.createStarted();
     explode(eefsm);
-    logger.trace("Exploding EEFSM took {}", sw);
+    logger.debug("Exploding EEFSM took {}. Exploded EEFSM contains {} nodes and {} transitions.", sw,
+        explodedEEFSM.vertexSet().size(), explodedEEFSM.edgeSet().size());
     connectivityInspector = new DirectedConnectivityInspector<>(explodedEEFSM);
     shortestPath = new DijkstraShortestPath<>(explodedEEFSM);
     // explodedGraphToDot(Paths.get("target/exploded.dot"));
