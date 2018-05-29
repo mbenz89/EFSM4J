@@ -40,7 +40,6 @@ public class ETransition<State, Input, ContextObject> extends Transition<State, 
     return array == null || array.length == 0 ? null : (T[]) Arrays.stream(array).filter(t -> t != null).toArray();
   }
 
-  @Override
   protected Input getExpectedInput() {
     return expectedInput;
   }

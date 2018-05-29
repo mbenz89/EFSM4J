@@ -63,13 +63,6 @@ public abstract class Transition<State, Parameter, Context> {
   }
 
   /**
-   * The expected input to trigger the transition or null if the empty input is expected.
-   *
-   * @return
-   */
-  protected abstract Parameter getExpectedInput();
-
-  /**
    * Has to handle the empty input (null)
    *
    * @param input

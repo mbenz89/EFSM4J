@@ -1,7 +1,13 @@
 package de.upb.testify.efsm.eefsm;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
 import org.jgrapht.Graph;
 
+import de.upb.testify.efsm.Configuration;
 import de.upb.testify.efsm.EFSM;
 import de.upb.testify.efsm.EFSMBuilder;
 
@@ -19,13 +25,34 @@ public class EEFSM<State, Input, ContextObject>
   }
 
   @Override
-  protected EFSM<State, Input, EEFSMContext<ContextObject>, ETransition<State, Input, ContextObject>> snapshot(State state,
-      EEFSMContext<ContextObject> context) {
-    return super.snapshot(state, context);
+  protected EEFSM<State, Input, ContextObject> snapshot(State initialState, EEFSMContext<ContextObject> initialContext) {
+    return new EEFSM<>(this.getBaseGraph(), initialState, initialContext);
   }
 
   @Override
-  protected EFSM<State, Input, EEFSMContext<ContextObject>, ETransition<State, Input, ContextObject>> snapshot() {
-    return super.snapshot();
+  protected EEFSM<State, Input, ContextObject> snapshot() {
+    return snapshot(curState, curContext);
+  }
+
+  public List<Set<Input>> transition(EEFSMPath<State, Input, ContextObject> path) {
+    List<Set<Input>> res = new ArrayList<>(path.getLength());
+    Iterator<Input> inputsToTrigger = path.getInputsToTrigger();
+    while (inputsToTrigger.hasNext()) {
+      Set<Input> out = transition(inputsToTrigger.next());
+      if (out == null) {
+        return null;
+      } else {
+        res.add(out);
+      }
+    }
+    return res;
+  }
+
+  public Configuration transitionAndDrop(EEFSMPath<State, Input, ContextObject> path) {
+    return transition(path) == null ? null : getConfiguration();
+  }
+
+  protected State getCurrentState() {
+    return curState;
   }
 }

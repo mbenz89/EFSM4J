@@ -10,11 +10,6 @@ import java.util.Set;
  */
 public class EpsilonTransition<State, Parameter, Context> extends SimpleTransition<State, Parameter, Context> {
   @Override
-  protected Parameter getExpectedInput() {
-    return null;
-  }
-
-  @Override
   protected Set<Parameter> operation(Parameter input, Context context) {
     return Collections.emptySet();
   }

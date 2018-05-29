@@ -45,7 +45,7 @@ public interface IFeasiblePathAlgo<State, Parameter, Context extends IEFSMContex
    * @param tgt
    * @return A set of feasible path (not necessarily all) or null if non exists
    */
-  List<EFSMPath<State, Parameter, Context, Transition>> getPaths(State tgt);
+  List<? extends EFSMPath<State, Parameter, Context, Transition>> getPaths(State tgt);
 
   /**
    * Returns a set feasible path between the given state of the efsm and the given target state, or null if no path exists.
@@ -59,7 +59,7 @@ public interface IFeasiblePathAlgo<State, Parameter, Context extends IEFSMContex
    * @return A set of feasible path (not necessarily all) or null if non exists
    * @config The configuration from which a path should be calculated
    */
-  List<EFSMPath<State, Parameter, Context, Transition>> getPaths(Configuration<State, Context> config, State tgt);
+  List<? extends EFSMPath<State, Parameter, Context, Transition>> getPaths(Configuration<State, Context> config, State tgt);
 
   boolean pathExists(State tgt);
 

@@ -23,7 +23,7 @@ public abstract class JGraphBasedFPALgo<State, Parameter, Context extends IEFSMC
   }
 
   @Override
-  public List<EFSMPath<State, Parameter, Context, Transition>> getPaths(State tgt) {
+  public List<? extends EFSMPath<State, Parameter, Context, Transition>> getPaths(State tgt) {
     return getPaths(efsm.getConfiguration(), tgt);
   }
 
