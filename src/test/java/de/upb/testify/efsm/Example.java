@@ -28,12 +28,6 @@ public class Example {
   };
 
   PGDGTransition<State, Boolean, Context> trans2 = new PGDGTransition<State, Boolean, Context>() {
-
-    @Override
-    protected Boolean getExpectedInput() {
-      return true;
-    }
-
     @Override
     protected boolean inputGuard(Boolean input) {
       return input != null && input;

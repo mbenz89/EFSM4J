@@ -26,9 +26,4 @@ public abstract class SimpleTransition<State, Parameter, Context> extends Transi
   public boolean hasParameterGuard() {
     return false;
   }
-
-  @Override
-  protected Parameter getExpectedInput() {
-    return null;
-  }
 }
