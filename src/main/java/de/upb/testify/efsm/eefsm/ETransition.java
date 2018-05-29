@@ -40,7 +40,6 @@ public class ETransition<State, Input, ContextObject> extends Transition<State, 
     return array == null || array.length == 0 ? null : array;
   }
 
-  @Override
   protected Input getExpectedInput() {
     return expectedInput;
   }

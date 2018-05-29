@@ -9,7 +9,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 
@@ -19,39 +18,31 @@ import org.jgrapht.GraphPath;
 public class EFSMPath<State, Parameter, Context extends IEFSMContext<Context>,
     Transition extends de.upb.testify.efsm.Transition<State, Parameter, Context>> implements Iterable<Transition> {
 
-  private final LinkedList<Transition> transitions;
-  /** our snapshot for validation */
-  private final EFSM<State, Parameter, Context, Transition> efsm;
+  protected final LinkedList<Transition> transitions;
 
-  protected EFSMPath(EFSM<State, Parameter, Context, Transition> efsm) {
-    this.efsm = efsm;
+  protected EFSMPath() {
     transitions = new LinkedList<>();
   }
 
-  protected EFSMPath(EFSM<State, Parameter, Context, Transition> efsm,
-      EFSMPath<State, Parameter, Context, Transition> basePath) {
-    this.efsm = efsm;
+  protected EFSMPath(EFSMPath<State, Parameter, Context, Transition> basePath) {
     this.transitions = new LinkedList<>(basePath.transitions);
   }
 
-  protected EFSMPath(EFSM<State, Parameter, Context, Transition> efsm, GraphPath<State, Transition> basePath) {
-    this.efsm = efsm;
+  protected EFSMPath(GraphPath<State, Transition> basePath) {
+
     transitions = new LinkedList<>(basePath.getEdgeList());
   }
 
-  protected EFSMPath(EFSM<State, Parameter, Context, Transition> efsm, Collection<Transition> transitions) {
-    this.efsm = efsm;
+  protected EFSMPath(Collection<Transition> transitions) {
     this.transitions = new LinkedList<>(transitions);
   }
 
-  protected EFSMPath(EFSM<State, Parameter, Context, Transition> efsm, Transition... transitions) {
-    this.efsm = efsm;
+  protected EFSMPath(Transition... transitions) {
     this.transitions = new LinkedList<>(Arrays.asList(transitions));
   }
 
-  public EFSMPath(EFSM<State, Parameter, Context, Transition> efsm, EFSMPath<State, Parameter, Context, Transition> basePath,
-      Transition t) {
-    this(efsm, basePath);
+  public EFSMPath(EFSMPath<State, Parameter, Context, Transition> basePath, Transition t) {
+    this(basePath);
     transitions.add(t);
   }
 
@@ -176,35 +167,12 @@ public class EFSMPath<State, Parameter, Context extends IEFSMContext<Context>,
     return transitions.size();
   }
 
-  public Iterator<Parameter> getInputsToTrigger() {
-    return transitions.stream().map(t -> t.getExpectedInput()).iterator();
-  }
-
-  public boolean isFeasible(Context context) {
-    // we just create a snapshot of the original efsm and check if we can transition from the path's
-    // src to target in the given context
-    EFSM<State, Parameter, Context, Transition> snapshot = efsm.snapshot(getSrc(), context);
-    for (Transition transition : transitions) {
-      // do not use transition and drop here, it is too expensive. also access curstate directly to
-      // omit building a configuratin
-      Set<Parameter> out = snapshot.transition(transition.getExpectedInput());
-      if (out == null || !snapshot.curState.equals(transition.getTgt())) {
-        return false;
-      }
-    }
-    return true;
-  }
-
   public EFSMPath<State, Parameter, Context, Transition> subPath(int src, int tgt) {
     int size = transitions.size();
     if (src < 0 || src >= size || tgt < src || tgt > size) {
       throw new IndexOutOfBoundsException();
     }
-    return new EFSMPath(efsm, transitions.subList(src, tgt));
-  }
-
-  public EFSM<State, Parameter, Context, Transition> getEfsm() {
-    return efsm;
+    return new EFSMPath(transitions.subList(src, tgt));
   }
 
   @Override

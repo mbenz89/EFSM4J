@@ -42,7 +42,8 @@ import de.upb.testify.efsm.JGraphBasedFPALgo;
  * @author Manuel Benz created on 26.03.18
  */
 public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context>
-    extends JGraphBasedFPALgo<State, Parameter, EEFSMContext<Context>, ETransition<State, Parameter, Context>> {
+    extends JGraphBasedFPALgo<State, Parameter, EEFSMContext<Context>, ETransition<State, Parameter, Context>>
+    implements IEEFSMFeasiblePathAlgo<State, Parameter, Context> {
 
   private static final Logger logger = LoggerFactory.getLogger(GraphExplosionFeasiblePathAlgorithm.class);
 
@@ -75,10 +76,8 @@ public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context>
    *
    * @return The shortest feasible path from source to target.
    */
-  public EFSMPath<State, Parameter, EEFSMContext<Context>, ETransition<State, Parameter, Context>>
-      getPath(Configuration<State, EEFSMContext<Context>> config, State tgt) {
-    List<EFSMPath<State, Parameter, EEFSMContext<Context>, ETransition<State, Parameter, Context>>> paths
-        = getPaths(config, tgt);
+  public EEFSMPath<State, Parameter, Context> getPath(Configuration<State, EEFSMContext<Context>> config, State tgt) {
+    List<EEFSMPath<State, Parameter, Context>> paths = getPaths(config, tgt);
     return paths == null ? null : Iterables.getFirst(paths, null);
   }
 
@@ -88,8 +87,8 @@ public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context>
    * @return The shortest feasible path from current to target.
    */
   @Override
-  public EFSMPath<State, Parameter, EEFSMContext<Context>, ETransition<State, Parameter, Context>> getPath(State tgt) {
-    return super.getPath(tgt);
+  public EEFSMPath<State, Parameter, Context> getPath(State tgt) {
+    return getPath(efsm.getConfiguration(), tgt);
   }
 
   /**
@@ -99,9 +98,8 @@ public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context>
    *         the shortest feasible path for its terminal configuration but leads to a different terminal configuration.
    */
   @Override
-  public List<EFSMPath<State, Parameter, EEFSMContext<Context>, ETransition<State, Parameter, Context>>>
-      getPaths(State tgt) {
-    return super.getPaths(tgt);
+  public List<EEFSMPath<State, Parameter, Context>> getPaths(State tgt) {
+    return getPaths(efsm.getConfiguration(), tgt);
   }
 
   /**
@@ -111,8 +109,7 @@ public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context>
    *         the shortest feasible path for its terminal configuration but leads to a different terminal configuration.
    */
   @Override
-  public List<EFSMPath<State, Parameter, EEFSMContext<Context>, ETransition<State, Parameter, Context>>>
-      getPaths(Configuration<State, EEFSMContext<Context>> config, State tgt) {
+  public List<EEFSMPath<State, Parameter, Context>> getPaths(Configuration<State, EEFSMContext<Context>> config, State tgt) {
     // the given configuration might not exist in the exploded graph which means there is not even a
     // single path to it.
     if (!explodedEEFSM.containsVertex(config)) {
@@ -120,8 +117,7 @@ public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context>
     }
 
     Collection<Configuration<State, EEFSMContext<Context>>> tgtConfigs = stateToConfigs.get(tgt);
-    List<EFSMPath<State, Parameter, EEFSMContext<Context>, ETransition<State, Parameter, Context>>> res
-        = new ArrayList<>(tgtConfigs.size());
+    List<EEFSMPath<State, Parameter, Context>> res = new ArrayList<>(tgtConfigs.size());
 
     ShortestPathAlgorithm.SingleSourcePaths<Configuration<State, EEFSMContext<Context>>, TransitionWrapper> paths
         = shortestPath.getPaths(config);
@@ -141,7 +137,7 @@ public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context>
     return res;
   }
 
-  private EFSMPath<State, Parameter, EEFSMContext<Context>, ETransition<State, Parameter, Context>>
+  private EEFSMPath<State, Parameter, Context>
       toEFSMPath(GraphPath<Configuration<State, EEFSMContext<Context>>, TransitionWrapper> path) {
     List<ETransition<State, Parameter, Context>> edges
         = path.getEdgeList().stream().map(e -> e.t).collect(Collectors.toList());

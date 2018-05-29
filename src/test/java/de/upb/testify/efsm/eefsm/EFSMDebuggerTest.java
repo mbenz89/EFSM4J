@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import de.upb.testify.efsm.EFSM;
 import de.upb.testify.efsm.EFSMDebugger;
 import de.upb.testify.efsm.EFSMPath;
 import de.upb.testify.efsm.Param;
@@ -15,8 +14,8 @@ import de.upb.testify.efsm.State;
 /** @author Manuel Benz created on 26.02.18 */
 public class EFSMDebuggerTest {
 
-  public static void debugThis(EFSMPath<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> path) {
-    EFSM<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> efsm = path.getEfsm();
+  public static void debugThis(EEFSMPath<State, Param, Object> path) {
+    final EEFSM<State, Param, Object> efsm = path.getEefsm();
     EFSMDebugger<State, ETransition<State, Param, Object>> debugger
         = EFSMDebugger.startDebugger(efsm, true, state -> state.toString(), t -> t.toString());
     debugger.highlightPath(path);
@@ -73,6 +72,6 @@ public class EFSMDebuggerTest {
     EFSMPath<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> path
         = new GraphExplosionFeasiblePathAlgorithm<>(example.eefsm).getPath(example.tgt);
 
-    debugThis(path);
+    debugThis((EEFSMPath<State, Param, Object>) path);
   }
 }

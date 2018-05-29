@@ -2,9 +2,6 @@ package de.upb.testify.efsm;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -96,24 +93,6 @@ public class EFSM<State, Parameter, Context extends IEFSMContext<Context>,
    */
   public Set<Parameter> transition() {
     return transition((Parameter) null);
-  }
-
-  public List<Set<Parameter>> transition(EFSMPath<State, Parameter, Context, Transition> path) {
-    List<Set<Parameter>> res = new ArrayList<>(path.getLength());
-    Iterator<Parameter> inputsToTrigger = path.getInputsToTrigger();
-    while (inputsToTrigger.hasNext()) {
-      Set<Parameter> out = transition(inputsToTrigger.next());
-      if (out == null) {
-        return null;
-      } else {
-        res.add(out);
-      }
-    }
-    return res;
-  }
-
-  public Configuration transitionAndDrop(EFSMPath<State, Parameter, Context, Transition> path) {
-    return transition(path) == null ? null : getConfiguration();
   }
 
   /**

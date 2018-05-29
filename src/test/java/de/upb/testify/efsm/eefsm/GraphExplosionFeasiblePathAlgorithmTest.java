@@ -8,10 +8,10 @@ import de.upb.testify.efsm.Param;
 import de.upb.testify.efsm.State;
 
 /** @author Manuel Benz created on 26.03.18 */
-class GraphExplosionFeasiblePathAlgorithmTest extends AbstractEFSMFPAlgoTest {
+class GraphExplosionFeasiblePathAlgorithmTest extends AbstractEEFSMFPAlgoTest {
 
   @Override
-  protected IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>>
+  protected IEEFSMFeasiblePathAlgo<State, Param, Object>
       getAlgo(EEFSM<State, Param, Object> eefsm) {
     return new GraphExplosionFeasiblePathAlgorithm<>(eefsm);
   }

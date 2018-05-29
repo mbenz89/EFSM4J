@@ -15,19 +15,18 @@ import de.upb.testify.efsm.Param;
 import de.upb.testify.efsm.State;
 
 /** @author Manuel Benz created on 02.03.18 */
-abstract class AbstractEFSMFPAlgoTest {
+abstract class AbstractEEFSMFPAlgoTest {
 
   protected boolean debugger = false;
 
-  protected abstract IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>>
-      getAlgo(EEFSM<State, Param, Object> eefsm);
+  protected abstract IEEFSMFeasiblePathAlgo<State, Param, Object> getAlgo(EEFSM<State, Param, Object> eefsm);
 
   @Test
   void c1ToHx() {
     BasicInterComponentExample example = new BasicInterComponentExample();
-    IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp = getAlgo(example.eefsm);
+    final IEEFSMFeasiblePathAlgo<State, Param, Object> sfp = getAlgo(example.eefsm);
 
-    EFSMPath<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> path = sfp.getPath(example.Hx);
+    EEFSMPath<State, Param, Object> path = sfp.getPath(example.Hx);
 
     Assertions.assertNotNull(path);
     // Assertions.assertEquals(15, path.getLength());
@@ -43,9 +42,9 @@ abstract class AbstractEFSMFPAlgoTest {
   void c1ToHxWithOnStop() {
     BasicInterComponentExample example = new BasicInterComponentExample();
     EEFSM<State, Param, Object> eefsm = example.eefsm;
-    IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp = getAlgo(eefsm);
+    final IEEFSMFeasiblePathAlgo<State, Param, Object> sfp = getAlgo(example.eefsm);
 
-    EFSMPath<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> path = sfp.getPath(example.Hx);
+    EEFSMPath<State, Param, Object> path = sfp.getPath(example.Hx);
 
     Assertions.assertNotNull(path);
     // Assertions.assertEquals(18, path.getLength());
@@ -64,7 +63,7 @@ abstract class AbstractEFSMFPAlgoTest {
 
     eefsm.transition(example.oSto1Entry);
 
-    EFSMPath<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> path2 = sfp.getPath(example.Hx);
+    EEFSMPath<State, Param, Object> path2 = sfp.getPath(example.Hx);
 
     Assertions.assertNotNull(path2);
     // Assertions.assertEquals(20, path2.getLength());
@@ -100,9 +99,9 @@ abstract class AbstractEFSMFPAlgoTest {
       }
     }
 
-    IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp = getAlgo(e);
+    final IEEFSMFeasiblePathAlgo<State, Param, Object> sfp = getAlgo(example.eefsm);
 
-    EFSMPath<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> path = sfp.getPath(example.example6.oR1);
+    EEFSMPath<State, Param, Object> path = sfp.getPath(example.example6.oR1);
 
     Assertions.assertNotNull(path);
     Assertions.assertEquals(example.example1.initialState, path.getSrc());
@@ -145,9 +144,9 @@ abstract class AbstractEFSMFPAlgoTest {
     LargeInterComponentExample example = new LargeInterComponentExample();
     EEFSM<State, Param, Object> e = example.eefsm;
 
-    IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp = getAlgo(e);
+    final IEEFSMFeasiblePathAlgo<State, Param, Object> sfp = getAlgo(example.eefsm);
 
-    EFSMPath<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> path = sfp.getPath(example.example6.oR2);
+    EEFSMPath<State, Param, Object> path = sfp.getPath(example.example6.oR2);
 
     Assertions.assertNotNull(path);
     Assertions.assertEquals(example.example1.initialState, path.getSrc());
@@ -167,9 +166,9 @@ abstract class AbstractEFSMFPAlgoTest {
     LargeInterComponentExample example = new LargeInterComponentExample();
     EEFSM<State, Param, Object> e = example.eefsm;
 
-    IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp = getAlgo(e);
+    final IEEFSMFeasiblePathAlgo<State, Param, Object> sfp = getAlgo(example.eefsm);
 
-    EFSMPath<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> path = sfp.getPath(example.tgt);
+    EEFSMPath<State, Param, Object> path = sfp.getPath(example.tgt);
 
     Assertions.assertNotNull(path);
     Assertions.assertEquals(example.example1.initialState, path.getSrc());
@@ -186,9 +185,9 @@ abstract class AbstractEFSMFPAlgoTest {
     LargeInterComponentExample example = new LargeInterComponentExample();
     EEFSM<State, Param, Object> e = example.eefsm;
 
-    IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp = getAlgo(e);
+    final IEEFSMFeasiblePathAlgo<State, Param, Object> sfp = getAlgo(example.eefsm);
 
-    EFSMPath<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> path = sfp.getPath(example.example6.oR2);
+    EEFSMPath<State, Param, Object> path = sfp.getPath(example.example6.oR2);
 
     Assertions.assertNotNull(path);
     Assertions.assertEquals(example.example1.initialState, path.getSrc());
