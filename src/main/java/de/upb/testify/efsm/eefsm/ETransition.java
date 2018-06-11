@@ -1,12 +1,12 @@
 package de.upb.testify.efsm.eefsm;
 
+import de.upb.testify.efsm.Transition;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-
-import de.upb.testify.efsm.Transition;
 
 /** @author Manuel Benz created on 22.02.18 */
 public class ETransition<State, Input, ContextObject> extends Transition<State, Input, EEFSMContext<ContextObject>> {
@@ -40,23 +40,23 @@ public class ETransition<State, Input, ContextObject> extends Transition<State, 
     return array == null || array.length == 0 ? null : (T[]) Arrays.stream(array).filter(t -> t != null).toArray();
   }
 
-  protected Input getExpectedInput() {
+  public Input getExpectedInput() {
     return expectedInput;
   }
 
-  protected Optional<ContextObject[]> getContextAdditions() {
+  public Optional<ContextObject[]> getContextAdditions() {
     return Optional.ofNullable(addToContext);
   }
 
-  protected Optional<ContextObject[]> getContextRemovals() {
+  public Optional<ContextObject[]> getContextRemovals() {
     return Optional.ofNullable(removeFromContext);
   }
 
-  protected Optional<ContextObject[]> getInContext() {
+  public Optional<ContextObject[]> getInContext() {
     return Optional.ofNullable(inContext);
   }
 
-  protected Optional<ContextObject[]> getNotInContext() {
+  public Optional<ContextObject[]> getNotInContext() {
     return Optional.ofNullable(notInContext);
   }
 
