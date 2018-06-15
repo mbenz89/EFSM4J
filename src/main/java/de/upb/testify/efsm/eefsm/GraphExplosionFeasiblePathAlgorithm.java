@@ -1,5 +1,10 @@
 package de.upb.testify.efsm.eefsm;
 
+import de.upb.testify.efsm.Configuration;
+import de.upb.testify.efsm.DirectedConnectivityInspector;
+import de.upb.testify.efsm.EFSMPath;
+import de.upb.testify.efsm.JGraphBasedFPALgo;
+
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
@@ -27,11 +32,6 @@ import org.jgrapht.io.StringComponentNameProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.upb.testify.efsm.Configuration;
-import de.upb.testify.efsm.DirectedConnectivityInspector;
-import de.upb.testify.efsm.EFSMPath;
-import de.upb.testify.efsm.JGraphBasedFPALgo;
-
 /**
  * Computes feasible paths based on an exploded graph where ich node is a feasible configuration of the original EEFSM. Uses
  * Dijkstra's shortest path algorithm to compute the set of shortest paths for the exploded EEFSM.
@@ -52,7 +52,9 @@ public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context>
 
   private final DirectedConnectivityInspector<Configuration<State, EEFSMContext<Context>>,
       TransitionWrapper> connectivityInspector;
+
   private final ShortestPathAlgorithm<Configuration<State, EEFSMContext<Context>>, TransitionWrapper> shortestPath;
+
   /** Exploded graph where ich node is a configuration of the original eefsm. */
   private DirectedPseudograph<Configuration<State, EEFSMContext<Context>>, TransitionWrapper> explodedEEFSM
       = new DirectedPseudograph<>((s, t) -> {
@@ -64,7 +66,8 @@ public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context>
     stateToConfigs = MultimapBuilder.hashKeys(baseGraph.vertexSet().size()).arrayListValues().build();
     Stopwatch sw = Stopwatch.createStarted();
     explode(eefsm);
-    logger.trace("Exploding EEFSM took {}", sw);
+    logger.debug("Exploding EEFSM took {}. Exploded EEFSM contains {} nodes and {} transitions.", sw,
+        explodedEEFSM.vertexSet().size(), explodedEEFSM.edgeSet().size());
     connectivityInspector = new DirectedConnectivityInspector<>(explodedEEFSM);
     shortestPath = new DijkstraShortestPath<>(explodedEEFSM);
     // explodedGraphToDot(Paths.get("target/exploded.dot"));
@@ -115,7 +118,8 @@ public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context>
     if (!explodedEEFSM.containsVertex(config)) {
       return null;
     }
-
+    // TODO maybe it makes sense to cache paths. we could evaluate this by saving the source node and check if same source
+    // nodes are used multiple times
     Collection<Configuration<State, EEFSMContext<Context>>> tgtConfigs = stateToConfigs.get(tgt);
     List<EEFSMPath<State, Parameter, Context>> res = new ArrayList<>(tgtConfigs.size());
 

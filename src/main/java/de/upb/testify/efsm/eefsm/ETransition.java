@@ -1,63 +1,63 @@
 package de.upb.testify.efsm.eefsm;
 
+import de.upb.testify.efsm.Transition;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-import de.upb.testify.efsm.Transition;
-
 /** @author Manuel Benz created on 22.02.18 */
 public class ETransition<State, Input, ContextObject> extends Transition<State, Input, EEFSMContext<ContextObject>> {
 
   public static final String ℂ = "\u2102";
   protected final Input expectedInput;
-  protected final ContextObject expectedContext;
-  protected final boolean elementOf;
   protected final ContextObject[] addToContext;
   protected final ContextObject[] removeFromContext;
+  protected final ContextObject[] inContext;
+  protected final ContextObject[] notInContext;
 
-  public ETransition(Input expectedInput, ContextObject expectedContext, boolean elementOf, ContextObject[] addToContext,
-      ContextObject[] removeFromContext) {
+  protected ETransition(Input expectedInput, ContextObject[] inContext, ContextObject[] notInContext,
+      ContextObject[] addToContext, ContextObject[] removeFromContext) {
     this.expectedInput = expectedInput;
-    this.expectedContext = expectedContext;
-    this.elementOf = elementOf;
     // ensure that these arrays are not empty, so that later checks against null ensure there are
     // not operations
+    this.inContext = sanitize(inContext);
+    this.notInContext = sanitize(notInContext);
     this.addToContext = sanitize(addToContext);
     this.removeFromContext = sanitize(removeFromContext);
   }
 
   /**
-   * Returns null if the given array is null or empty, the given array otherwise.
+   * Returns null if the given array is null or empty, the given array without null values otherwise.
    *
    * @param array
    * @param <T>
    * @return
    */
-  private <T> T[] sanitize(T[] array) {
-    return array == null || array.length == 0 ? null : array;
+  private static <T> T[] sanitize(T[] array) {
+    return array == null || array.length == 0 ? null : (T[]) Arrays.stream(array).filter(t -> t != null).toArray();
   }
 
-  protected Input getExpectedInput() {
+  public Input getExpectedInput() {
     return expectedInput;
   }
 
-  protected Optional<ContextObject[]> getContextAdditions() {
+  public Optional<ContextObject[]> getContextAdditions() {
     return Optional.ofNullable(addToContext);
   }
 
-  protected Optional<ContextObject[]> getContextRemovals() {
+  public Optional<ContextObject[]> getContextRemovals() {
     return Optional.ofNullable(removeFromContext);
   }
 
-  protected ContextObject getExpectedContext() {
-    return expectedContext;
+  public Optional<ContextObject[]> getInContext() {
+    return Optional.ofNullable(inContext);
   }
 
-  protected boolean isElementOfGuard() {
-    return elementOf;
+  public Optional<ContextObject[]> getNotInContext() {
+    return Optional.ofNullable(notInContext);
   }
 
   @Override
@@ -71,11 +71,12 @@ public class ETransition<State, Input, ContextObject> extends Transition<State, 
 
   @Override
   protected boolean domainGuard(EEFSMContext<ContextObject> eefsmContext) {
-    if (expectedContext == null
-        || (elementOf ? eefsmContext.elementOf(expectedContext) : eefsmContext.notElementOf(expectedContext))) {
-      return true;
+    if ((inContext != null && !eefsmContext.elementOf(inContext))
+        || (notInContext != null && !eefsmContext.notElementOf(notInContext))) {
+      return false;
     }
-    return false;
+
+    return true;
   }
 
   @Override
@@ -96,7 +97,7 @@ public class ETransition<State, Input, ContextObject> extends Transition<State, 
 
   @Override
   public boolean hasDomainGuard() {
-    return expectedContext != null;
+    return inContext != null || notInContext != null;
   }
 
   @Override
@@ -108,10 +109,22 @@ public class ETransition<State, Input, ContextObject> extends Transition<State, 
   public String toString() {
     StringBuilder builder = new StringBuilder();
 
-    builder.append(Objects.toString(expectedInput, "-") + " \uFF0F " + Objects.toString(expectedContext, "-"));
-    if (expectedContext != null) {
-      builder.append((elementOf ? " \u2208 " : " \u2209 ") + ℂ);
+    builder.append(Objects.toString(expectedInput, "-") + " \uFF0F ");
+    if (inContext != null) {
+      builder.append(Arrays.toString(inContext) + " \u2208 " + ℂ);
     }
+
+    if (inContext == null && notInContext == null) {
+      builder.append("-");
+    } else if (inContext != null && notInContext != null) {
+      builder.append(" ^ ");
+    }
+
+    if (notInContext != null) {
+      builder.append(" " + Arrays.toString(notInContext) + " \u2209 " + ℂ);
+    }
+    //
+
     builder.append("\n");
     builder.append(String.join("", Collections.nCopies(builder.length() + 5, "-")) + "\n");
     if (addToContext != null || removeFromContext != null) {

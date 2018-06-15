@@ -20,7 +20,8 @@ public class MediumInterComponentExample {
     builder.withEFSM(example1.eefsm);
     builder.withEFSM(example2.eefsm);
     e2Entry = new Param("e2Entry");
-    builder.withTransition(example1.Hf, example2.oC1, new ETransition<>(e2Entry, example1.Le, true, null, null));
+    builder.withTransition(example1.Hf, example2.oC1,
+        new ETransition<>(e2Entry, new Object[] { example1.Le }, null, null, null));
 
     eefsm = builder.build(example1.initialState, example2.initialContext);
   }

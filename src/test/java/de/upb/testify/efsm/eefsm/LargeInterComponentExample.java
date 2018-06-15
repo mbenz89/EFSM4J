@@ -34,27 +34,32 @@ public class LargeInterComponentExample {
     builder.withEFSM(example1.eefsm);
     builder.withEFSM(example2.eefsm);
     e2Entry = new Param("e2Entry");
-    builder.withTransition(example1.Hf, example2.oC1, new ETransition<>(e2Entry, example1.Le, true, null, null));
+    builder.withTransition(example1.Hf, example2.oC1,
+        new ETransition<>(e2Entry, new Object[] { example1.Le }, null, null, null));
     builder.withEFSM(example3.eefsm);
     e3Entry = new Param("e3Entry");
-    builder.withTransition(example2.Hf, example3.oC1, new ETransition<>(e3Entry, example2.Le, true, null, null));
-    builder.withTransition(example3.oR1, example2.oR2, new ETransition<>(example3.EvtBack, null, true, null, null));
+    builder.withTransition(example2.Hf, example3.oC1,
+        new ETransition<>(e3Entry, new Object[] { example2.Le }, null, null, null));
+    builder.withTransition(example3.oR1, example2.oR2, new ETransition<>(example3.EvtBack, null, null, null, null));
     builder.withEFSM(example4.eefsm);
     e4Entry = new Param("e4Entry");
-    builder.withTransition(example3.Hf, example4.oC1, new ETransition<>(e4Entry, example3.Hc, true, null, null));
-    builder.withTransition(example4.oR1, example2.oR2, new ETransition<>(example4.EvtBack, null, true, null, null));
+    builder.withTransition(example3.Hf, example4.oC1,
+        new ETransition<>(e4Entry, new Object[] { example3.Hc }, null, null, null));
+    builder.withTransition(example4.oR1, example2.oR2, new ETransition<>(example4.EvtBack, null, null, null, null));
     builder.withState(tgt);
     tgtEntry = new Param("tgtEntry");
-    builder.withTransition(example3.oD1, tgt, new ETransition<>(tgtEntry, additionalContext, true, null, null));
+    builder.withTransition(example3.oD1, tgt,
+        new ETransition<>(tgtEntry, new Object[] { additionalContext }, null, null, null));
     builder.withEFSM(example5.eefsm);
     e5Entry = new Param("e5Entry");
-    builder.withTransition(example4.Hf, example5.oC1, new ETransition<>(e5Entry, example1.Le, true, null, null));
-    builder.withTransition(example5.oR1, example4.oR2, new ETransition<>(example5.EvtBack, null, true, null, null));
+    builder.withTransition(example4.Hf, example5.oC1,
+        new ETransition<>(e5Entry, new Object[] { example1.Le }, null, null, null));
+    builder.withTransition(example5.oR1, example4.oR2, new ETransition<>(example5.EvtBack, null, null, null, null));
     builder.withEFSM(example6.eefsm);
     e6Entry = new Param("e6Entry");
     builder.withTransition(example5.Hf, example6.oC1,
-        new ETransition<>(e6Entry, example1.Le, true, new ContextVar[] { additionalContext }, null));
-    builder.withTransition(example6.oR1, example5.oR2, new ETransition<>(example6.EvtBack, null, true, null, null));
+        new ETransition<>(e6Entry, new Object[] { example1.Le }, null, new ContextVar[] { additionalContext }, null));
+    builder.withTransition(example6.oR1, example5.oR2, new ETransition<>(example6.EvtBack, null, null, null, null));
 
     eefsm = builder.build(example1.initialState, example1.initialContext);
   }
