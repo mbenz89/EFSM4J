@@ -16,7 +16,7 @@ public class EFSMBuilder<State, Parameter, Context extends IEFSMContext<Context>
     EFSM extends de.upb.testify.efsm.EFSM<State, Parameter, Context, Transition>> {
 
   private final Class<EFSM> efsmTypeClass;
-  private final Graph<State, Transition> base;
+  protected final Graph<State, Transition> base;
 
   public EFSMBuilder(Class<EFSM> efsmTypeClass) {
     this(efsmTypeClass, new DirectedPseudograph<>((state, v1) -> {
