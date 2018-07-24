@@ -118,7 +118,7 @@ public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context>
     if (!explodedEEFSM.containsVertex(config)) {
       return null;
     }
-    // TODO maybe it makes sense to cache paths. we could evaluate this by saving the source node and check if same source
+    // TODO maybe it makes sense to cache paths. we could evaluate this by logging the source node and check if same source
     // nodes are used multiple times
     Collection<Configuration<State, EEFSMContext<Context>>> tgtConfigs = stateToConfigs.get(tgt);
     List<EEFSMPath<State, Parameter, Context>> res = new ArrayList<>(tgtConfigs.size());
