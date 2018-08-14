@@ -288,6 +288,7 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
   }
 
   private void haltExecution() {
+    logger.trace("Putting thread to sleep.");
     while (controlMode && !executeStep) {
       try {
         Thread.sleep(200);
@@ -295,6 +296,7 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
         e.printStackTrace();
       }
     }
+    logger.trace("Resuming thread after pause.");
   }
 
   public void highlightPath(EFSMPath<State, ?, ?, Transition> path) {
