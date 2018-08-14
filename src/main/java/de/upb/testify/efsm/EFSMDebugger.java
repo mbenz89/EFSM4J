@@ -1,5 +1,7 @@
 package de.upb.testify.efsm;
 
+import de.upb.testify.efsm.eefsm.EEFSM;
+
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import com.mxgraph.layout.mxEdgeLabelLayout;
@@ -37,7 +39,6 @@ import org.jgrapht.ext.JGraphXAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.upb.testify.efsm.eefsm.EEFSM;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
@@ -963,10 +964,18 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
       mxFastOrganicLayout layout = new mxFastOrganicLayout(this);
 
       // set some properties
-      layout.setForceConstant(80); // the higher, the more separated
+      final int maxLabelLength
+          = getVertexToCellMap().values().stream().mapToInt(c -> convertValueToString(c).length()).max().orElse(0);
+      final int forceConst = Math.max(200, maxLabelLength * 2);
+
+      layout.setForceConstant(forceConst); // the higher, the more separated
       layout.setResetEdges(true);
       layout.setDisableEdgeStyle(true); // true transforms the edges and makes them direct lines
-      layout.setMaxIterations(50.0 * Math.sqrt(getVertexToCellMap().size()));
+      final double maxIterations = 200.0d * Math.sqrt(getVertexToCellMap().size());
+      layout.setMaxIterations(maxIterations);
+
+      logger.trace("Setting force constant to {}", forceConst);
+      logger.trace("Setting max iterations to {}", maxIterations);
 
       // layout graph
       layout.execute(this.getDefaultParent());
