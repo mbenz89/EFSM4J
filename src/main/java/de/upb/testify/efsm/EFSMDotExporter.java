@@ -28,14 +28,10 @@ public class EFSMDotExporter<State, Transition> {
 
   public void writeOut(Path outFile) throws IOException {
     DOTExporter exporter = new DOTExporter<State, Transition>(new IntegerComponentNameProvider<>(),
-        s -> escape(stateLabeler.apply(s)), t -> escape(edgeLabeler.apply(t)));
+        s -> stateLabeler.apply(s), t -> edgeLabeler.apply(t));
 
     try (BufferedWriter writer = new BufferedWriter(new FileWriter(outFile.toFile()))) {
       exporter.exportGraph(efsm.getBaseGraph(), writer);
     }
-  }
-
-  private String escape(String s) {
-    return s.replace("\"", "\\\"");
   }
 }
