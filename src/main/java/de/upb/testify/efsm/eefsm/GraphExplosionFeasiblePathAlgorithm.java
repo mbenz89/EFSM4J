@@ -118,6 +118,12 @@ public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context>
     if (!explodedEEFSM.containsVertex(config)) {
       return null;
     }
+
+    Stopwatch sw = null;
+    if (logger.isTraceEnabled()) {
+      sw = Stopwatch.createStarted();
+    }
+
     // TODO maybe it makes sense to cache paths. we could evaluate this by logging the source node and check if same source
     // nodes are used multiple times
     Collection<Configuration<State, EEFSMContext<Context>>> tgtConfigs = stateToConfigs.get(tgt);
@@ -132,6 +138,8 @@ public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context>
         res.add(toEFSMPath(path));
       }
     }
+
+    logger.trace("Computing paths from {} to {} resulted in {} paths and took {}", config, tgt, res.size(), sw);
 
     if (res.isEmpty()) {
       return null;
