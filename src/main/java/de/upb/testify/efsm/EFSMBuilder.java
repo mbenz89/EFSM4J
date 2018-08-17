@@ -5,6 +5,7 @@ import com.google.common.base.Preconditions;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.TypeVariable;
 import java.util.Arrays;
+import java.util.Set;
 
 import org.jgrapht.Graph;
 import org.jgrapht.Graphs;
@@ -15,8 +16,8 @@ public class EFSMBuilder<State, Parameter, Context extends IEFSMContext<Context>
     Transition extends de.upb.testify.efsm.Transition<State, Parameter, Context>,
     EFSM extends de.upb.testify.efsm.EFSM<State, Parameter, Context, Transition>> {
 
-  private final Class<EFSM> efsmTypeClass;
   protected final Graph<State, Transition> base;
+  private final Class<EFSM> efsmTypeClass;
 
   public EFSMBuilder(Class<EFSM> efsmTypeClass) {
     this(efsmTypeClass, new DirectedPseudograph<>((state, v1) -> {
@@ -110,5 +111,9 @@ public class EFSMBuilder<State, Parameter, Context extends IEFSMContext<Context>
       }
     }
     return null;
+  }
+
+  public Set<Transition> incomingTransitionsOf(State s) {
+    return base.incomingEdgesOf(s);
   }
 }
