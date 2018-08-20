@@ -516,6 +516,8 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     graphComponent.getGraphControl().addMouseMotionListener(ma);
   }
 
+  // endregion
+
   // region properties panel
 
   private Control setupPropertiesPanel() {
@@ -550,7 +552,6 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
             return "-";
           }
         }
-
         return String.valueOf(val);
       }
 
@@ -575,7 +576,8 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
       }
     });
 
-    value.prefWidthProperty().bind(treeTable.widthProperty().multiply(0.7));
+    // width should probably grow and shrink with content length
+    value.prefWidthProperty().bind(treeTable.widthProperty().multiply(2));
 
     treeTable.getColumns().addAll(property, value);
 
@@ -695,8 +697,6 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     column.setPrefWidth(200);
     return column;
   }
-
-  // endregion
 
   private void setupHaltOnNode() {
     graphComponent.getGraphControl().addMouseListener(new MouseAdapter() {
