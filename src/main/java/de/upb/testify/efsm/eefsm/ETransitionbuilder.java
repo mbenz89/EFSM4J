@@ -8,10 +8,10 @@ import java.util.List;
 public class ETransitionbuilder<State, Input, ContextObject> {
 
   private Input expectedInput = null;
-  private List<ContextObject> addToContext = null;
-  private List<ContextObject> removeFromContext = null;
-  private List<ContextObject> inContext = null;
-  private List<ContextObject> notInContext = null;
+  private List<ContextObject> addToContext;
+  private List<ContextObject> removeFromContext;
+  private List<ContextObject> inContext;
+  private List<ContextObject> notInContext;
 
   public ETransitionbuilder() {
     this.addToContext = new ArrayList<>();
@@ -65,5 +65,24 @@ public class ETransitionbuilder<State, Input, ContextObject> {
   public ETransition<State, Input, ContextObject> build() {
     return new ETransition<>(expectedInput, (ContextObject[]) inContext.toArray(), (ContextObject[]) notInContext.toArray(),
         (ContextObject[]) addToContext.toArray(), (ContextObject[]) removeFromContext.toArray());
+  }
+
+  /**
+   * Merges in the other builder so that all context operations are united. The expected input is only overwritten if the
+   * expected of this transition is null.
+   * 
+   * @param other
+   * @return
+   */
+  public ETransitionbuilder<State, Input, ContextObject> merge(ETransitionbuilder<State, Input, ContextObject> other) {
+    addToContext.addAll(other.addToContext);
+    removeFromContext.addAll(other.removeFromContext);
+    inContext.addAll(other.inContext);
+    notInContext.addAll(other.notInContext);
+
+    if (expectedInput == null) {
+      expectedInput = other.expectedInput;
+    }
+    return this;
   }
 }
