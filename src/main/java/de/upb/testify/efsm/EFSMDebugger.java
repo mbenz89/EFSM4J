@@ -299,6 +299,12 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     logger.trace("Resuming thread after pause.");
   }
 
+  /**
+   * Highlights the given path (resets the previous highlighting)
+   * 
+   * @param path
+   *          The path to highlight or null remove path highlighting all together
+   */
   public void highlightPath(EFSMPath<State, ?, ?, Transition> path) {
     HashMap<Transition, mxICell> edgeToCellMap = jgxAdapter.getEdgeToCellMap();
 
@@ -308,7 +314,7 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
 
     // reset highlighting
     if (highlightedPath != null) {
-      for (Transition transition : path) {
+      for (Transition transition : highlightedPath) {
         mxICell mxICell = edgeToCellMap.get(transition);
         model.setStyle(mxICell, new SB(mxICell).set(mxConstants.STYLE_STROKECOLOR, Color.BLACK).build());
       }
@@ -316,9 +322,11 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
 
     highlightedPath = path;
 
-    for (Transition transition : path) {
-      mxICell mxICell = edgeToCellMap.get(transition);
-      model.setStyle(mxICell, new SB(mxICell).set(mxConstants.STYLE_STROKECOLOR, Color.BLUE).build());
+    if (path != null) {
+      for (Transition transition : path) {
+        mxICell mxICell = edgeToCellMap.get(transition);
+        model.setStyle(mxICell, new SB(mxICell).set(mxConstants.STYLE_STROKECOLOR, Color.BLUE).build());
+      }
     }
 
     model.endUpdate();
