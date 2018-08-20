@@ -116,4 +116,8 @@ public class EFSMBuilder<State, Parameter, Context extends IEFSMContext<Context>
   public Set<Transition> incomingTransitionsOf(State s) {
     return base.incomingEdgesOf(s);
   }
+
+  public Set<Transition> outgoingTransitionsOf(State s) {
+    return base.outgoingEdgesOf(s);
+  }
 }
