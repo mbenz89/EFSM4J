@@ -4,6 +4,7 @@ import de.upb.testify.efsm.eefsm.EEFSM;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
+import com.google.common.primitives.Primitives;
 import com.mxgraph.layout.mxEdgeLabelLayout;
 import com.mxgraph.layout.mxFastOrganicLayout;
 import com.mxgraph.layout.mxParallelEdgeLayout;
@@ -433,10 +434,6 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     stepButton.setDisable(false);
   }
 
-  // endregion
-
-  // region StatusBar
-
   private void performPlay() {
     status("Running");
     controlMode = false;
@@ -445,6 +442,10 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     pauseButton.setDisable(false);
     stepButton.setDisable(true);
   }
+
+  // endregion
+
+  // region StatusBar
 
   private StatusBar initStatusBar() {
     // create the status bar panel and shove it down the bottom of the frame
@@ -460,12 +461,43 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     Platform.runLater(() -> statusPanel.setText(msg + "  "));
   }
 
+  public void info(String msg) {
+    Platform.runLater(() -> detailsPanel.setText(msg));
+  }
+
   // endregion
 
   // region control
 
-  public void info(String msg) {
-    Platform.runLater(() -> detailsPanel.setText(msg));
+  private void setupHaltOnNode() {
+    graphComponent.getGraphControl().addMouseListener(new MouseAdapter() {
+      @Override
+      public void mouseClicked(MouseEvent e) {
+        if (e.getClickCount() == 2) {
+          Object cellAt = graphComponent.getCellAt(e.getX(), e.getY());
+          // for now we just allow to halt on nodes. if we see need, it woult be easy to
+          // extend to halt on a specific transition
+          if (cellAt != null) {
+            mxICell cell = (mxICell) cellAt;
+            if (cell.isVertex()) {
+              mxICell[] mxICells = { cell };
+              if (haltingStates.containsKey(cellAt)) {
+                // remove visual feedback
+                jgxAdapter.setCellStyle(new SB(cell)
+                    .setFrom(haltingStates.get(cellAt), mxConstants.STYLE_SHADOW, mxConstants.STYLE_SHAPE).build(),
+                    mxICells);
+                haltingStates.remove(cellAt);
+              } else {
+                // add visual feedback
+                haltingStates.put(cell, cell.getStyle());
+                jgxAdapter.setCellStyle(new SB(cell).set(mxConstants.STYLE_SHADOW, true)
+                    .set(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_DOUBLE_ELLIPSE).build(), mxICells);
+              }
+            }
+          }
+        }
+      }
+    });
   }
 
   private void setupZooming() {
@@ -550,7 +582,10 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
         if (val instanceof Field) {
           try {
             Field field = (Field) val;
-            Object fieldVal = field.get(o.getParent().getValue());
+
+            Object parentVal = getParentValue(o);
+
+            Object fieldVal = field.get(parentVal);
             if (field.getType().isArray()) {
               return Arrays.toString(unpack(fieldVal));
             } else {
@@ -632,7 +667,9 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
             aClass = value.getClass();
           } else {
             try {
-              value = ((Field) value).get(getParent().getValue());
+              Object parentVal = getParentValue(this);
+
+              value = ((Field) value).get(parentVal);
               aClass = value.getClass();
             } catch (IllegalAccessException e) {
               throw new RuntimeException();
@@ -672,31 +709,50 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
 
       @Override
       public boolean isLeaf() {
+
+        final Object value = getValue();
         try {
-          return !isValueOfInterest(getValue());
+          return isLeaf(value);
         } catch (IllegalAccessException e) {
-          return false;
+          e.printStackTrace();
+          return true;
         }
+
+        // return !isValueOfInterest(getValue());
       }
 
-      private boolean isValueOfInterest(Object value) throws IllegalAccessException {
+      private boolean isLeaf(Object value) throws IllegalAccessException {
         if (value == null) {
-          return false;
+          return true;
         }
-        // we do not want to show the whole jdk
-        Class<?> aClass = value.getClass();
-        Package aPackage = aClass.getPackage();
 
-        return (aPackage != null && aPackage.getName().startsWith("de.upb.testify") || aPackage.getName().startsWith("soot"))
-            || aClass.isArray()
-            || (value instanceof Field && ((Field) value).getType().isArray()
-                && ((Field) value).get(getParent().getValue()) != null)
-            || (value instanceof Field && Iterable.class.isAssignableFrom(((Field) value).getType())
-                && ((Field) value).get(getParent().getValue()) != null);
+        final Class<?> aClass = value.getClass();
+
+        if (aClass.isPrimitive() || Primitives.isWrapperType(aClass)) {
+          return true;
+        }
+
+        if (value instanceof Field) {
+          final Object parentValue = getParentValue(this);
+
+          final Object fieldVal = ((Field) value).get(parentValue);
+          return isLeaf(fieldVal);
+        }
+
+        return false;
       }
     };
 
     return item;
+  }
+
+  private Object getParentValue(TreeItem item) throws IllegalAccessException {
+    Object parentVal = item.getParent().getValue();
+    if (parentVal instanceof Field) {
+      final Object grandParentVal = getParentValue(item.getParent());
+      parentVal = ((Field) parentVal).get(grandParentVal);
+    }
+    return parentVal;
   }
 
   private <S, T> TreeTableColumn<S, T> column(String title, Function<TreeItem<S>, T> property) {
@@ -704,37 +760,6 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     column.setCellValueFactory(cellData -> new SimpleObjectProperty<T>(property.apply(cellData.getValue())));
     column.setPrefWidth(200);
     return column;
-  }
-
-  private void setupHaltOnNode() {
-    graphComponent.getGraphControl().addMouseListener(new MouseAdapter() {
-      @Override
-      public void mouseClicked(MouseEvent e) {
-        if (e.getClickCount() == 2) {
-          Object cellAt = graphComponent.getCellAt(e.getX(), e.getY());
-          // for now we just allow to halt on nodes. if we see need, it woult be easy to
-          // extend to halt on a specific transition
-          if (cellAt != null) {
-            mxICell cell = (mxICell) cellAt;
-            if (cell.isVertex()) {
-              mxICell[] mxICells = { cell };
-              if (haltingStates.containsKey(cellAt)) {
-                // remove visual feedback
-                jgxAdapter.setCellStyle(new SB(cell)
-                    .setFrom(haltingStates.get(cellAt), mxConstants.STYLE_SHADOW, mxConstants.STYLE_SHAPE).build(),
-                    mxICells);
-                haltingStates.remove(cellAt);
-              } else {
-                // add visual feedback
-                haltingStates.put(cell, cell.getStyle());
-                jgxAdapter.setCellStyle(new SB(cell).set(mxConstants.STYLE_SHADOW, true)
-                    .set(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_DOUBLE_ELLIPSE).build(), mxICells);
-              }
-            }
-          }
-        }
-      }
-    });
   }
 
   // endregion
