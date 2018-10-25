@@ -124,7 +124,7 @@ public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context>
       sw = Stopwatch.createStarted();
     }
 
-    // TODO maybe it makes sense to cache paths. we could evaluate this by logging the source node and check if same source
+    // TODO we shoudl have our own sssp implementation and a method to return it. other methods should build up on it
     // nodes are used multiple times
     Collection<Configuration<State, EEFSMContext<Context>>> tgtConfigs = stateToConfigs.get(tgt);
     List<EEFSMPath<State, Parameter, Context>> res = new ArrayList<>(tgtConfigs.size());
