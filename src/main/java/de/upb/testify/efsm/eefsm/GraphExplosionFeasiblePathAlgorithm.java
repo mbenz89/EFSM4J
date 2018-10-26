@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -299,7 +300,13 @@ public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context>
         = CacheBuilder.newBuilder().build(new CacheLoader<State, List<EEFSMPath<State, Parameter, Context>>>() {
           @Override
           public List<EEFSMPath<State, Parameter, Context>> load(State tgt) {
-            return getPathsForSSSP(tgt, baseSSSP);
+            final List<EEFSMPath<State, Parameter, Context>> pathsForSSSP = getPathsForSSSP(tgt, baseSSSP);
+
+            if (pathsForSSSP == null || pathsForSSSP.isEmpty()) {
+              throw new NoSuchElementException();
+            }
+
+            return pathsForSSSP;
           }
         });
 
@@ -313,6 +320,9 @@ public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context>
       try {
         return tgtToPaths.get(tgt);
       } catch (ExecutionException e) {
+        if (e.getCause() instanceof NoSuchElementException) {
+          return null;
+        }
         throw new RuntimeException(e);
       }
     }
@@ -322,18 +332,23 @@ public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context>
       try {
         return Iterables.getFirst(tgtToPaths.get(tgt), null);
       } catch (ExecutionException e) {
+        if (e.getCause() instanceof NoSuchElementException) {
+          return null;
+        }
         throw new RuntimeException(e);
       }
     }
 
     @Override
     public int getLength(State tgt) {
-      return getPath(tgt).getLength();
+      final EEFSMPath<State, Parameter, Context> path = getPath(tgt);
+      return path != null ? path.getLength() : -1;
     }
 
     @Override
     public Configuration<State, EEFSMContext<Context>> getSource() {
       return baseSSSP.getSourceVertex();
     }
+
   }
 }
