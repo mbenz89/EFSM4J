@@ -3,9 +3,13 @@ package de.upb.testify.efsm.eefsm;
 import de.upb.testify.efsm.Configuration;
 import de.upb.testify.efsm.DirectedConnectivityInspector;
 import de.upb.testify.efsm.EFSMPath;
+import de.upb.testify.efsm.IFeasiblePathAlgo;
 import de.upb.testify.efsm.JGraphBasedFPALgo;
 
 import com.google.common.base.Stopwatch;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
@@ -19,6 +23,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import org.jgrapht.GraphPath;
@@ -42,8 +47,7 @@ import org.slf4j.LoggerFactory;
  * @author Manuel Benz created on 26.03.18
  */
 public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context>
-    extends JGraphBasedFPALgo<State, Parameter, EEFSMContext<Context>, ETransition<State, Parameter, Context>>
-    implements IEEFSMFeasiblePathAlgo<State, Parameter, Context> {
+    extends JGraphBasedFPALgo<State, Parameter, EEFSMContext<Context>, ETransition<State, Parameter, Context>> {
 
   private static final Logger logger = LoggerFactory.getLogger(GraphExplosionFeasiblePathAlgorithm.class);
 
@@ -70,7 +74,6 @@ public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context>
         explodedEEFSM.vertexSet().size(), explodedEEFSM.edgeSet().size());
     connectivityInspector = new DirectedConnectivityInspector<>(explodedEEFSM);
     shortestPath = new DijkstraShortestPath<>(explodedEEFSM);
-    // explodedGraphToDot(Paths.get("target/exploded.dot"));
   }
 
   @Override
@@ -98,7 +101,8 @@ public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context>
    * {@inheritDoc}
    *
    * @return A ascending sorted list of shortest feasible path through different configurations, i.e., every returned path is
-   *         the shortest feasible path for its terminal configuration but leads to a different terminal configuration.
+   *         the shortest feasible path for its terminal configuration but leads to a different terminal configuration that
+   *         contains the target state.
    */
   @Override
   public List<EEFSMPath<State, Parameter, Context>> getPaths(State tgt) {
@@ -109,7 +113,8 @@ public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context>
    * {@inheritDoc}
    *
    * @return A ascending sorted list of shortest feasible path through different configurations, i.e., every returned path is
-   *         the shortest feasible path for its terminal configuration but leads to a different terminal configuration.
+   *         the shortest feasible path for its terminal configuration but leads to a different terminal configuration that
+   *         contains the target state.
    */
   @Override
   public List<EEFSMPath<State, Parameter, Context>> getPaths(Configuration<State, EEFSMContext<Context>> config, State tgt) {
@@ -119,27 +124,78 @@ public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context>
       return null;
     }
 
+    ShortestPathAlgorithm.SingleSourcePaths<Configuration<State, EEFSMContext<Context>>, TransitionWrapper> paths
+        = shortestPath.getPaths(config);
+
+    final List<EEFSMPath<State, Parameter, Context>> res = getPathsForSSSP(tgt, paths);
+
+    return res;
+  }
+
+  /**
+   * Returns a cached set of feasible path between the current state of the EEFSM and any target. If a path is feasible
+   * depends on the semantics of the underlying efsm implementation. The algorithm will assume the current configuration of
+   * the efsm as start configuration.
+   *
+   *
+   * @return A {@link SingleSourceShortestPath} instance containing all feasible path from the current EEFSM configuration
+   */
+  public SingleSourceShortestPath getSingleSourceShortestPath() {
+    return getSingleSourceShortestPath(efsm.getConfiguration());
+  }
+
+  /**
+   * Returns a cached set of feasible path between the given state of the efsm and any target. If a path is feasible depends
+   * on the semantics of the underlying efsm implementation. The algorithm will assume given configuration of the efsm as
+   * start configuration.
+   *
+   * <p>
+   * Note: The implementation of this interface has to decide which paths to returen, e.g., all feasible path or a subset
+   *
+   * @param config
+   *          The configuration from which a path should be calculated The source configuration for which a single source
+   *          shortest path set should be collected
+   * @return A {@link SingleSourceShortestPath} instance containing all feasible path from the given EEFSM configuration
+   */
+  public SingleSourceShortestPath getSingleSourceShortestPath(Configuration<State, EEFSMContext<Context>> config) {
+    // the given configuration might not exist in the exploded graph which means there is not even a
+    // single path to it.
+    if (!explodedEEFSM.containsVertex(config)) {
+      return null;
+    }
+
+    return new SingleSourceShortestPath(shortestPath.getPaths(config));
+  }
+
+  /**
+   * Returns a list of all configuration containing the given target state which are reachable by the given
+   * {@link ShortestPathAlgorithm.SingleSourcePaths}
+   * 
+   * @param tgt
+   * @param baseSSSP
+   * @return
+   */
+  private List<EEFSMPath<State, Parameter, Context>> getPathsForSSSP(State tgt,
+      ShortestPathAlgorithm.SingleSourcePaths<Configuration<State, EEFSMContext<Context>>, TransitionWrapper> baseSSSP) {
+
     Stopwatch sw = null;
     if (logger.isTraceEnabled()) {
       sw = Stopwatch.createStarted();
     }
 
-    // TODO we shoudl have our own sssp implementation and a method to return it. other methods should build up on it
     // nodes are used multiple times
     Collection<Configuration<State, EEFSMContext<Context>>> tgtConfigs = stateToConfigs.get(tgt);
     List<EEFSMPath<State, Parameter, Context>> res = new ArrayList<>(tgtConfigs.size());
 
-    ShortestPathAlgorithm.SingleSourcePaths<Configuration<State, EEFSMContext<Context>>, TransitionWrapper> paths
-        = shortestPath.getPaths(config);
-
     for (Configuration<State, EEFSMContext<Context>> tgtConfig : tgtConfigs) {
-      GraphPath<Configuration<State, EEFSMContext<Context>>, TransitionWrapper> path = paths.getPath(tgtConfig);
+      GraphPath<Configuration<State, EEFSMContext<Context>>, TransitionWrapper> path = baseSSSP.getPath(tgtConfig);
       if (path != null) {
         res.add(toEFSMPath(path));
       }
     }
 
-    logger.trace("Computing paths from {} to {} resulted in {} paths and took {}", config, tgt, res.size(), sw);
+    logger.trace("Computing paths from {} to {} resulted in {} paths and took {}", baseSSSP.getSourceVertex(), tgt,
+        res.size(), sw);
 
     if (res.isEmpty()) {
       return null;
@@ -225,6 +281,59 @@ public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context>
     @Override
     public String toString() {
       return Objects.toString(t.getExpectedInput(), "-");
+    }
+  }
+
+  /**
+   * Single source shortest path implementation for {@link GraphExplosionFeasiblePathAlgorithm}. Caches all shortest path for
+   * a given source node and can be useful if multiple have to be queried without re-computation.
+   */
+  public class SingleSourceShortestPath implements IFeasiblePathAlgo.SingleSourceShortestPath<State, Parameter,
+      EEFSMContext<Context>, ETransition<State, Parameter, Context>> {
+
+    private final ShortestPathAlgorithm.SingleSourcePaths<Configuration<State, EEFSMContext<Context>>,
+        TransitionWrapper> baseSSSP;
+
+    private final LoadingCache<State, List<EEFSMPath<State, Parameter, Context>>> tgtToPaths
+        = CacheBuilder.newBuilder().build(new CacheLoader<State, List<EEFSMPath<State, Parameter, Context>>>() {
+          @Override
+          public List<EEFSMPath<State, Parameter, Context>> load(State tgt) {
+            return getPathsForSSSP(tgt, baseSSSP);
+          }
+        });
+
+    private SingleSourceShortestPath(
+        ShortestPathAlgorithm.SingleSourcePaths<Configuration<State, EEFSMContext<Context>>, TransitionWrapper> baseSSSP) {
+      this.baseSSSP = baseSSSP;
+    }
+
+    @Override
+    public List<? extends EFSMPath<State, Parameter, EEFSMContext<Context>, ETransition<State, Parameter, Context>>>
+        getPaths(State tgt) {
+      try {
+        return tgtToPaths.get(tgt);
+      } catch (ExecutionException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
+    @Override
+    public EFSMPath<State, Parameter, EEFSMContext<Context>, ETransition<State, Parameter, Context>> getPath(State tgt) {
+      try {
+        return Iterables.getFirst(tgtToPaths.get(tgt), null);
+      } catch (ExecutionException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
+    @Override
+    public int getLength(State tgt) {
+      return getPath(tgt).getLength();
+    }
+
+    @Override
+    public Configuration<State, EEFSMContext<Context>> getSource() {
+      return baseSSSP.getSourceVertex();
     }
   }
 }
