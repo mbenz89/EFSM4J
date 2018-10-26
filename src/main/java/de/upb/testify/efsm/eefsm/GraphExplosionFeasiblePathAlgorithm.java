@@ -309,8 +309,7 @@ public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context>
     }
 
     @Override
-    public List<? extends EFSMPath<State, Parameter, EEFSMContext<Context>, ETransition<State, Parameter, Context>>>
-        getPaths(State tgt) {
+    public List<EEFSMPath<State, Parameter, Context>> getPaths(State tgt) {
       try {
         return tgtToPaths.get(tgt);
       } catch (ExecutionException e) {
@@ -319,7 +318,7 @@ public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context>
     }
 
     @Override
-    public EFSMPath<State, Parameter, EEFSMContext<Context>, ETransition<State, Parameter, Context>> getPath(State tgt) {
+    public EEFSMPath<State, Parameter, Context> getPath(State tgt) {
       try {
         return Iterables.getFirst(tgtToPaths.get(tgt), null);
       } catch (ExecutionException e) {
