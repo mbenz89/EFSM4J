@@ -21,7 +21,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -273,6 +272,13 @@ public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context>
     }
   }
 
+  private static final class NoPathForTargetException extends Exception {
+
+    public NoPathForTargetException(Configuration src, Object tgt) {
+      super(String.format("No path from %s to %s found in EEFSM", src, tgt));
+    }
+  }
+
   private final class TransitionWrapper {
     private final ETransition<State, Parameter, Context> t;
 
@@ -299,11 +305,11 @@ public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context>
     private final LoadingCache<State, List<EEFSMPath<State, Parameter, Context>>> tgtToPaths
         = CacheBuilder.newBuilder().build(new CacheLoader<State, List<EEFSMPath<State, Parameter, Context>>>() {
           @Override
-          public List<EEFSMPath<State, Parameter, Context>> load(State tgt) {
+          public List<EEFSMPath<State, Parameter, Context>> load(State tgt) throws NoPathForTargetException {
             final List<EEFSMPath<State, Parameter, Context>> pathsForSSSP = getPathsForSSSP(tgt, baseSSSP);
 
             if (pathsForSSSP == null || pathsForSSSP.isEmpty()) {
-              throw new NoSuchElementException();
+              throw new NoPathForTargetException(baseSSSP.getSourceVertex(), tgt);
             }
 
             return pathsForSSSP;
@@ -320,7 +326,7 @@ public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context>
       try {
         return tgtToPaths.get(tgt);
       } catch (ExecutionException e) {
-        if (e.getCause() instanceof NoSuchElementException) {
+        if (e.getCause() instanceof NoPathForTargetException) {
           return null;
         }
         throw new RuntimeException(e);
@@ -332,7 +338,7 @@ public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context>
       try {
         return Iterables.getFirst(tgtToPaths.get(tgt), null);
       } catch (ExecutionException e) {
-        if (e.getCause() instanceof NoSuchElementException) {
+        if (e.getCause() instanceof NoPathForTargetException) {
           return null;
         }
         throw new RuntimeException(e);
@@ -349,6 +355,5 @@ public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context>
     public Configuration<State, EEFSMContext<Context>> getSource() {
       return baseSSSP.getSourceVertex();
     }
-
   }
 }
