@@ -47,7 +47,8 @@ import org.slf4j.LoggerFactory;
  * @author Manuel Benz created on 26.03.18
  */
 public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context>
-    extends JGraphBasedFPALgo<State, Parameter, EEFSMContext<Context>, ETransition<State, Parameter, Context>> {
+    extends JGraphBasedFPALgo<State, Parameter, EEFSMContext<Context>, ETransition<State, Parameter, Context>>
+    implements IEEFSMFeasiblePathAlgo<State, Parameter, Context> {
 
   private static final Logger logger = LoggerFactory.getLogger(GraphExplosionFeasiblePathAlgorithm.class);
 
