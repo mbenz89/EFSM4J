@@ -150,12 +150,6 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     logger.debug("Starting up efsm debugger...");
     Stopwatch sw = Stopwatch.createStarted();
 
-    try {
-      UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
-      ex.printStackTrace();
-    }
-
     BorderPane borderPane = new BorderPane();
     borderPane.setTop(initToolBar());
     borderPane.setBottom(initStatusBar());
