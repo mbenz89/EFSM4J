@@ -8,6 +8,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 /** @author Manuel Benz created on 22.02.18 */
 public class ETransition<State, Input, ContextObject> extends Transition<State, Input, EEFSMContext<ContextObject>> {
 
@@ -142,5 +145,26 @@ public class ETransition<State, Input, ContextObject> extends Transition<State, 
     builder.append("\n");
 
     return builder.toString();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o)
+      return true;
+
+    if (o == null || getClass() != o.getClass())
+      return false;
+
+    ETransition<?, ?, ?> that = (ETransition<?, ?, ?>) o;
+
+    return new EqualsBuilder().append(expectedInput, that.expectedInput).append(addToContext, that.addToContext)
+        .append(removeFromContext, that.removeFromContext).append(inContext, that.inContext)
+        .append(notInContext, that.notInContext).append(getSrc(), that.getSrc()).append(getTgt(), that.getTgt()).isEquals();
+  }
+
+  @Override
+  public int hashCode() {
+    return new HashCodeBuilder(17, 37).append(expectedInput).append(addToContext).append(removeFromContext).append(inContext)
+        .append(notInContext).append(getSrc()).append(getTgt()).toHashCode();
   }
 }

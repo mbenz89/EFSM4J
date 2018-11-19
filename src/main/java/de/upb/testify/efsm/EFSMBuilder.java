@@ -10,12 +10,15 @@ import java.util.Set;
 import org.jgrapht.Graph;
 import org.jgrapht.Graphs;
 import org.jgrapht.graph.DirectedPseudograph;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** @author Manuel Benz created on 20.02.18 */
 public class EFSMBuilder<State, Parameter, Context extends IEFSMContext<Context>,
     Transition extends de.upb.testify.efsm.Transition<State, Parameter, Context>,
     EFSM extends de.upb.testify.efsm.EFSM<State, Parameter, Context, Transition>> {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(EFSMBuilder.class);
   protected final Graph<State, Transition> base;
   private final Class<EFSM> efsmTypeClass;
 
@@ -53,15 +56,19 @@ public class EFSMBuilder<State, Parameter, Context extends IEFSMContext<Context>
   }
 
   public EFSMBuilder<State, Parameter, Context, Transition, EFSM> withTransition(State src, State tgt, Transition t) {
-    Preconditions.checkArgument(!base.containsEdge(t), "Transition already in EFSM");
-
-    base.addVertex(src);
-    base.addVertex(tgt);
-
     t.setSrc(src);
     t.setTgt(tgt);
 
-    base.addEdge(src, tgt, t);
+    // ignore duplicate transitions
+    if (!base.containsEdge(t)) {
+      base.addVertex(src);
+      base.addVertex(tgt);
+
+      base.addEdge(src, tgt, t);
+    } else {
+      LOGGER.warn("Duplicate edge from {} to {}: {}", src, tgt, t);
+    }
+
     return this;
   }
 
