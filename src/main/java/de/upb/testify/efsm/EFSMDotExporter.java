@@ -1,8 +1,11 @@
 package de.upb.testify.efsm;
 
 import java.io.BufferedWriter;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.function.Function;
 
@@ -30,7 +33,8 @@ public class EFSMDotExporter<State, Transition> {
     DOTExporter exporter = new DOTExporter<State, Transition>(new IntegerComponentNameProvider<>(),
         s -> stateLabeler.apply(s), t -> edgeLabeler.apply(t));
 
-    try (BufferedWriter writer = new BufferedWriter(new FileWriter(outFile.toFile()))) {
+    try (Writer writer
+        = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outFile.toFile()), StandardCharsets.UTF_8))) {
       exporter.exportGraph(efsm.getBaseGraph(), writer);
     }
   }
