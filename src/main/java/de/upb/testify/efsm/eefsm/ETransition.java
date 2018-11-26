@@ -40,7 +40,17 @@ public class ETransition<State, Input, ContextObject> extends Transition<State, 
    * @return
    */
   private static <T> T[] sanitize(T[] array) {
-    return array == null || array.length == 0 ? null : (T[]) Arrays.stream(array).filter(t -> t != null).toArray();
+    if (array == null || array.length == 0) {
+      return null;
+    }
+
+    final T[] res = (T[]) Arrays.stream(array).filter(t -> t != null).toArray();
+
+    if (res.length == 0) {
+      return null;
+    }
+
+    return res;
   }
 
   public Input getExpectedInput() {
