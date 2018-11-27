@@ -7,11 +7,11 @@ import java.util.List;
 /** @author Manuel Benz created on 22.02.18 */
 public class ETransitionbuilder<State, Input, ContextObject> {
 
-  private Input expectedInput = null;
-  private List<ContextObject> addToContext;
-  private List<ContextObject> removeFromContext;
-  private List<ContextObject> inContext;
-  private List<ContextObject> notInContext;
+  protected Input expectedInput = null;
+  protected List<ContextObject> addToContext;
+  protected List<ContextObject> removeFromContext;
+  protected List<ContextObject> inContext;
+  protected List<ContextObject> notInContext;
 
   public ETransitionbuilder() {
     this.addToContext = new ArrayList<>();

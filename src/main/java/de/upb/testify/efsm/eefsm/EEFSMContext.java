@@ -1,19 +1,19 @@
 package de.upb.testify.efsm.eefsm;
 
+import de.upb.testify.efsm.IEFSMContext;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.stream.Collectors;
 
-import de.upb.testify.efsm.IEFSMContext;
-
 /** @author Manuel Benz created on 22.02.18 */
 public class EEFSMContext<ContextObject> implements IEFSMContext<EEFSMContext<ContextObject>> {
 
-  private final HashSet<ContextObject> internalSet = new HashSet<>();
-  private boolean hashInvalidated = true;
-  private int cachedHash;
+  protected final HashSet<ContextObject> internalSet = new HashSet<>();
+  protected boolean hashInvalidated = true;
+  protected int cachedHash;
 
   public EEFSMContext(ContextObject... o) {
     union(o);
