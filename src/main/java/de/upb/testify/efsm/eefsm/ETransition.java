@@ -21,6 +21,8 @@ public class ETransition<State, Input, ContextObject> extends Transition<State, 
   protected final ContextObject[] inContext;
   protected final ContextObject[] notInContext;
 
+  private final int cachedHash;
+
   protected ETransition(Input expectedInput, ContextObject[] inContext, ContextObject[] notInContext,
       ContextObject[] addToContext, ContextObject[] removeFromContext) {
     this.expectedInput = expectedInput;
@@ -30,6 +32,9 @@ public class ETransition<State, Input, ContextObject> extends Transition<State, 
     this.notInContext = sanitize(notInContext);
     this.addToContext = sanitize(addToContext);
     this.removeFromContext = sanitize(removeFromContext);
+
+    cachedHash = new HashCodeBuilder(17, 37).append(expectedInput).append(addToContext).append(removeFromContext)
+        .append(inContext).append(notInContext).append(getSrc()).append(getTgt()).toHashCode();
   }
 
   /**
@@ -76,7 +81,7 @@ public class ETransition<State, Input, ContextObject> extends Transition<State, 
   @Override
   protected boolean inputGuard(Input input) {
     // we accept epsilon (expectedInput=null) by checking if expected input is input
-    if (expectedInput == input || (expectedInput != null && expectedInput.equals(input))) {
+    if (Objects.equals(expectedInput, input)) {
       return true;
     }
     return false;
@@ -174,7 +179,6 @@ public class ETransition<State, Input, ContextObject> extends Transition<State, 
 
   @Override
   public int hashCode() {
-    return new HashCodeBuilder(17, 37).append(expectedInput).append(addToContext).append(removeFromContext).append(inContext)
-        .append(notInContext).append(getSrc()).append(getTgt()).toHashCode();
+    return cachedHash;
   }
 }

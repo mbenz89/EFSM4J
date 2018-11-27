@@ -13,7 +13,7 @@ public class EEFSMContext<ContextObject> implements IEFSMContext<EEFSMContext<Co
 
   protected final HashSet<ContextObject> internalSet = new HashSet<>();
   protected boolean hashInvalidated = true;
-  protected int cachedHash;
+  private int cachedHash;
 
   public EEFSMContext(ContextObject... o) {
     union(o);
