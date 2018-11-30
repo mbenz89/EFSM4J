@@ -66,7 +66,7 @@ public class EFSMBuilder<State, Parameter, Context extends IEFSMContext<Context>
 
       base.addEdge(src, tgt, t);
     } else {
-      LOGGER.warn("Duplicate edge from {} to {}: {}", src, tgt, t);
+      LOGGER.trace("Duplicate edge from {} to {}: {}", src, tgt, t);
     }
 
     return this;
