@@ -190,7 +190,8 @@ public class EFSM<State, Parameter, Context extends IEFSMContext<Context>,
     this.curState = config.getState();
     this.curContext = config.getContext().snapshot();
     if (pcs != null) {
-      this.pcs.firePropertyChange(PROP_CONFIGURATION, prefConfig, getConfiguration());
+      // pass null as transition since there was no valid transition
+      this.pcs.firePropertyChange(PROP_CONFIGURATION, prefConfig, Pair.of(null, getConfiguration()));
     }
   }
 }
