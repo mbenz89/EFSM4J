@@ -102,7 +102,7 @@ public class EFSM<State, Parameter, Context extends IEFSMContext<Context>,
    * @return The configuration after taking one of the possible transitions for the given input or null if the input is not
    *         accepted in the current configuration
    */
-  public Configuration transitionAndDrop(Parameter input) {
+  public Configuration<State, Context> transitionAndDrop(Parameter input) {
     if (transition(input) != null) {
       return getConfiguration();
     } else {
@@ -116,7 +116,7 @@ public class EFSM<State, Parameter, Context extends IEFSMContext<Context>,
    * @return The configuration after taking one of the possible transitions for the empty input or null if the input is not
    *         accepted in the current configuration
    */
-  public Configuration transitionAndDrop() {
+  public Configuration<State, Context> transitionAndDrop() {
     return transitionAndDrop((Parameter) null);
   }
 
