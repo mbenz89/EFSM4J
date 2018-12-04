@@ -116,6 +116,8 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
   private boolean initialized;
   private EFSMPath<State, ?, ?, Transition> highlightedPath;
   private NotificationPane notificationPane;
+  private TreeItem<Object> invisibleRoot;
+  private EFSM<State, ?, ?, Transition> efsm;
 
   // endregion
 
@@ -166,6 +168,8 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
 
   private void init(EFSM<State, ?, ?, Transition> efsm, boolean startInControlMode, Function<State, String> stateLabeler,
       Function<Transition, String> transitionLabeler) {
+    this.efsm = efsm;
+
     logger.debug("Starting up efsm debugger...");
     Stopwatch sw = Stopwatch.createStarted();
 
@@ -301,6 +305,9 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     jgxAdapter.setCellStyle(new SB(curState).set(mxConstants.STYLE_FILLCOLOR, COLOR_CUR_VERTEX).build(),
         new mxICell[] { curState });
     toCur.setDisable(false);
+
+    // show the new context in the properties window
+    Platform.runLater(() -> invisibleRoot.getChildren().set(0, createTreeItem(newConfig.getContext())));
   }
 
   private void haltExecution() {
@@ -649,6 +656,14 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
 
     treeTable.getColumns().addAll(property, value);
 
+    invisibleRoot = new TreeItem<>();
+    treeTable.setRoot(invisibleRoot);
+    treeTable.setShowRoot(false);
+
+    invisibleRoot.getChildren().add(0, createTreeItem(efsm.getInitialConfiguration().getContext()));
+    final TreeItem<Object> placeHolder = new TreeItem<>("");
+    invisibleRoot.getChildren().add(1, placeHolder);
+
     graphComponent.getGraphControl().addMouseListener(new MouseAdapter() {
       @Override
       public void mouseClicked(MouseEvent e) {
@@ -656,14 +671,20 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
 
         if (cell != null) {
           mxICell mxCell = (mxICell) cell;
+          final Object newItem;
           if (mxCell.isVertex()) {
-            Platform.runLater(() -> treeTable.setRoot(createTreeItem(jgxAdapter.getCellToVertexMap().get(mxCell))));
+            newItem = jgxAdapter.getCellToVertexMap().get(mxCell);
           } else if (mxCell.isEdge()) {
-            Platform.runLater(() -> treeTable.setRoot(createTreeItem(jgxAdapter.getCellToEdgeMap().get(mxCell))));
+            newItem = jgxAdapter.getCellToEdgeMap().get(mxCell);
+          } else {
+            newItem = "";
           }
+          final ObservableList<TreeItem<Object>> children = invisibleRoot.getChildren();
+          Platform.runLater(() -> children.set(1, createTreeItem(newItem)));
         }
       }
     });
+
 
     return treeTable;
   }
