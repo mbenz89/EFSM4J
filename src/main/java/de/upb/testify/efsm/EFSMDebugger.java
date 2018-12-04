@@ -11,11 +11,13 @@ import com.mxgraph.layout.mxEdgeLabelLayout;
 import com.mxgraph.layout.mxFastOrganicLayout;
 import com.mxgraph.layout.mxParallelEdgeLayout;
 import com.mxgraph.model.mxGeometry;
+import com.mxgraph.model.mxGraphModel;
 import com.mxgraph.model.mxICell;
 import com.mxgraph.model.mxIGraphModel;
 import com.mxgraph.swing.mxGraphComponent;
 import com.mxgraph.util.mxConstants;
 import com.mxgraph.util.mxRectangle;
+import com.sun.javafx.collections.ObservableListWrapper;
 
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -46,9 +48,17 @@ import org.slf4j.LoggerFactory;
 
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.embed.swing.SwingNode;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
@@ -65,9 +75,11 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTableView;
+import javafx.scene.layout.Border;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 /** @author Manuel Benz created on 01.02.18 */
@@ -176,6 +188,7 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     setupHaltOnNode();
 
     notificationPane = new NotificationPane(createSwingNode(graphComponent));
+    setupSearchBar();
     SplitPane jSplitPane = new SplitPane(notificationPane, setupPropertiesPanel());
     jSplitPane.setOrientation(Orientation.VERTICAL);
     borderPane.setCenter(jSplitPane);
@@ -400,19 +413,6 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     if (notificationPane.isShowing()) {
       notificationPane.hide();
     } else {
-      CustomTextField searchField = new CustomTextField();
-      searchField.setLeft(new MaterialDesignIconView(MaterialDesignIcon.MAGNIFY, "16"));
-      final MaterialDesignIconView lastEntry
-          = new MaterialDesignIconView(MaterialDesignIcon.CHEVRON_UP, "" + TOOLBAR_BUTTON_SIZE.height);
-      final MaterialDesignIconView nextEntry
-          = new MaterialDesignIconView(MaterialDesignIcon.CHEVRON_DOWN, "" + TOOLBAR_BUTTON_SIZE.height);
-      final Label resultLabel = new Label("test");
-      resultLabel.setMinSize(TOOLBAR_BUTTON_SIZE.width, TOOLBAR_BUTTON_SIZE.height);
-      final HBox hBox = new HBox(searchField, lastEntry, nextEntry, resultLabel);
-      hBox.setAlignment(Pos.CENTER_LEFT);
-      hBox.setPadding(new Insets(0, 2, 0, 7));
-      notificationPane.setGraphic(hBox);
-      notificationPane.setCloseButtonVisible(true);
       notificationPane.show();
     }
   }
@@ -1049,6 +1049,148 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
       logger.trace("Layouting graph took {}", sw);
     }
     // endregion
+  }
+  // endregion
+
+  // region Searchbar
+
+  private void setupSearchBar() {
+    CustomTextField searchField = new CustomTextField();
+    searchField.setLeft(new MaterialDesignIconView(MaterialDesignIcon.MAGNIFY, "20"));
+    final Button lastEntry = new Button();
+    lastEntry.setGraphic(new MaterialDesignIconView(MaterialDesignIcon.CHEVRON_UP, "20"));
+    lastEntry.setBorder(Border.EMPTY);
+    lastEntry.setDisable(true);
+    final Button nextEntry = new Button();
+    nextEntry.setGraphic(new MaterialDesignIconView(MaterialDesignIcon.CHEVRON_DOWN, "20"));
+    nextEntry.setBorder(Border.EMPTY);
+    nextEntry.setDisable(true);
+    final Label resultLabel = new Label();
+    resultLabel.setFont(new Font("arial", 15));
+    final HBox hBox = new HBox(searchField, lastEntry, nextEntry, resultLabel);
+    hBox.setAlignment(Pos.CENTER_LEFT);
+    hBox.setPadding(new Insets(0, 2, 0, 7));
+    notificationPane.setGraphic(hBox);
+    notificationPane.setCloseButtonVisible(true);
+
+    final EFSMDebugger.SearchModel searchModel = new EFSMDebugger.SearchModel();
+    searchModel.searchTerm().bind(searchField.textProperty());
+    searchField.onActionProperty().bind(searchModel.conductSearch());
+    resultLabel.textProperty().bind(searchModel.result());
+    lastEntry.disableProperty().bind(searchModel.hasPreviousEntry().not());
+    lastEntry.onActionProperty().bind(searchModel.showPrevious());
+    nextEntry.disableProperty().bind(searchModel.hasNextEntry().not());
+    nextEntry.onActionProperty().bind(searchModel.showNext());
+    notificationPane.setOnHidden(e -> searchModel.clearSearch());
+  }
+
+  private class SearchModel {
+
+    public final Color COLOR_FOUND_CELL = Color.MAGENTA;
+    private final Object[] allCells;
+    private ObservableList<mxICell> found = new ObservableListWrapper<>(new ArrayList<>());
+    private IntegerProperty index = new SimpleIntegerProperty(0);
+    private SimpleStringProperty resultText;
+    private SimpleStringProperty searchTerm;
+    private String oldStyle;
+    private mxICell foundCell;
+
+    public SearchModel() {
+      allCells = mxGraphModel.getChildCells(jgxAdapter.getModel(), jgxAdapter.getDefaultParent(), true, true);
+    }
+
+    public SimpleStringProperty result() {
+      resultText = new SimpleStringProperty();
+      return resultText;
+    }
+
+    public SimpleStringProperty searchTerm() {
+      searchTerm = new SimpleStringProperty();
+      return searchTerm;
+    }
+
+    public BooleanProperty hasPreviousEntry() {
+      final BooleanProperty booleanSimpleObjectProperty = new SimpleBooleanProperty(false);
+      booleanSimpleObjectProperty.bind(index.greaterThan(0));
+      return booleanSimpleObjectProperty;
+    }
+
+    public ObservableValue<? extends EventHandler<ActionEvent>> showPrevious() {
+      EventHandler<ActionEvent> prev = e -> {
+        index.setValue(index.getValue() - 1);
+        resultText.set(String.format("%d of %d matches", index.intValue() + 1, found.size()));
+        showFound();
+      };
+      return new SimpleObjectProperty<>(prev);
+    }
+
+    public BooleanProperty hasNextEntry() {
+      final BooleanProperty booleanSimpleObjectProperty = new SimpleBooleanProperty(false);
+      booleanSimpleObjectProperty.bind(Bindings.size(found).subtract(1).greaterThan(index));
+      return booleanSimpleObjectProperty;
+    }
+
+    public ObservableValue<? extends EventHandler<ActionEvent>> showNext() {
+      EventHandler<ActionEvent> next = e -> {
+        index.set(index.getValue() + 1);
+        resultText.set(String.format("%d of %d matches", index.intValue() + 1, found.size()));
+        showFound();
+      };
+      return new SimpleObjectProperty<>(next);
+    }
+
+    protected void showFound() {
+      clearFocus();
+
+      foundCell = found.get(index.get());
+      oldStyle = Strings.nullToEmpty(foundCell.getStyle());
+      jgxAdapter.getModel().setStyle(foundCell,
+          new EFSMDebugger.SB(foundCell).set(mxConstants.STYLE_STROKEWIDTH, String.valueOf(STROKE_WIDTH_HIGHLIGHTED))
+              .set(mxConstants.STYLE_STROKECOLOR, COLOR_FOUND_CELL).build());
+      graphComponent.scrollCellToVisible(foundCell, true);
+    }
+
+    public ObservableValue<? extends EventHandler<ActionEvent>> conductSearch() {
+      EventHandler<ActionEvent> search = e -> {
+        clearSearch();
+
+        final String term = searchTerm.getValue().toLowerCase();
+
+        if (Strings.isNullOrEmpty(term)) {
+          resultText.set("No search term given");
+          return;
+        }
+
+        for (Object cell : allCells) {
+          final mxICell mxCell = (mxICell) cell;
+          if (mxCell.getValue().toString().toLowerCase().contains(term)) {
+            found.add(mxCell);
+          }
+        }
+
+        if (found.isEmpty()) {
+          resultText.set("No matches found");
+          return;
+        }
+
+        resultText.set(String.format("%d of %d matches", index.intValue() + 1, found.size()));
+        showFound();
+      };
+      return new SimpleObjectProperty<>(search);
+    }
+
+    public void clearSearch() {
+      clearFocus();
+      found.clear();
+      index.set(0);
+      resultText.setValue("");
+    }
+
+    private void clearFocus() {
+      if (foundCell != null) {
+        jgxAdapter.getModel().setStyle(foundCell, oldStyle);
+      }
+    }
   }
   // endregion
 }
