@@ -1,5 +1,7 @@
 package de.upb.testify.efsm;
 
+import de.jensd.fx.glyphs.materialdesignicons.MaterialDesignIcon;
+import de.jensd.fx.glyphs.materialdesignicons.MaterialDesignIconView;
 import de.upb.testify.efsm.eefsm.EEFSM;
 
 import com.google.common.base.Stopwatch;
@@ -35,7 +37,9 @@ import javax.naming.Context;
 import javax.swing.*;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.controlsfx.control.NotificationPane;
 import org.controlsfx.control.StatusBar;
+import org.controlsfx.control.textfield.CustomTextField;
 import org.jgrapht.ext.JGraphXAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +50,9 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ObservableList;
 import javafx.embed.swing.SwingNode;
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -59,8 +65,8 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTableView;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
@@ -97,6 +103,7 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
   private mxICell curState;
   private boolean initialized;
   private EFSMPath<State, ?, ?, Transition> highlightedPath;
+  private NotificationPane notificationPane;
 
   // endregion
 
@@ -168,7 +175,8 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     setupZooming();
     setupHaltOnNode();
 
-    SplitPane jSplitPane = new SplitPane(createSwingNode(graphComponent), setupPropertiesPanel());
+    notificationPane = new NotificationPane(createSwingNode(graphComponent));
+    SplitPane jSplitPane = new SplitPane(notificationPane, setupPropertiesPanel());
     jSplitPane.setOrientation(Orientation.VERTICAL);
     borderPane.setCenter(jSplitPane);
     Platform.runLater(() -> jSplitPane.setDividerPosition(0, 0.8));
@@ -367,22 +375,46 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
 
   private ToolBar initToolBar() {
     ToolBar toolBar = new ToolBar();
-    playButton = addButton(toolBar, event -> performPlay(), "play.png", "(Re)starts the continuous exploration");
-    pauseButton
-        = addButton(toolBar, event -> performPause(), "pause.png", "Pauses the exploration and starts the stepping mode");
-    stepButton
-        = addButton(toolBar, event -> performStep(), "step.png", "Executes the next state transition in stepping mode");
+    playButton
+        = addButton(toolBar, event -> performPlay(), MaterialDesignIcon.PLAY, "(Re)starts the continuous exploration");
+    pauseButton = addButton(toolBar, event -> performPause(), MaterialDesignIcon.PAUSE,
+        "Pauses the exploration and starts the stepping mode");
+    stepButton = addButton(toolBar, event -> performStep(), MaterialDesignIcon.STEP_FORWARD,
+        "Executes the next state transition in stepping mode");
     toolBar.getItems().add(new Separator());
     addButton(toolBar, event -> {
-    }, "undo.png", "Undoes the last transition visually (internal state is not affected)");
+    }, MaterialDesignIcon.UNDO, "Undoes the last transition visually (internal state is not affected)");
     addButton(toolBar, event -> {
-    }, "redo.png", "Redoes the last transition visually (internal state is not affected)");
+    }, MaterialDesignIcon.REDO, "Redoes the last transition visually (internal state is not affected)");
     toolBar.getItems().add(new Separator());
     toCur = addButton(toolBar, "CS", event -> graphComponent.scrollCellToVisible(curState, true), COLOR_CUR_VERTEX,
         "Scrolls the current state into view");
     toLast = addButton(toolBar, "LS", event -> graphComponent.scrollCellToVisible(lastState, true), COLOR_LAST_VERTEX,
         "Scrolls the last state into view");
+    toolBar.getItems().add(new Separator());
+    addButton(toolBar, event -> showSearchBar(), MaterialDesignIcon.MAGNIFY, "Opens the search panel").setDisable(false);
     return toolBar;
+  }
+
+  private void showSearchBar() {
+    if (notificationPane.isShowing()) {
+      notificationPane.hide();
+    } else {
+      CustomTextField searchField = new CustomTextField();
+      searchField.setLeft(new MaterialDesignIconView(MaterialDesignIcon.MAGNIFY, "16"));
+      final MaterialDesignIconView lastEntry
+          = new MaterialDesignIconView(MaterialDesignIcon.CHEVRON_UP, "" + TOOLBAR_BUTTON_SIZE.height);
+      final MaterialDesignIconView nextEntry
+          = new MaterialDesignIconView(MaterialDesignIcon.CHEVRON_DOWN, "" + TOOLBAR_BUTTON_SIZE.height);
+      final Label resultLabel = new Label("test");
+      resultLabel.setMinSize(TOOLBAR_BUTTON_SIZE.width, TOOLBAR_BUTTON_SIZE.height);
+      final HBox hBox = new HBox(searchField, lastEntry, nextEntry, resultLabel);
+      hBox.setAlignment(Pos.CENTER_LEFT);
+      hBox.setPadding(new Insets(0, 2, 0, 7));
+      notificationPane.setGraphic(hBox);
+      notificationPane.setCloseButtonVisible(true);
+      notificationPane.show();
+    }
   }
 
   private Button addButton(ToolBar toolBar, String label, EventHandler<javafx.event.ActionEvent> handler,
@@ -399,14 +431,13 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     return button;
   }
 
-  private Button addButton(ToolBar jToolBar, EventHandler<javafx.event.ActionEvent> actionCommand, String image,
+  private Button addButton(ToolBar jToolBar, EventHandler<javafx.event.ActionEvent> actionCommand, MaterialDesignIcon icon,
       String toolTip) {
     Button but = new Button();
-    but.setGraphic(new ImageView(new javafx.scene.image.Image(getClass().getResourceAsStream(image),
-        TOOLBAR_BUTTON_SIZE.width, TOOLBAR_BUTTON_SIZE.height, false, false)));
+    but.setGraphic(new MaterialDesignIconView(icon, "" + TOOLBAR_BUTTON_SIZE.height));
     but.setOnAction(actionCommand);
     but.setTooltip(new Tooltip(toolTip));
-    but.setPrefSize(TOOLBAR_BUTTON_SIZE.width, TOOLBAR_BUTTON_SIZE.height);
+    but.setMinSize(TOOLBAR_BUTTON_SIZE.width, TOOLBAR_BUTTON_SIZE.height);
     but.setDisable(true);
     jToolBar.getItems().add(but);
     return but;
