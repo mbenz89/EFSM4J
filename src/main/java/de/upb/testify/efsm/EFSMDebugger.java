@@ -75,6 +75,10 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTableView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Border;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -206,10 +210,27 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     setCurrentConfig(efsm.getInitialConfiguration());
     graphComponent.scrollCellToVisible(curState, true);
 
+    registerHotKeys();
+
     logger.debug("Creating debugger took {}", sw);
     initialized = true;
     status("Waiting for input");
     info("");
+  }
+
+  private void registerHotKeys() {
+    final Scene scene = primaryStage.getScene();
+
+    final KeyCodeCombination searchKey = new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN);
+
+    scene.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
+      @Override
+      public void handle(KeyEvent event) {
+        if (searchKey.match(event)) {
+          showSearchBar();
+        }
+      }
+    });
   }
 
   @Override
@@ -412,7 +433,9 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     toLast = addButton(toolBar, "LS", event -> graphComponent.scrollCellToVisible(lastState, true), COLOR_LAST_VERTEX,
         "Scrolls the last state into view");
     toolBar.getItems().add(new Separator());
-    addButton(toolBar, event -> showSearchBar(), MaterialDesignIcon.MAGNIFY, "Opens the search panel").setDisable(false);
+    final Button searchPanelButton
+        = addButton(toolBar, event -> showSearchBar(), MaterialDesignIcon.MAGNIFY, "Opens the search panel");
+    searchPanelButton.setDisable(false);
     return toolBar;
   }
 
@@ -597,8 +620,8 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
 
     TreeTableColumn<Object, Object> property = column("Property", o -> {
       Object value = o.getValue();
-      if (value == treeTable.getRoot().getValue()) {
-        return String.valueOf(value.getClass());
+      if (invisibleRoot.getChildren().stream().anyMatch(c -> c.getValue() == value)) {
+        return value.getClass().getSimpleName();
       } else if (value instanceof Field) {
         return ((Field) value).getName();
       }
@@ -661,8 +684,6 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     treeTable.setShowRoot(false);
 
     invisibleRoot.getChildren().add(0, createTreeItem(efsm.getInitialConfiguration().getContext()));
-    final TreeItem<Object> placeHolder = new TreeItem<>("");
-    invisibleRoot.getChildren().add(1, placeHolder);
 
     graphComponent.getGraphControl().addMouseListener(new MouseAdapter() {
       @Override
@@ -680,7 +701,14 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
             newItem = "";
           }
           final ObservableList<TreeItem<Object>> children = invisibleRoot.getChildren();
-          Platform.runLater(() -> children.set(1, createTreeItem(newItem)));
+          Platform.runLater(() -> {
+            final TreeItem<Object> newTreeItem = createTreeItem(newItem);
+            if (children.size() > 1) {
+              children.set(1, newTreeItem);
+            } else {
+              children.add(1, newTreeItem);
+            }
+          });
         }
       }
     });
@@ -1099,10 +1127,12 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     searchField.onActionProperty().bind(searchModel.conductSearch());
     resultLabel.textProperty().bind(searchModel.result());
     lastEntry.disableProperty().bind(searchModel.hasPreviousEntry().not());
-    lastEntry.onActionProperty().bind(searchModel.showPrevious());
+    lastEntry.setOnAction(e -> searchModel.showPrevious());
     nextEntry.disableProperty().bind(searchModel.hasNextEntry().not());
-    nextEntry.onActionProperty().bind(searchModel.showNext());
+    nextEntry.setOnAction(e -> searchModel.showNext());
     notificationPane.setOnHidden(e -> searchModel.clearSearch());
+
+    notificationPane.setOnShowing(e -> searchField.requestFocus());
   }
 
   private class SearchModel {
@@ -1113,6 +1143,7 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     private IntegerProperty index = new SimpleIntegerProperty(0);
     private SimpleStringProperty resultText;
     private SimpleStringProperty searchTerm;
+    private SimpleBooleanProperty searchTermChanged = new SimpleBooleanProperty(false);
     private String oldStyle;
     private mxICell foundCell;
 
@@ -1127,6 +1158,7 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
 
     public SimpleStringProperty searchTerm() {
       searchTerm = new SimpleStringProperty();
+      searchTerm.addListener(e -> searchTermChanged.set(true));
       return searchTerm;
     }
 
@@ -1136,13 +1168,10 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
       return booleanSimpleObjectProperty;
     }
 
-    public ObservableValue<? extends EventHandler<ActionEvent>> showPrevious() {
-      EventHandler<ActionEvent> prev = e -> {
-        index.setValue(index.getValue() - 1);
-        resultText.set(String.format("%d of %d matches", index.intValue() + 1, found.size()));
-        showFound();
-      };
-      return new SimpleObjectProperty<>(prev);
+    public void showPrevious() {
+      index.setValue(index.getValue() - 1);
+      resultText.set(String.format("%d of %d matches", index.intValue() + 1, found.size()));
+      showFound();
     }
 
     public BooleanProperty hasNextEntry() {
@@ -1151,13 +1180,10 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
       return booleanSimpleObjectProperty;
     }
 
-    public ObservableValue<? extends EventHandler<ActionEvent>> showNext() {
-      EventHandler<ActionEvent> next = e -> {
-        index.set(index.getValue() + 1);
-        resultText.set(String.format("%d of %d matches", index.intValue() + 1, found.size()));
-        showFound();
-      };
-      return new SimpleObjectProperty<>(next);
+    public void showNext() {
+      index.set(index.getValue() + 1);
+      resultText.set(String.format("%d of %d matches", index.intValue() + 1, found.size()));
+      showFound();
     }
 
     protected void showFound() {
@@ -1173,6 +1199,13 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
 
     public ObservableValue<? extends EventHandler<ActionEvent>> conductSearch() {
       EventHandler<ActionEvent> search = e -> {
+        if (!searchTermChanged.get()) {
+          if (hasNextEntry().get()) {
+            showNext();
+          }
+          return;
+        }
+
         clearSearch();
 
         final String term = searchTerm.getValue().toLowerCase();
@@ -1195,6 +1228,7 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
         }
 
         resultText.set(String.format("%d of %d matches", index.intValue() + 1, found.size()));
+        searchTermChanged.set(false);
         showFound();
       };
       return new SimpleObjectProperty<>(search);
