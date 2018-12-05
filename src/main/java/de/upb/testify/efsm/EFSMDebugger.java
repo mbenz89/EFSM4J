@@ -755,29 +755,33 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
 
         if (cell != null) {
           mxICell mxCell = (mxICell) cell;
-          final Object newItem;
-          if (mxCell.isVertex()) {
-            newItem = jgxAdapter.getCellToVertexMap().get(mxCell);
-          } else if (mxCell.isEdge()) {
-            newItem = jgxAdapter.getCellToEdgeMap().get(mxCell);
-          } else {
-            newItem = "";
-          }
-          final ObservableList<TreeItem<Object>> children = invisibleRoot.getChildren();
-          Platform.runLater(() -> {
-            final TreeItem<Object> newTreeItem = createTreeItem(newItem);
-            if (children.size() > 1) {
-              children.set(1, newTreeItem);
-            } else {
-              children.add(1, newTreeItem);
-            }
-          });
+          showCellProperties(mxCell);
         }
       }
     });
 
 
     return treeTable;
+  }
+
+  protected void showCellProperties(mxICell mxCell) {
+    final Object newItem;
+    if (mxCell.isVertex()) {
+      newItem = jgxAdapter.getCellToVertexMap().get(mxCell);
+    } else if (mxCell.isEdge()) {
+      newItem = jgxAdapter.getCellToEdgeMap().get(mxCell);
+    } else {
+      newItem = "";
+    }
+    final ObservableList<TreeItem<Object>> children = invisibleRoot.getChildren();
+    Platform.runLater(() -> {
+      final TreeItem<Object> newTreeItem = createTreeItem(newItem);
+      if (children.size() > 1) {
+        children.set(1, newTreeItem);
+      } else {
+        children.add(1, newTreeItem);
+      }
+    });
   }
 
   private void initPropertyPane() {
@@ -1241,6 +1245,7 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
           new EFSMDebugger.SB(foundCell).set(mxConstants.STYLE_STROKEWIDTH, String.valueOf(STROKE_WIDTH_HIGHLIGHTED))
               .set(mxConstants.STYLE_STROKECOLOR, COLOR_FOUND_CELL).build());
       graphComponent.scrollCellToVisible(foundCell, true);
+      showCellProperties(foundCell);
     }
 
     public ObservableValue<? extends EventHandler<ActionEvent>> conductSearch() {
