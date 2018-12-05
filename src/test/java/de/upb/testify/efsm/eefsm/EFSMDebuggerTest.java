@@ -1,15 +1,15 @@
 package de.upb.testify.efsm.eefsm;
 
+import de.upb.testify.efsm.EFSMDebugger;
+import de.upb.testify.efsm.EFSMPath;
+import de.upb.testify.efsm.Param;
+import de.upb.testify.efsm.State;
+
 import java.util.Iterator;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-
-import de.upb.testify.efsm.EFSMDebugger;
-import de.upb.testify.efsm.EFSMPath;
-import de.upb.testify.efsm.Param;
-import de.upb.testify.efsm.State;
 
 /** @author Manuel Benz created on 26.02.18 */
 public class EFSMDebuggerTest {
@@ -25,14 +25,6 @@ public class EFSMDebuggerTest {
     while (iterator.hasNext()) {
       Assertions.assertNotNull(efsm.transition(iterator.next()),
           "Transition failed in configuration: " + efsm.getConfiguration());
-    }
-
-    while (true) {
-      try {
-        Thread.sleep(2000);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
     }
   }
 
@@ -71,6 +63,20 @@ public class EFSMDebuggerTest {
     LargeInterComponentExample example = new LargeInterComponentExample();
     EFSMPath<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> path
         = new GraphExplosionFeasiblePathAlgorithm<>(example.eefsm).getPath(example.tgt);
+
+    debugThis((EEFSMPath<State, Param, Object>) path);
+  }
+
+  @Test
+  @Disabled
+  void resetTest() {
+    LargeInterComponentExample example = new LargeInterComponentExample();
+    EFSMPath<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> path
+        = new GraphExplosionFeasiblePathAlgorithm<>(example.eefsm).getPath(example.tgt);
+
+    debugThis((EEFSMPath<State, Param, Object>) path);
+
+    ((EEFSMPath<State, Param, Object>) path).getEefsm().reset();
 
     debugThis((EEFSMPath<State, Param, Object>) path);
   }

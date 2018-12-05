@@ -89,6 +89,7 @@ import javafx.stage.Stage;
 /** @author Manuel Benz created on 01.02.18 */
 public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transition<State, ?, ?>> extends Application
     implements PropertyChangeListener {
+
   // region fields and constants
   public static final float STROKE_WIDTH_HIGHLIGHTED = 4f;
   public static final Dimension TOOLBAR_BUTTON_SIZE = new Dimension(20, 20);
@@ -114,14 +115,14 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
   private Button pauseButton;
   private Button stepButton;
   private Stage primaryStage;
-  private Function<Object, String> stateLabeler;
-  private Function<Object, String> transitionLabeler;
   private mxICell curState;
   private boolean initialized;
   private EFSMPath<State, ?, ?, Transition> highlightedPath;
   private NotificationPane notificationPane;
   private TreeItem<Object> invisibleRoot;
-  private EFSM<State, ?, ?, Transition> efsm;
+  private Function<Object, String> stateLabeler;
+  private Function<Object, String> transitionLabeler;
+  private SearchModel searchModel;
 
   // endregion
 
@@ -143,6 +144,12 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
   public static synchronized <State, Transition extends de.upb.testify.efsm.Transition<State, ?, ?>>
       EFSMDebugger<State, Transition> startDebugger(EFSM<State, ?, ?, Transition> efsm, boolean startInControlMode,
           Function<State, String> stateLabeler, Function<Transition, String> transitionLabeler) {
+    if (instance != null) {
+      // reset everything
+      instance.reset(efsm, startInControlMode, stateLabeler, transitionLabeler);
+      return instance;
+    }
+
     new Thread(() -> {
       // Have to run in a thread because launch doesn't return
       Application.launch(EFSMDebugger.class);
@@ -170,10 +177,12 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     return instance;
   }
 
+  private static Function<Object, String> sanitizeLabeler(Function labeler) {
+    return o -> o instanceof String ? o.toString() : labeler.apply(o).toString();
+  }
+
   private void init(EFSM<State, ?, ?, Transition> efsm, boolean startInControlMode, Function<State, String> stateLabeler,
       Function<Transition, String> transitionLabeler) {
-    this.efsm = efsm;
-
     logger.debug("Starting up efsm debugger...");
     Stopwatch sw = Stopwatch.createStarted();
 
@@ -181,9 +190,10 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     borderPane.setTop(initToolBar());
     borderPane.setBottom(initStatusBar());
 
-    this.stateLabeler = o -> o instanceof String ? o.toString() : stateLabeler.apply((State) o);
-    this.transitionLabeler = o -> o instanceof String ? o.toString() : transitionLabeler.apply((Transition) o);
     this.controlMode = startInControlMode;
+
+    this.stateLabeler = sanitizeLabeler(stateLabeler);
+    this.transitionLabeler = sanitizeLabeler(transitionLabeler);
 
     efsm.addPropertyChangeListener(this);
     jgxAdapter = new MyJGraphXAdapter(efsm);
@@ -207,7 +217,7 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     primaryStage.sizeToScene();
     primaryStage.show();
 
-    setCurrentConfig(efsm.getInitialConfiguration());
+    setCurrentConfig(efsm.getConfiguration());
     graphComponent.scrollCellToVisible(curState, true);
 
     registerHotKeys();
@@ -217,6 +227,7 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     status("Waiting for input");
     info("");
   }
+
 
   private void registerHotKeys() {
     final Scene scene = primaryStage.getScene();
@@ -233,9 +244,55 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     });
   }
 
+  // @formatter:on
+
   @Override
   public void start(Stage primaryStage) {
     this.primaryStage = primaryStage;
+  }
+
+  public void reset(EFSM<State, ?, ?, Transition> efsm, boolean startInControlMode, Function<State, String> stateLabeler,
+      Function<Transition, String> transitionLabeler) {
+
+    logger.debug("Recreating debugger's graph view");
+    final Stopwatch sw = Stopwatch.createStarted();
+
+    if (startInControlMode) {
+      performPause();
+    } else {
+      performPlay();
+    }
+
+    this.stateLabeler = sanitizeLabeler(stateLabeler);
+    this.transitionLabeler = sanitizeLabeler(transitionLabeler);
+
+    // reset state
+    highlightedPath = null;
+    curState = null;
+    executeStep = false;
+    edgeTaken = null;
+    savedStyleCurState = "";
+    savedStyleEdgeTaken = "";
+    savedStyleLastState = "";
+    haltingStates.clear();
+    status("Waiting for input");
+    info("");
+
+    // reset graph view
+    jgxAdapter = new MyJGraphXAdapter(efsm);
+    jgxAdapter.layout();
+    graphComponent.setGraph(jgxAdapter);
+    // reset property pane
+    initPropertyPane();
+    // reset search view
+    notificationPane.hide();
+
+    setCurrentConfig(efsm.getConfiguration());
+    graphComponent.scrollCellToVisible(curState, true);
+
+    Platform.runLater(() -> searchModel.updateIndex());
+
+    logger.debug("Recreating graph view took {}", sw);
   }
 
   // endregion
@@ -322,7 +379,7 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
   private void setCurrentConfig(Configuration<State, ?> newConfig) {
     curState = jgxAdapter.getVertexToCellMap().get(newConfig.getState());
 
-    savedStyleCurState = curState.getStyle();
+    savedStyleCurState = Strings.nullToEmpty(curState.getStyle());
     jgxAdapter.setCellStyle(new SB(curState).set(mxConstants.STYLE_FILLCOLOR, COLOR_CUR_VERTEX).build(),
         new mxICell[] { curState });
     toCur.setDisable(false);
@@ -332,7 +389,10 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
   }
 
   private void haltExecution() {
-    logger.trace("Putting thread to sleep.");
+    if (controlMode && !executeStep) {
+      logger.trace("Putting thread to sleep.");
+    }
+
     while (controlMode && !executeStep) {
       try {
         Thread.sleep(200);
@@ -340,12 +400,15 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
         e.printStackTrace();
       }
     }
-    logger.trace("Resuming thread after pause.");
+
+    if (controlMode && !executeStep) {
+      logger.trace("Resuming thread after pause.");
+    }
   }
 
   /**
    * Highlights the given path (resets the previous highlighting)
-   * 
+   *
    * @param path
    *          The path to highlight or null remove path highlighting all together
    */
@@ -401,15 +464,15 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
 
   /*
    * public void acceptPath() { mxIGraphModel model = jgxAdapter.getModel(); model.beginUpdate();
-   * 
+   *
    * for (Pair<mxICell, String> sp : shortestPathCells) { mxICell cell = sp.getLeft(); model.setStyle(cell, new
    * SB(cell).setFrom(sp.getRight(), mxConstants.STYLE_STROKEWIDTH).build()); }
-   * 
+   *
    * shortestPathCells.clear();
-   * 
+   *
    * for (ExplorationEvent event : shortestPath.getEdgeList()) { mxICell mxICell = jgxAdapter.getEdgeToCellMap().get(event);
    * shortestPathCells.add(Pair.of(mxICell, mxICell.getStyle()));
-   * 
+   *
    * model.setStyle(mxICell, new SB(mxICell).set(mxConstants.STYLE_STROKEWIDTH, STROKE_WIDTH_HIGHLIGHTED).build()); }
    * model.endUpdate(); }
    */
@@ -683,7 +746,7 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     treeTable.setRoot(invisibleRoot);
     treeTable.setShowRoot(false);
 
-    invisibleRoot.getChildren().add(0, createTreeItem(efsm.getInitialConfiguration().getContext()));
+    initPropertyPane();
 
     graphComponent.getGraphControl().addMouseListener(new MouseAdapter() {
       @Override
@@ -715,6 +778,12 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
 
 
     return treeTable;
+  }
+
+  private void initPropertyPane() {
+    invisibleRoot.getChildren().clear();
+    // add dummy for context
+    invisibleRoot.getChildren().add(0, new TreeItem<>("Dummy"));
   }
 
   private TreeItem<Object> createTreeItem(Object value) {
@@ -1007,24 +1076,7 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     }
 
     private void setSpecialEdgeProperty(Transition mapEdge, mxICell graphEdge) {
-      // SB sb = new SB();
-      //
-      // if (!mapEdge.isActive()) {
-      // sb.set(mxConstants.STYLE_DASHED, true);
-      // }
-      //
-      // if (EventUtils.getTrigger(mapEdge.getBaseEvent(), BackPressed.class).isPresent()) {
-      // sb.set(mxConstants.STYLE_STROKECOLOR, "#a0522d");
-      // } else if (EventUtils.getTrigger(mapEdge.getBaseEvent(),
-      // UiInteraction.class).isPresent()) {
-      // sb.set(mxConstants.STYLE_STROKECOLOR, "blue");
-      // } else if (mapEdge.getBaseEvent() instanceof TautologicEvent) {
-      // sb.set(mxConstants.STYLE_STROKECOLOR, "green");
-      // } else if (mapEdge.getBaseEvent() instanceof ImpossibleEvent) {
-      // sb.set(mxConstants.STYLE_STROKECOLOR, "red");
-      // }
-      //
-      // model.setStyle(graphEdge, sb.build());
+
     }
 
     private void setSpecialVertexProperties(State root) {
@@ -1039,16 +1091,6 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     }
 
     private void setSpecialVertexProperty(State mapNode, mxICell graphNode) {
-      SB sb = new SB();
-
-      // if (!(mapNode.getLoi() instanceof WayPoint)) {
-      // // this is a target loi
-      // sb.set(mxConstants.STYLE_STROKECOLOR, COLOR_LOI_VERTEX);
-      // sb.set(mxConstants.STYLE_STROKEWIDTH, String.valueOf(STROKE_WIDTH_HIGHLIGHTED));
-      // }
-
-      model.setStyle(graphNode, sb.build());
-
       updateCellSize(graphNode);
       adjustCellHeight(graphNode);
     }
@@ -1122,7 +1164,7 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     notificationPane.setGraphic(hBox);
     notificationPane.setCloseButtonVisible(true);
 
-    final EFSMDebugger.SearchModel searchModel = new EFSMDebugger.SearchModel();
+    searchModel = new SearchModel();
     searchModel.searchTerm().bind(searchField.textProperty());
     searchField.onActionProperty().bind(searchModel.conductSearch());
     resultLabel.textProperty().bind(searchModel.result());
@@ -1138,21 +1180,25 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
   private class SearchModel {
 
     public final Color COLOR_FOUND_CELL = Color.MAGENTA;
-    private final Object[] allCells;
+    private Object[] allCells;
     private ObservableList<mxICell> found = new ObservableListWrapper<>(new ArrayList<>());
     private IntegerProperty index = new SimpleIntegerProperty(0);
-    private SimpleStringProperty resultText;
+    private SimpleStringProperty resultText = new SimpleStringProperty();
     private SimpleStringProperty searchTerm;
     private SimpleBooleanProperty searchTermChanged = new SimpleBooleanProperty(false);
     private String oldStyle;
     private mxICell foundCell;
 
     public SearchModel() {
+      updateIndex();
+    }
+
+    public void updateIndex() {
       allCells = mxGraphModel.getChildCells(jgxAdapter.getModel(), jgxAdapter.getDefaultParent(), true, true);
+      clearSearch();
     }
 
     public SimpleStringProperty result() {
-      resultText = new SimpleStringProperty();
       return resultText;
     }
 
@@ -1238,6 +1284,7 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
       clearFocus();
       found.clear();
       index.set(0);
+      searchTermChanged.set(true);
       resultText.setValue("");
     }
 
