@@ -182,6 +182,10 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     return o -> o instanceof String ? o.toString() : labeler.apply(o).toString();
   }
 
+  protected static String getCellStyle(mxICell cell) {
+    return Strings.nullToEmpty(cell.getStyle());
+  }
+
   private void init(EFSM<State, ?, ?, Transition> efsm, boolean startInControlMode, Function<State, String> stateLabeler,
       Function<Transition, String> transitionLabeler) {
     logger.debug("Starting up efsm debugger...");
@@ -368,7 +372,7 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
 
       if (transition != null) {
         edgeTaken = jgxAdapter.getEdgeToCellMap().get(transition);
-        savedStyleEdgeTaken = Strings.nullToEmpty(edgeTaken.getStyle());
+        savedStyleEdgeTaken = getCellStyle(edgeTaken);
         model.setStyle(edgeTaken,
             new SB(edgeTaken).set(mxConstants.STYLE_STROKEWIDTH, String.valueOf(STROKE_WIDTH_HIGHLIGHTED)).build());
       } else {
@@ -384,7 +388,7 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
   private void setCurrentConfig(Configuration<State, ?> newConfig) {
     curState = jgxAdapter.getVertexToCellMap().get(newConfig.getState());
 
-    savedStyleCurState = Strings.nullToEmpty(curState.getStyle());
+    savedStyleCurState = getCellStyle(curState);
     jgxAdapter.setCellStyle(new SB(curState).set(mxConstants.STYLE_FILLCOLOR, COLOR_CUR_VERTEX).build(),
         new mxICell[] { curState });
     toCur.setDisable(false);
@@ -603,18 +607,16 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
           if (cellAt != null) {
             mxICell cell = (mxICell) cellAt;
             if (cell.isVertex()) {
-              mxICell[] mxICells = { cell };
-              if (haltingStates.containsKey(cellAt)) {
+              if (haltingStates.containsKey(cell)) {
                 // remove visual feedback
-                jgxAdapter.setCellStyle(new SB(cell)
-                    .setFrom(haltingStates.get(cellAt), mxConstants.STYLE_SHADOW, mxConstants.STYLE_SHAPE).build(),
-                    mxICells);
-                haltingStates.remove(cellAt);
+                jgxAdapter.getModel().setStyle(cell, new SB(cell)
+                    .setFrom(haltingStates.get(cell), mxConstants.STYLE_SHADOW, mxConstants.STYLE_SHAPE).build());
+                haltingStates.remove(cell);
               } else {
                 // add visual feedback
-                haltingStates.put(cell, cell.getStyle());
-                jgxAdapter.setCellStyle(new SB(cell).set(mxConstants.STYLE_SHADOW, true)
-                    .set(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_DOUBLE_ELLIPSE).build(), mxICells);
+                haltingStates.put(cell, getCellStyle(cell));
+                jgxAdapter.getModel().setStyle(cell, new SB(cell).set(mxConstants.STYLE_SHADOW, true)
+                    .set(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_DOUBLE_ELLIPSE).build());
               }
             }
           }
@@ -936,7 +938,7 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
      * @param base
      */
     public SB(mxICell base) {
-      String baseStyle = Strings.nullToEmpty(base.getStyle());
+      String baseStyle = getCellStyle(base);
       this.styleMap = styleToMap(baseStyle);
       this.useDefaultMapping = !baseStyle.startsWith(";");
     }
@@ -1245,7 +1247,7 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
       clearFocus();
 
       foundCell = found.get(index.get());
-      oldStyle = Strings.nullToEmpty(foundCell.getStyle());
+      oldStyle = getCellStyle(foundCell);
       jgxAdapter.getModel().setStyle(foundCell,
           new EFSMDebugger.SB(foundCell).set(mxConstants.STYLE_STROKEWIDTH, String.valueOf(STROKE_WIDTH_HIGHLIGHTED))
               .set(mxConstants.STYLE_STROKECOLOR, COLOR_FOUND_CELL).build());
