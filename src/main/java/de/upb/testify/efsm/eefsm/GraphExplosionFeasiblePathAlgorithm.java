@@ -227,6 +227,14 @@ public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context>
     return false;
   }
 
+  public boolean configIsFeasible(Configuration<State, EEFSMContext<Context>> config) {
+    return explodedEEFSM.containsVertex(config);
+  }
+
+  public Collection<Configuration<State, EEFSMContext<Context>>> getFeasibleConfigsForState(State state) {
+    return stateToConfigs.get(state);
+  }
+
   private void explode(EEFSM<State, Parameter, Context> eefsm) {
     Set<State> rootNodes
         = baseGraph.vertexSet().stream().filter(v -> baseGraph.inDegreeOf(v) == 0).collect(Collectors.toSet());
@@ -261,14 +269,6 @@ public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context>
         }
       }
     }
-  }
-
-  public boolean configIsFeasible(Configuration<State, EEFSMContext<Context>> config) {
-    return explodedEEFSM.containsVertex(config);
-  }
-
-  public Collection<Configuration<State, EEFSMContext<Context>>> getFeasibleConfigsForState(State state) {
-    return stateToConfigs.get(state);
   }
 
   public void explodedGraphToDot(Path outFile) {

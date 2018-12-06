@@ -102,7 +102,7 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
   private static final Dimension DEFAULT_WINDOW_SIZE = new Dimension(1200, 800);
   private static EFSMDebugger instance;
   private Label statusPanel;
-  private StatusBar detailsPanel;
+  private StatusBar infoPanel;
   private mxGraphComponent graphComponent;
   private MyJGraphXAdapter<State, Transition> jgxAdapter;
   private mxICell lastState;
@@ -573,10 +573,10 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
   private StatusBar initStatusBar() {
     // create the status bar panel and shove it down the bottom of the frame
     StatusBar statusBar = new StatusBar();
-    // statusBar.setPrefSize(new Dimension(this..getWidth(), 24));
-    detailsPanel = statusBar;
+    this.infoPanel = statusBar;
     this.statusPanel = new Label();
     statusBar.getRightItems().add(statusPanel);
+    statusBar.setDisable(false);
     return statusBar;
   }
 
@@ -585,7 +585,7 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
   }
 
   public void info(String msg) {
-    Platform.runLater(() -> detailsPanel.setText(msg));
+    Platform.runLater(() -> infoPanel.setText(msg));
   }
 
   // endregion
