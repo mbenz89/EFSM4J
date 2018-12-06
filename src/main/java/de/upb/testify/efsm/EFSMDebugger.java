@@ -85,6 +85,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 /** @author Manuel Benz created on 01.02.18 */
 public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transition<State, ?, ?>> extends Application
@@ -221,11 +222,17 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     graphComponent.scrollCellToVisible(curState, true);
 
     registerHotKeys();
+    primaryStage.setOnCloseRequest(e -> close(e));
 
     logger.debug("Creating debugger took {}", sw);
     initialized = true;
     status("Waiting for input");
     info("");
+  }
+
+  private void close(WindowEvent e) {
+    executeStep = controlMode = false;
+    Platform.exit();
   }
 
 
@@ -371,8 +378,6 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
       model.endUpdate();
 
       graphComponent.scrollCellToVisible(curState, true);
-
-      info("");
     }
   }
 
