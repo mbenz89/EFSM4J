@@ -1,6 +1,7 @@
 package de.upb.testify.efsm;
 
 import com.google.common.collect.Lists;
+import org.jgrapht.GraphPath;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,11 +13,13 @@ import java.util.List;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 
-import org.jgrapht.GraphPath;
-
 /** @author Manuel Benz created on 02.03.18 */
-public class EFSMPath<State, Parameter, Context extends IEFSMContext<Context>,
-    Transition extends de.upb.testify.efsm.Transition<State, Parameter, Context>> implements Iterable<Transition> {
+public class EFSMPath<
+        State,
+        Parameter,
+        Context extends IEFSMContext<Context>,
+        Transition extends de.upb.testify.efsm.Transition<State, Parameter, Context>>
+    implements Iterable<Transition> {
 
   protected final LinkedList<Transition> transitions;
 
@@ -50,7 +53,8 @@ public class EFSMPath<State, Parameter, Context extends IEFSMContext<Context>,
     if (!transitions.isEmpty()) {
       Transition last = transitions.getLast();
       if (last.getTgt() != t.getSrc()) {
-        throw new IllegalArgumentException("The given transition does not connect to the last transition of this path");
+        throw new IllegalArgumentException(
+            "The given transition does not connect to the last transition of this path");
       }
     }
 
@@ -79,7 +83,8 @@ public class EFSMPath<State, Parameter, Context extends IEFSMContext<Context>,
     if (!transitions.isEmpty()) {
       Transition first = transitions.getFirst();
       if (first.getSrc() != t.getTgt()) {
-        throw new IllegalArgumentException("The given transition does not connect to the first transition of this path");
+        throw new IllegalArgumentException(
+            "The given transition does not connect to the first transition of this path");
       }
     }
 

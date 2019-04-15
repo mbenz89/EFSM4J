@@ -1,25 +1,25 @@
 package de.upb.testify.efsm.eefsm;
 
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.Iterator;
-
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import de.upb.testify.efsm.Configuration;
 import de.upb.testify.efsm.EFSMDotExporter;
 import de.upb.testify.efsm.EFSMPath;
 import de.upb.testify.efsm.IFeasiblePathAlgo;
 import de.upb.testify.efsm.Param;
 import de.upb.testify.efsm.State;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.Iterator;
 
 /** @author Manuel Benz created on 02.03.18 */
 abstract class AbstractEEFSMFPAlgoTest {
 
   protected boolean debugger = false;
 
-  protected abstract IEEFSMFeasiblePathAlgo<State, Param, Object> getAlgo(EEFSM<State, Param, Object> eefsm);
+  protected abstract IEEFSMFeasiblePathAlgo<State, Param, Object> getAlgo(
+      EEFSM<State, Param, Object> eefsm);
 
   @Test
   void c1ToHx() {
@@ -80,8 +80,10 @@ abstract class AbstractEEFSMFPAlgoTest {
   void infeasiblePath() {
     InterComponentExampleInfeasible example = new InterComponentExampleInfeasible();
     EEFSM<State, Param, Object> eefsm = example.eefsm;
-    IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp = getAlgo(eefsm);
-    EFSMPath<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> path = sfp.getPath(example.Hx);
+    IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp =
+        getAlgo(eefsm);
+    EFSMPath<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> path =
+        sfp.getPath(example.Hx);
     Assertions.assertNull(path);
   }
 
@@ -209,7 +211,8 @@ abstract class AbstractEEFSMFPAlgoTest {
     MediumInterComponentExample example = new MediumInterComponentExample();
     EEFSM<State, Param, Object> eefsm = example.eefsm;
 
-    IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp = getAlgo(eefsm);
+    IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp =
+        getAlgo(eefsm);
     Assertions.assertNotNull(sfp.getPath(example.example1.oR1));
     Assertions.assertNotNull(sfp.getPath(example.example1.UIy));
     Assertions.assertNotNull(sfp.getPath(example.example1.Hf));

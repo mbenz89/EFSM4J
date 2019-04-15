@@ -38,9 +38,10 @@ public class ETransitionbuilder<State, Input, ContextObject> {
     this.removeFromContext = setFromArray(base.removeFromContext);
   }
 
-  private static <ContextObject> void checkContradiction(Collection<ContextObject> existing,
-      Collection<ContextObject> toBeAdded) {
-    Preconditions.checkArgument(Collections.disjoint(existing, toBeAdded),
+  private static <ContextObject> void checkContradiction(
+      Collection<ContextObject> existing, Collection<ContextObject> toBeAdded) {
+    Preconditions.checkArgument(
+        Collections.disjoint(existing, toBeAdded),
         "Contradiction of context guard found. At least one of the following context objects have to be in and must not be in the context: "
             + toBeAdded);
   }
@@ -54,43 +55,52 @@ public class ETransitionbuilder<State, Input, ContextObject> {
     return this;
   }
 
-  public ETransitionbuilder<State, Input, ContextObject> fireIfInContext(ContextObject... contextVariables) {
+  public ETransitionbuilder<State, Input, ContextObject> fireIfInContext(
+      ContextObject... contextVariables) {
     final List<ContextObject> toBeAdded = Arrays.asList(contextVariables);
     checkContradiction(notInContext, toBeAdded);
     inContext.addAll(toBeAdded);
     return this;
   }
 
-  public ETransitionbuilder<State, Input, ContextObject> fireIfNotInContext(ContextObject... contextVariables) {
+  public ETransitionbuilder<State, Input, ContextObject> fireIfNotInContext(
+      ContextObject... contextVariables) {
     final List<ContextObject> toBeAdded = Arrays.asList(contextVariables);
     checkContradiction(inContext, toBeAdded);
     notInContext.addAll(toBeAdded);
     return this;
   }
 
-  public ETransitionbuilder<State, Input, ContextObject> addToContext(ContextObject... addToContext) {
+  public ETransitionbuilder<State, Input, ContextObject> addToContext(
+      ContextObject... addToContext) {
     this.addToContext.addAll(Arrays.asList(addToContext));
     return this;
   }
 
-  public ETransitionbuilder<State, Input, ContextObject> removeFromContext(ContextObject... removeFromContext) {
+  public ETransitionbuilder<State, Input, ContextObject> removeFromContext(
+      ContextObject... removeFromContext) {
     this.removeFromContext.addAll(Arrays.asList(removeFromContext));
     return this;
   }
 
   public ETransition<State, Input, ContextObject> build() {
-    return new ETransition<>(expectedInput, (ContextObject[]) inContext.toArray(), (ContextObject[]) notInContext.toArray(),
-        (ContextObject[]) addToContext.toArray(), (ContextObject[]) removeFromContext.toArray());
+    return new ETransition<>(
+        expectedInput,
+        (ContextObject[]) inContext.toArray(),
+        (ContextObject[]) notInContext.toArray(),
+        (ContextObject[]) addToContext.toArray(),
+        (ContextObject[]) removeFromContext.toArray());
   }
 
   /**
-   * Merges in the other builder so that all context operations are united. The expected input is only overwritten if the
-   * expected of this transition is null.
-   * 
+   * Merges in the other builder so that all context operations are united. The expected input is
+   * only overwritten if the expected of this transition is null.
+   *
    * @param other
    * @return
    */
-  public ETransitionbuilder<State, Input, ContextObject> merge(ETransitionbuilder<State, Input, ContextObject> other) {
+  public ETransitionbuilder<State, Input, ContextObject> merge(
+      ETransitionbuilder<State, Input, ContextObject> other) {
     addToContext.addAll(other.addToContext);
     removeFromContext.addAll(other.removeFromContext);
     inContext.addAll(other.inContext);

@@ -1,9 +1,5 @@
 package de.upb.testify.efsm;
 
-import de.jensd.fx.glyphs.materialdesignicons.MaterialDesignIcon;
-import de.jensd.fx.glyphs.materialdesignicons.MaterialDesignIconView;
-import de.upb.testify.efsm.eefsm.EEFSM;
-
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import com.google.common.primitives.Primitives;
@@ -18,34 +14,9 @@ import com.mxgraph.swing.mxGraphComponent;
 import com.mxgraph.util.mxConstants;
 import com.mxgraph.util.mxRectangle;
 import com.sun.javafx.collections.ObservableListWrapper;
-
-import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.lang.reflect.Array;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import javax.naming.Context;
-import javax.swing.*;
-
-import org.apache.commons.lang3.tuple.Pair;
-import org.controlsfx.control.NotificationPane;
-import org.controlsfx.control.StatusBar;
-import org.controlsfx.control.textfield.CustomTextField;
-import org.jgrapht.ext.JGraphXAdapter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import de.jensd.fx.glyphs.materialdesignicons.MaterialDesignIcon;
+import de.jensd.fx.glyphs.materialdesignicons.MaterialDesignIconView;
+import de.upb.testify.efsm.eefsm.EEFSM;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
@@ -86,10 +57,42 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import org.apache.commons.lang3.tuple.Pair;
+import org.controlsfx.control.NotificationPane;
+import org.controlsfx.control.StatusBar;
+import org.controlsfx.control.textfield.CustomTextField;
+import org.jgrapht.ext.JGraphXAdapter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.naming.Context;
+import javax.swing.JComponent;
+import javax.swing.JViewport;
+import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
+import java.awt.Container;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.lang.reflect.Array;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /** @author Manuel Benz created on 01.02.18 */
-public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transition<State, ?, ?>> extends Application
-    implements PropertyChangeListener {
+public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transition<State, ?, ?>>
+    extends Application implements PropertyChangeListener {
 
   // region fields and constants
   public static final float STROKE_WIDTH_HIGHLIGHTED = 4f;
@@ -138,23 +141,30 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
   // region setup
 
   public static synchronized <State, Transition extends de.upb.testify.efsm.Transition<State, ?, ?>>
-      EFSMDebugger<State, Transition> startDebugger(EFSM<State, ?, ?, Transition> efsm, boolean startInControlMode) {
-    return startDebugger(efsm, startInControlMode, state -> state.toString(), transition -> transition.toString());
+      EFSMDebugger<State, Transition> startDebugger(
+          EFSM<State, ?, ?, Transition> efsm, boolean startInControlMode) {
+    return startDebugger(
+        efsm, startInControlMode, state -> state.toString(), transition -> transition.toString());
   }
 
   public static synchronized <State, Transition extends de.upb.testify.efsm.Transition<State, ?, ?>>
-      EFSMDebugger<State, Transition> startDebugger(EFSM<State, ?, ?, Transition> efsm, boolean startInControlMode,
-          Function<State, String> stateLabeler, Function<Transition, String> transitionLabeler) {
+      EFSMDebugger<State, Transition> startDebugger(
+          EFSM<State, ?, ?, Transition> efsm,
+          boolean startInControlMode,
+          Function<State, String> stateLabeler,
+          Function<Transition, String> transitionLabeler) {
     if (instance != null) {
       // reset everything
       instance.reset(efsm, startInControlMode, stateLabeler, transitionLabeler);
       return instance;
     }
 
-    new Thread(() -> {
-      // Have to run in a thread because launch doesn't return
-      Application.launch(EFSMDebugger.class);
-    }).start();
+    new Thread(
+            () -> {
+              // Have to run in a thread because launch doesn't return
+              Application.launch(EFSMDebugger.class);
+            })
+        .start();
 
     while (instance == null) {
       try {
@@ -164,7 +174,8 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
       }
     }
 
-    Platform.runLater(() -> instance.init(efsm, startInControlMode, stateLabeler, transitionLabeler));
+    Platform.runLater(
+        () -> instance.init(efsm, startInControlMode, stateLabeler, transitionLabeler));
 
     // wait for initialization to finish
     while (!instance.initialized) {
@@ -186,7 +197,10 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     return Strings.nullToEmpty(cell.getStyle());
   }
 
-  private void init(EFSM<State, ?, ?, Transition> efsm, boolean startInControlMode, Function<State, String> stateLabeler,
+  private void init(
+      EFSM<State, ?, ?, Transition> efsm,
+      boolean startInControlMode,
+      Function<State, String> stateLabeler,
       Function<Transition, String> transitionLabeler) {
     logger.debug("Starting up efsm debugger...");
     Stopwatch sw = Stopwatch.createStarted();
@@ -218,7 +232,8 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     Platform.runLater(() -> jSplitPane.setDividerPosition(0, 0.8));
 
     primaryStage.setTitle("EFSM debugger");
-    primaryStage.setScene(new Scene(borderPane, DEFAULT_WINDOW_SIZE.width, DEFAULT_WINDOW_SIZE.height));
+    primaryStage.setScene(
+        new Scene(borderPane, DEFAULT_WINDOW_SIZE.width, DEFAULT_WINDOW_SIZE.height));
     primaryStage.sizeToScene();
     primaryStage.show();
 
@@ -239,20 +254,22 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     Platform.exit();
   }
 
-
   private void registerHotKeys() {
     final Scene scene = primaryStage.getScene();
 
-    final KeyCodeCombination searchKey = new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN);
+    final KeyCodeCombination searchKey =
+        new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN);
 
-    scene.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
-      @Override
-      public void handle(KeyEvent event) {
-        if (searchKey.match(event)) {
-          showSearchBar();
-        }
-      }
-    });
+    scene.addEventHandler(
+        KeyEvent.KEY_PRESSED,
+        new EventHandler<KeyEvent>() {
+          @Override
+          public void handle(KeyEvent event) {
+            if (searchKey.match(event)) {
+              showSearchBar();
+            }
+          }
+        });
   }
 
   // @formatter:on
@@ -262,7 +279,10 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     this.primaryStage = primaryStage;
   }
 
-  public void reset(EFSM<State, ?, ?, Transition> efsm, boolean startInControlMode, Function<State, String> stateLabeler,
+  public void reset(
+      EFSM<State, ?, ?, Transition> efsm,
+      boolean startInControlMode,
+      Function<State, String> stateLabeler,
       Function<Transition, String> transitionLabeler) {
 
     logger.debug("Recreating debugger's graph view");
@@ -344,19 +364,23 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
       model.beginUpdate();
 
       Configuration<State, Context> lastConfig = (Configuration<State, Context>) evt.getOldValue();
-      Pair<Configuration<State, Context>, Transition> newValue
-          = (Pair<Configuration<State, Context>, Transition>) evt.getNewValue();
+      Pair<Configuration<State, Context>, Transition> newValue =
+          (Pair<Configuration<State, Context>, Transition>) evt.getNewValue();
       Configuration<State, Context> newConfig = newValue.getKey();
 
       if (lastState != null) {
-        model.setStyle(lastState, new SB(lastState).setFrom(savedStyleLastState, mxConstants.STYLE_FILLCOLOR).build());
+        model.setStyle(
+            lastState,
+            new SB(lastState).setFrom(savedStyleLastState, mxConstants.STYLE_FILLCOLOR).build());
       }
 
       lastState = jgxAdapter.getVertexToCellMap().get(lastConfig.getState());
 
       if (lastState != null) {
         savedStyleLastState = savedStyleCurState;
-        model.setStyle(lastState, new SB(lastState).set(mxConstants.STYLE_FILLCOLOR, COLOR_LAST_VERTEX).build());
+        model.setStyle(
+            lastState,
+            new SB(lastState).set(mxConstants.STYLE_FILLCOLOR, COLOR_LAST_VERTEX).build());
         toLast.setDisable(false);
       }
 
@@ -365,7 +389,9 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
       // also highlight edge
 
       if (edgeTaken != null) {
-        model.setStyle(edgeTaken, new SB(edgeTaken).setFrom(savedStyleEdgeTaken, mxConstants.STYLE_STROKEWIDTH).build());
+        model.setStyle(
+            edgeTaken,
+            new SB(edgeTaken).setFrom(savedStyleEdgeTaken, mxConstants.STYLE_STROKEWIDTH).build());
       }
 
       Transition transition = newValue.getValue();
@@ -373,8 +399,11 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
       if (transition != null) {
         edgeTaken = jgxAdapter.getEdgeToCellMap().get(transition);
         savedStyleEdgeTaken = getCellStyle(edgeTaken);
-        model.setStyle(edgeTaken,
-            new SB(edgeTaken).set(mxConstants.STYLE_STROKEWIDTH, String.valueOf(STROKE_WIDTH_HIGHLIGHTED)).build());
+        model.setStyle(
+            edgeTaken,
+            new SB(edgeTaken)
+                .set(mxConstants.STYLE_STROKEWIDTH, String.valueOf(STROKE_WIDTH_HIGHLIGHTED))
+                .build());
       } else {
         info("Uncovered state change conducted!");
       }
@@ -389,12 +418,14 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     curState = jgxAdapter.getVertexToCellMap().get(newConfig.getState());
 
     savedStyleCurState = getCellStyle(curState);
-    jgxAdapter.setCellStyle(new SB(curState).set(mxConstants.STYLE_FILLCOLOR, COLOR_CUR_VERTEX).build(),
-        new mxICell[] { curState });
+    jgxAdapter.setCellStyle(
+        new SB(curState).set(mxConstants.STYLE_FILLCOLOR, COLOR_CUR_VERTEX).build(),
+        new mxICell[] {curState});
     toCur.setDisable(false);
 
     // show the new context in the properties window
-    Platform.runLater(() -> invisibleRoot.getChildren().set(0, createTreeItem(newConfig.getContext())));
+    Platform.runLater(
+        () -> invisibleRoot.getChildren().set(0, createTreeItem(newConfig.getContext())));
   }
 
   private void haltExecution() {
@@ -418,8 +449,7 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
   /**
    * Highlights the given path (resets the previous highlighting)
    *
-   * @param path
-   *          The path to highlight or null remove path highlighting all together
+   * @param path The path to highlight or null remove path highlighting all together
    */
   public void highlightPath(EFSMPath<State, ?, ?, Transition> path) {
     HashMap<Transition, mxICell> edgeToCellMap = jgxAdapter.getEdgeToCellMap();
@@ -432,7 +462,8 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     if (highlightedPath != null) {
       for (Transition transition : highlightedPath) {
         mxICell mxICell = edgeToCellMap.get(transition);
-        model.setStyle(mxICell, new SB(mxICell).set(mxConstants.STYLE_STROKECOLOR, Color.BLACK).build());
+        model.setStyle(
+            mxICell, new SB(mxICell).set(mxConstants.STYLE_STROKECOLOR, Color.BLACK).build());
       }
     }
 
@@ -441,7 +472,8 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     if (path != null) {
       for (Transition transition : path) {
         mxICell mxICell = edgeToCellMap.get(transition);
-        model.setStyle(mxICell, new SB(mxICell).set(mxConstants.STYLE_STROKECOLOR, Color.BLUE).build());
+        model.setStyle(
+            mxICell, new SB(mxICell).set(mxConstants.STYLE_STROKECOLOR, Color.BLUE).build());
       }
     }
 
@@ -460,8 +492,12 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     model.beginUpdate();
     for (State state : states) {
       mxICell mxICell = vertexToCellMap.get(state);
-      model.setStyle(mxICell, new SB(mxICell).set(mxConstants.STYLE_STROKECOLOR, COLOR_TARGET_VERTEX)
-          .set(mxConstants.STYLE_STROKEWIDTH, String.valueOf(STROKE_WIDTH_HIGHLIGHTED)).build());
+      model.setStyle(
+          mxICell,
+          new SB(mxICell)
+              .set(mxConstants.STYLE_STROKECOLOR, COLOR_TARGET_VERTEX)
+              .set(mxConstants.STYLE_STROKEWIDTH, String.valueOf(STROKE_WIDTH_HIGHLIGHTED))
+              .build());
     }
 
     model.endUpdate();
@@ -488,25 +524,57 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
 
   private ToolBar initToolBar() {
     ToolBar toolBar = new ToolBar();
-    playButton
-        = addButton(toolBar, event -> performPlay(), MaterialDesignIcon.PLAY, "(Re)starts the continuous exploration");
-    pauseButton = addButton(toolBar, event -> performPause(), MaterialDesignIcon.PAUSE,
-        "Pauses the exploration and starts the stepping mode");
-    stepButton = addButton(toolBar, event -> performStep(), MaterialDesignIcon.STEP_FORWARD,
-        "Executes the next state transition in stepping mode");
+    playButton =
+        addButton(
+            toolBar,
+            event -> performPlay(),
+            MaterialDesignIcon.PLAY,
+            "(Re)starts the continuous exploration");
+    pauseButton =
+        addButton(
+            toolBar,
+            event -> performPause(),
+            MaterialDesignIcon.PAUSE,
+            "Pauses the exploration and starts the stepping mode");
+    stepButton =
+        addButton(
+            toolBar,
+            event -> performStep(),
+            MaterialDesignIcon.STEP_FORWARD,
+            "Executes the next state transition in stepping mode");
     toolBar.getItems().add(new Separator());
-    addButton(toolBar, event -> {
-    }, MaterialDesignIcon.UNDO, "Undoes the last transition visually (internal state is not affected)");
-    addButton(toolBar, event -> {
-    }, MaterialDesignIcon.REDO, "Redoes the last transition visually (internal state is not affected)");
+    addButton(
+        toolBar,
+        event -> {},
+        MaterialDesignIcon.UNDO,
+        "Undoes the last transition visually (internal state is not affected)");
+    addButton(
+        toolBar,
+        event -> {},
+        MaterialDesignIcon.REDO,
+        "Redoes the last transition visually (internal state is not affected)");
     toolBar.getItems().add(new Separator());
-    toCur = addButton(toolBar, "CS", event -> graphComponent.scrollCellToVisible(curState, true), COLOR_CUR_VERTEX,
-        "Scrolls the current state into view");
-    toLast = addButton(toolBar, "LS", event -> graphComponent.scrollCellToVisible(lastState, true), COLOR_LAST_VERTEX,
-        "Scrolls the last state into view");
+    toCur =
+        addButton(
+            toolBar,
+            "CS",
+            event -> graphComponent.scrollCellToVisible(curState, true),
+            COLOR_CUR_VERTEX,
+            "Scrolls the current state into view");
+    toLast =
+        addButton(
+            toolBar,
+            "LS",
+            event -> graphComponent.scrollCellToVisible(lastState, true),
+            COLOR_LAST_VERTEX,
+            "Scrolls the last state into view");
     toolBar.getItems().add(new Separator());
-    final Button searchPanelButton
-        = addButton(toolBar, event -> showSearchBar(), MaterialDesignIcon.MAGNIFY, "Opens the search panel");
+    final Button searchPanelButton =
+        addButton(
+            toolBar,
+            event -> showSearchBar(),
+            MaterialDesignIcon.MAGNIFY,
+            "Opens the search panel");
     searchPanelButton.setDisable(false);
     return toolBar;
   }
@@ -519,21 +587,29 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     }
   }
 
-  private Button addButton(ToolBar toolBar, String label, EventHandler<javafx.event.ActionEvent> handler,
-      javafx.scene.paint.Color color, String toolTip) {
+  private Button addButton(
+      ToolBar toolBar,
+      String label,
+      EventHandler<javafx.event.ActionEvent> handler,
+      javafx.scene.paint.Color color,
+      String toolTip) {
     Button button = new Button(label);
     button.setOnAction(handler);
     button.setMinSize(TOOLBAR_BUTTON_SIZE.width, TOOLBAR_BUTTON_SIZE.height);
-    button.setStyle(String.format(
-        "-fx-font: 21 arial; -fx-padding: 2; -fx-border-insets: 0; -fx-border-width: 1; -fx-font-weight: bold; -fx-base: %s;",
-        color.toString().replace("0x", "#")));
+    button.setStyle(
+        String.format(
+            "-fx-font: 21 arial; -fx-padding: 2; -fx-border-insets: 0; -fx-border-width: 1; -fx-font-weight: bold; -fx-base: %s;",
+            color.toString().replace("0x", "#")));
     button.setDisable(true);
     button.setTooltip(new Tooltip(toolTip));
     toolBar.getItems().add(button);
     return button;
   }
 
-  private Button addButton(ToolBar jToolBar, EventHandler<javafx.event.ActionEvent> actionCommand, MaterialDesignIcon icon,
+  private Button addButton(
+      ToolBar jToolBar,
+      EventHandler<javafx.event.ActionEvent> actionCommand,
+      MaterialDesignIcon icon,
       String toolTip) {
     Button but = new Button();
     but.setGraphic(new MaterialDesignIconView(icon, "" + TOOLBAR_BUTTON_SIZE.height));
@@ -597,85 +673,106 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
   // region control
 
   private void setupHaltOnNode() {
-    graphComponent.getGraphControl().addMouseListener(new MouseAdapter() {
-      @Override
-      public void mouseClicked(MouseEvent e) {
-        if (e.getClickCount() == 2) {
-          Object cellAt = graphComponent.getCellAt(e.getX(), e.getY());
-          // for now we just allow to halt on nodes. if we see need, it woult be easy to
-          // extend to halt on a specific transition
-          if (cellAt != null) {
-            mxICell cell = (mxICell) cellAt;
-            if (cell.isVertex()) {
-              if (haltingStates.containsKey(cell)) {
-                // remove visual feedback
-                jgxAdapter.getModel().setStyle(cell, new SB(cell)
-                    .setFrom(haltingStates.get(cell), mxConstants.STYLE_SHADOW, mxConstants.STYLE_SHAPE).build());
-                haltingStates.remove(cell);
-              } else {
-                // add visual feedback
-                haltingStates.put(cell, getCellStyle(cell));
-                jgxAdapter.getModel().setStyle(cell, new SB(cell).set(mxConstants.STYLE_SHADOW, true)
-                    .set(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_DOUBLE_ELLIPSE).build());
+    graphComponent
+        .getGraphControl()
+        .addMouseListener(
+            new MouseAdapter() {
+              @Override
+              public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                  Object cellAt = graphComponent.getCellAt(e.getX(), e.getY());
+                  // for now we just allow to halt on nodes. if we see need, it woult be easy to
+                  // extend to halt on a specific transition
+                  if (cellAt != null) {
+                    mxICell cell = (mxICell) cellAt;
+                    if (cell.isVertex()) {
+                      if (haltingStates.containsKey(cell)) {
+                        // remove visual feedback
+                        jgxAdapter
+                            .getModel()
+                            .setStyle(
+                                cell,
+                                new SB(cell)
+                                    .setFrom(
+                                        haltingStates.get(cell),
+                                        mxConstants.STYLE_SHADOW,
+                                        mxConstants.STYLE_SHAPE)
+                                    .build());
+                        haltingStates.remove(cell);
+                      } else {
+                        // add visual feedback
+                        haltingStates.put(cell, getCellStyle(cell));
+                        jgxAdapter
+                            .getModel()
+                            .setStyle(
+                                cell,
+                                new SB(cell)
+                                    .set(mxConstants.STYLE_SHADOW, true)
+                                    .set(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_DOUBLE_ELLIPSE)
+                                    .build());
+                      }
+                    }
+                  }
+                }
               }
-            }
-          }
-        }
-      }
-    });
+            });
   }
 
   private void setupZooming() {
-    graphComponent.getGraphControl().addMouseWheelListener(e -> {
-      if (e.getWheelRotation() < 0) {
-        graphComponent.zoomIn();
-      } else {
-        graphComponent.zoomOut();
-      }
-    });
+    graphComponent
+        .getGraphControl()
+        .addMouseWheelListener(
+            e -> {
+              if (e.getWheelRotation() < 0) {
+                graphComponent.zoomIn();
+              } else {
+                graphComponent.zoomOut();
+              }
+            });
   }
 
   private void setupScrolling() {
     graphComponent.setAutoscrolls(true);
     graphComponent.getViewport().setScrollMode(JViewport.BACKINGSTORE_SCROLL_MODE);
 
-    MouseAdapter ma = new MouseAdapter() {
+    MouseAdapter ma =
+        new MouseAdapter() {
 
-      private final Cursor defCursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR);
-      private final Cursor hndCursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
-      private final Point pp = new Point();
+          private final Cursor defCursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR);
+          private final Cursor hndCursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
+          private final Point pp = new Point();
 
-      @Override
-      public void mouseDragged(MouseEvent e) {
-        final JComponent jc = (JComponent) e.getSource();
-        Container c = jc.getParent();
-        if (c instanceof JViewport) {
-          JViewport vport = (JViewport) c;
-          Point cp = SwingUtilities.convertPoint(jc, e.getPoint(), vport);
-          Point vp = vport.getViewPosition();
-          vp.translate(pp.x - cp.x, pp.y - cp.y);
-          jc.scrollRectToVisible(new Rectangle(vp, vport.getSize()));
-          pp.setLocation(cp);
-        }
-      }
+          @Override
+          public void mouseDragged(MouseEvent e) {
+            final JComponent jc = (JComponent) e.getSource();
+            Container c = jc.getParent();
+            if (c instanceof JViewport) {
+              JViewport vport = (JViewport) c;
+              Point cp = SwingUtilities.convertPoint(jc, e.getPoint(), vport);
+              Point vp = vport.getViewPosition();
+              vp.translate(pp.x - cp.x, pp.y - cp.y);
+              jc.scrollRectToVisible(new Rectangle(vp, vport.getSize()));
+              pp.setLocation(cp);
+            }
+          }
 
-      @Override
-      public void mousePressed(MouseEvent e) {
-        JComponent jc = (JComponent) e.getSource();
-        Container c = jc.getParent();
-        if (c instanceof JViewport) {
-          jc.setCursor(hndCursor);
-          JViewport vport = (JViewport) c;
-          Point cp = SwingUtilities.convertPoint(jc, e.getPoint(), vport);
-          pp.setLocation(cp);
-        }
-      }
+          @Override
+          public void mousePressed(MouseEvent e) {
+            JComponent jc = (JComponent) e.getSource();
+            Container c = jc.getParent();
+            if (c instanceof JViewport) {
+              jc.setCursor(hndCursor);
+              JViewport vport = (JViewport) c;
+              Point cp = SwingUtilities.convertPoint(jc, e.getPoint(), vport);
+              pp.setLocation(cp);
+            }
+          }
 
-      @Override
-      public void mouseReleased(MouseEvent e) {
-        ((JComponent) e.getSource()).setCursor(defCursor);
-      }
-    };
+          @Override
+          public void mouseReleased(MouseEvent e) {
+            ((JComponent) e.getSource()).setCursor(defCursor);
+          }
+        };
 
     graphComponent.getGraphControl().addMouseListener(ma);
     graphComponent.getGraphControl().addMouseMotionListener(ma);
@@ -688,61 +785,67 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
   private Control setupPropertiesPanel() {
     TreeTableView<Object> treeTable = new TreeTableView<>();
 
-    TreeTableColumn<Object, Object> property = column("Property", o -> {
-      Object value = o.getValue();
-      if (invisibleRoot.getChildren().stream().anyMatch(c -> c.getValue() == value)) {
-        return value.getClass().getSimpleName();
-      } else if (value instanceof Field) {
-        return ((Field) value).getName();
-      }
-      return String.valueOf(value);
-    });
+    TreeTableColumn<Object, Object> property =
+        column(
+            "Property",
+            o -> {
+              Object value = o.getValue();
+              if (invisibleRoot.getChildren().stream().anyMatch(c -> c.getValue() == value)) {
+                return value.getClass().getSimpleName();
+              } else if (value instanceof Field) {
+                return ((Field) value).getName();
+              }
+              return String.valueOf(value);
+            });
 
     property.prefWidthProperty().bind(treeTable.widthProperty().multiply(0.3));
 
-    TreeTableColumn<Object, Object> value = column("Value", new Function<TreeItem<Object>, Object>() {
-      @Override
-      public Object apply(TreeItem<Object> o) {
-        Object val = o.getValue();
-        if (val instanceof Field) {
-          try {
-            Field field = (Field) val;
+    TreeTableColumn<Object, Object> value =
+        column(
+            "Value",
+            new Function<TreeItem<Object>, Object>() {
+              @Override
+              public Object apply(TreeItem<Object> o) {
+                Object val = o.getValue();
+                if (val instanceof Field) {
+                  try {
+                    Field field = (Field) val;
 
-            Object parentVal = getParentValue(o);
+                    Object parentVal = getParentValue(o);
 
-            Object fieldVal = field.get(parentVal);
-            if (field.getType().isArray()) {
-              return Arrays.toString(unpack(fieldVal));
-            } else {
-              return String.valueOf(fieldVal);
-            }
-          } catch (IllegalAccessException e) {
-            return "-";
-          }
-        }
-        return String.valueOf(val);
-      }
+                    Object fieldVal = field.get(parentVal);
+                    if (field.getType().isArray()) {
+                      return Arrays.toString(unpack(fieldVal));
+                    } else {
+                      return String.valueOf(fieldVal);
+                    }
+                  } catch (IllegalAccessException e) {
+                    return "-";
+                  }
+                }
+                return String.valueOf(val);
+              }
 
-      private Object[] unpack(final Object value) {
-        if (value == null) {
-          return null;
-        }
-        if (value.getClass().isArray()) {
-          if (value instanceof Object[]) {
-            return (Object[]) value;
-          } else // box primitive arrays
-          {
-            final Object[] boxedArray = new Object[Array.getLength(value)];
-            for (int index = 0; index < boxedArray.length; index++) {
-              boxedArray[index] = Array.get(value, index); // automatic boxing
-            }
-            return boxedArray;
-          }
-        } else {
-          throw new IllegalArgumentException("Not an array");
-        }
-      }
-    });
+              private Object[] unpack(final Object value) {
+                if (value == null) {
+                  return null;
+                }
+                if (value.getClass().isArray()) {
+                  if (value instanceof Object[]) {
+                    return (Object[]) value;
+                  } else // box primitive arrays
+                  {
+                    final Object[] boxedArray = new Object[Array.getLength(value)];
+                    for (int index = 0; index < boxedArray.length; index++) {
+                      boxedArray[index] = Array.get(value, index); // automatic boxing
+                    }
+                    return boxedArray;
+                  }
+                } else {
+                  throw new IllegalArgumentException("Not an array");
+                }
+              }
+            });
 
     // width should probably grow and shrink with content length
     value.prefWidthProperty().bind(treeTable.widthProperty().multiply(2));
@@ -755,18 +858,20 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
 
     initPropertyPane();
 
-    graphComponent.getGraphControl().addMouseListener(new MouseAdapter() {
-      @Override
-      public void mouseClicked(MouseEvent e) {
-        Object cell = graphComponent.getCellAt(e.getX(), e.getY());
+    graphComponent
+        .getGraphControl()
+        .addMouseListener(
+            new MouseAdapter() {
+              @Override
+              public void mouseClicked(MouseEvent e) {
+                Object cell = graphComponent.getCellAt(e.getX(), e.getY());
 
-        if (cell != null) {
-          mxICell mxCell = (mxICell) cell;
-          showCellProperties(mxCell);
-        }
-      }
-    });
-
+                if (cell != null) {
+                  mxICell mxCell = (mxICell) cell;
+                  showCellProperties(mxCell);
+                }
+              }
+            });
 
     return treeTable;
   }
@@ -781,14 +886,15 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
       newItem = "";
     }
     final ObservableList<TreeItem<Object>> children = invisibleRoot.getChildren();
-    Platform.runLater(() -> {
-      final TreeItem<Object> newTreeItem = createTreeItem(newItem);
-      if (children.size() > 1) {
-        children.set(1, newTreeItem);
-      } else {
-        children.add(1, newTreeItem);
-      }
-    });
+    Platform.runLater(
+        () -> {
+          final TreeItem<Object> newTreeItem = createTreeItem(newItem);
+          if (children.size() > 1) {
+            children.set(1, newTreeItem);
+          } else {
+            children.add(1, newTreeItem);
+          }
+        });
   }
 
   private void initPropertyPane() {
@@ -798,104 +904,107 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
   }
 
   private TreeItem<Object> createTreeItem(Object value) {
-    TreeItem<Object> item = new TreeItem<Object>(value) {
+    TreeItem<Object> item =
+        new TreeItem<Object>(value) {
 
-      private boolean childrenComputed = false;
+          private boolean childrenComputed = false;
 
-      {
-        expandedProperty().addListener((obs, wasExpanded, isNowExpanded) -> {
-          if (!isNowExpanded) { // remove child nodes...
-            super.getChildren().clear();
-            childrenComputed = false;
-          }
-        });
-      }
-
-      @Override
-      public ObservableList<TreeItem<Object>> getChildren() {
-        List<TreeItem<Object>> children = new ArrayList<>();
-        Object value = getValue();
-        if (!childrenComputed) {
-          Class<?> aClass;
-          if (!(value instanceof Field)) {
-            aClass = value.getClass();
-          } else {
-            try {
-              Object parentVal = getParentValue(this);
-
-              value = ((Field) value).get(parentVal);
-              aClass = value.getClass();
-            } catch (IllegalAccessException e) {
-              throw new RuntimeException();
-            }
+          {
+            expandedProperty()
+                .addListener(
+                    (obs, wasExpanded, isNowExpanded) -> {
+                      if (!isNowExpanded) { // remove child nodes...
+                        super.getChildren().clear();
+                        childrenComputed = false;
+                      }
+                    });
           }
 
-          while (aClass != null) {
-            // we do not care about fields of collections and arrays but their contents
-            if (Iterable.class.isAssignableFrom(aClass)) {
-              for (Object o : Iterable.class.cast(value)) {
-                children.add(createTreeItem(o));
-              }
-            } else if (aClass.isArray()) {
-              int length = Array.getLength(value);
-              for (int i = 0; i < length; i++) {
-                Object arrayElement = Array.get(value, i);
-                children.add(createTreeItem(arrayElement));
-              }
-            } else {
-              for (Field field : aClass.getDeclaredFields()) {
-                if (!Modifier.isStatic(field.getModifiers())) {
-                  field.setAccessible(true);
-                  children.add(createTreeItem(field));
+          @Override
+          public ObservableList<TreeItem<Object>> getChildren() {
+            List<TreeItem<Object>> children = new ArrayList<>();
+            Object value = getValue();
+            if (!childrenComputed) {
+              Class<?> aClass;
+              if (!(value instanceof Field)) {
+                aClass = value.getClass();
+              } else {
+                try {
+                  Object parentVal = getParentValue(this);
+
+                  value = ((Field) value).get(parentVal);
+                  aClass = value.getClass();
+                } catch (IllegalAccessException e) {
+                  throw new RuntimeException();
                 }
               }
+
+              while (aClass != null) {
+                // we do not care about fields of collections and arrays but their contents
+                if (Iterable.class.isAssignableFrom(aClass)) {
+                  for (Object o : (Iterable) value) {
+                    children.add(createTreeItem(o));
+                  }
+                } else if (aClass.isArray()) {
+                  int length = Array.getLength(value);
+                  for (int i = 0; i < length; i++) {
+                    Object arrayElement = Array.get(value, i);
+                    children.add(createTreeItem(arrayElement));
+                  }
+                } else {
+                  for (Field field : aClass.getDeclaredFields()) {
+                    if (!Modifier.isStatic(field.getModifiers())) {
+                      field.setAccessible(true);
+                      children.add(createTreeItem(field));
+                    }
+                  }
+                }
+                aClass = aClass.getSuperclass();
+              }
+              childrenComputed = true;
+              // we have to add all childrens here together after we set the childrenComputed flag
+              // to prevent a stackoverflow execption on double clickig an item
+              // it will recurse into the same items again but stop due to childrenComputed flag set
+              super.getChildren().addAll(children);
             }
-            aClass = aClass.getSuperclass();
+            return super.getChildren();
           }
-          childrenComputed = true;
-          // we have to add all childrens here together after we set the childrenComputed flag
-          // to prevent a stackoverflow execption on double clickig an item
-          // it will recurse into the same items again but stop due to childrenComputed flag set
-          super.getChildren().addAll(children);
-        }
-        return super.getChildren();
-      }
 
-      @Override
-      public boolean isLeaf() {
+          @Override
+          public boolean isLeaf() {
 
-        final Object value = getValue();
-        try {
-          return isLeaf(value);
-        } catch (IllegalAccessException e) {
-          e.printStackTrace();
-          return true;
-        }
+            final Object value = getValue();
+            try {
+              return isLeaf(value);
+            } catch (IllegalAccessException e) {
+              e.printStackTrace();
+              return true;
+            }
 
-        // return !isValueOfInterest(getValue());
-      }
+            // return !isValueOfInterest(getValue());
+          }
 
-      private boolean isLeaf(Object value) throws IllegalAccessException {
-        if (value == null) {
-          return true;
-        }
+          private boolean isLeaf(Object value) throws IllegalAccessException {
+            if (value == null) {
+              return true;
+            }
 
-        final Class<?> aClass = value.getClass();
+            final Class<?> aClass = value.getClass();
 
-        if (aClass.isPrimitive() || Primitives.isWrapperType(aClass)) {
-          return true;
-        }
+            if (aClass.isPrimitive() || Primitives.isWrapperType(aClass)) {
+              return true;
+            }
 
-        if (value instanceof Field) {
-          final Object parentValue = getParentValue(this);
+            if (value instanceof Field) {
+              final Object parentValue = getParentValue(this);
 
-          final Object fieldVal = ((Field) value).get(parentValue);
-          return isLeaf(fieldVal);
-        }
+              final Object fieldVal = ((Field) value).get(parentValue);
+              return isLeaf(fieldVal);
+            }
 
-        return false;
-      }
-    };
+            return false;
+          }
+        };
 
     return item;
   }
@@ -911,12 +1020,48 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
 
   private <S, T> TreeTableColumn<S, T> column(String title, Function<TreeItem<S>, T> property) {
     TreeTableColumn<S, T> column = new TreeTableColumn<>(title);
-    column.setCellValueFactory(cellData -> new SimpleObjectProperty<T>(property.apply(cellData.getValue())));
+    column.setCellValueFactory(
+        cellData -> new SimpleObjectProperty<T>(property.apply(cellData.getValue())));
     column.setPrefWidth(200);
     return column;
   }
 
   // endregion
+
+  private void setupSearchBar() {
+    CustomTextField searchField = new CustomTextField();
+    searchField.setLeft(new MaterialDesignIconView(MaterialDesignIcon.MAGNIFY, "20"));
+    final Button lastEntry = new Button();
+    lastEntry.setGraphic(new MaterialDesignIconView(MaterialDesignIcon.CHEVRON_UP, "20"));
+    lastEntry.setBorder(Border.EMPTY);
+    lastEntry.setDisable(true);
+    final Button nextEntry = new Button();
+    nextEntry.setGraphic(new MaterialDesignIconView(MaterialDesignIcon.CHEVRON_DOWN, "20"));
+    nextEntry.setBorder(Border.EMPTY);
+    nextEntry.setDisable(true);
+    final Label resultLabel = new Label();
+    resultLabel.setFont(new Font("arial", 15));
+    final HBox hBox = new HBox(searchField, lastEntry, nextEntry, resultLabel);
+    hBox.setAlignment(Pos.CENTER_LEFT);
+    hBox.setPadding(new Insets(0, 2, 0, 7));
+    notificationPane.setGraphic(hBox);
+    notificationPane.setCloseButtonVisible(true);
+
+    searchModel = new SearchModel();
+    searchModel.searchTerm().bind(searchField.textProperty());
+    searchField.onActionProperty().bind(searchModel.conductSearch());
+    resultLabel.textProperty().bind(searchModel.result());
+    lastEntry.disableProperty().bind(searchModel.hasPreviousEntry().not());
+    lastEntry.setOnAction(e -> searchModel.showPrevious());
+    nextEntry.disableProperty().bind(searchModel.hasNextEntry().not());
+    nextEntry.setOnAction(e -> searchModel.showNext());
+    notificationPane.setOnHidden(e -> searchModel.clearSearch());
+
+    notificationPane.setOnShowing(e -> searchField.requestFocus());
+  }
+  // endregion
+
+  // region JGraphXAdapter
 
   // region style helpers
   private static final class SB {
@@ -944,7 +1089,10 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     }
 
     private static String colorToString(Color color) {
-      return "#" + colorChanelToHex(color.getRed()) + colorChanelToHex(color.getGreen()) + colorChanelToHex(color.getBlue());
+      return "#"
+          + colorChanelToHex(color.getRed())
+          + colorChanelToHex(color.getGreen())
+          + colorChanelToHex(color.getBlue());
     }
 
     private static String colorChanelToHex(double chanelValue) {
@@ -966,8 +1114,8 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     }
 
     /**
-     * Sets all given attributes from the given style string. If the given style does not contain a given attribute, it is
-     * removed.
+     * Sets all given attributes from the given style string. If the given style does not contain a
+     * given attribute, it is removed.
      *
      * @param baseStyle
      * @param attributes
@@ -993,19 +1141,24 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     }
 
     private String mapToStyle(Map<String, String> curStyleMap) {
-      return curStyleMap.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue()).collect(Collectors.joining(";"));
+      return curStyleMap.entrySet().stream()
+          .map(e -> e.getKey() + "=" + e.getValue())
+          .collect(Collectors.joining(";"));
     }
 
     private Map<String, String> styleToMap(String style) {
-      return Arrays.stream(style.split(";")).filter(s -> !s.isEmpty()).map(kv -> kv.split("="))
+      return Arrays.stream(style.split(";"))
+          .filter(s -> !s.isEmpty())
+          .map(kv -> kv.split("="))
           .collect(Collectors.toMap(e -> e[0], e -> e[1]));
     }
   }
   // endregion
 
-  // region JGraphXAdapter
+  // region Searchbar
 
-  private final class MyJGraphXAdapter<State, Transition extends de.upb.testify.efsm.Transition<State, ?, ?>>
+  private final class MyJGraphXAdapter<
+          State, Transition extends de.upb.testify.efsm.Transition<State, ?, ?>>
       extends JGraphXAdapter<State, Transition> {
 
     public MyJGraphXAdapter(EFSM<State, ?, ?, Transition> efsm) {
@@ -1086,9 +1239,7 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
       }
     }
 
-    private void setSpecialEdgeProperty(Transition mapEdge, mxICell graphEdge) {
-
-    }
+    private void setSpecialEdgeProperty(Transition mapEdge, mxICell graphEdge) {}
 
     private void setSpecialVertexProperties(State root) {
       for (Map.Entry<State, mxICell> node : getVertexToCellMap().entrySet()) {
@@ -1097,8 +1248,12 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
         setSpecialVertexProperty(mapNode, graphNode);
       }
 
-      model.setStyle(getVertexToCellMap().get(root), new SB().set(mxConstants.STYLE_STROKECOLOR, COLOR_ROOT_VERTEX)
-          .set(mxConstants.STYLE_STROKEWIDTH, STROKE_WIDTH_HIGHLIGHTED).build());
+      model.setStyle(
+          getVertexToCellMap().get(root),
+          new SB()
+              .set(mxConstants.STYLE_STROKECOLOR, COLOR_ROOT_VERTEX)
+              .set(mxConstants.STYLE_STROKEWIDTH, STROKE_WIDTH_HIGHLIGHTED)
+              .build());
     }
 
     private void setSpecialVertexProperty(State mapNode, mxICell graphNode) {
@@ -1110,7 +1265,7 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
       mxGeometry g = (mxGeometry) cell.getGeometry().clone();
       mxRectangle bounds = getView().getState(cell).getLabelBounds();
       g.setHeight(bounds.getHeight() + 25); // 15 is for padding
-      cellsResized(new Object[] { cell }, new mxRectangle[] { g });
+      cellsResized(new Object[] {cell}, new mxRectangle[] {g});
     }
 
     private void layout() {
@@ -1126,8 +1281,11 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
       mxFastOrganicLayout layout = new mxFastOrganicLayout(this);
 
       // set some properties
-      final int maxLabelLength
-          = getVertexToCellMap().values().stream().mapToInt(c -> convertValueToString(c).length()).max().orElse(0);
+      final int maxLabelLength =
+          getVertexToCellMap().values().stream()
+              .mapToInt(c -> convertValueToString(c).length())
+              .max()
+              .orElse(0);
       final int forceConst = Math.max(200, maxLabelLength * 2);
 
       layout.setForceConstant(forceConst); // the higher, the more separated
@@ -1152,41 +1310,6 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     }
     // endregion
   }
-  // endregion
-
-  // region Searchbar
-
-  private void setupSearchBar() {
-    CustomTextField searchField = new CustomTextField();
-    searchField.setLeft(new MaterialDesignIconView(MaterialDesignIcon.MAGNIFY, "20"));
-    final Button lastEntry = new Button();
-    lastEntry.setGraphic(new MaterialDesignIconView(MaterialDesignIcon.CHEVRON_UP, "20"));
-    lastEntry.setBorder(Border.EMPTY);
-    lastEntry.setDisable(true);
-    final Button nextEntry = new Button();
-    nextEntry.setGraphic(new MaterialDesignIconView(MaterialDesignIcon.CHEVRON_DOWN, "20"));
-    nextEntry.setBorder(Border.EMPTY);
-    nextEntry.setDisable(true);
-    final Label resultLabel = new Label();
-    resultLabel.setFont(new Font("arial", 15));
-    final HBox hBox = new HBox(searchField, lastEntry, nextEntry, resultLabel);
-    hBox.setAlignment(Pos.CENTER_LEFT);
-    hBox.setPadding(new Insets(0, 2, 0, 7));
-    notificationPane.setGraphic(hBox);
-    notificationPane.setCloseButtonVisible(true);
-
-    searchModel = new SearchModel();
-    searchModel.searchTerm().bind(searchField.textProperty());
-    searchField.onActionProperty().bind(searchModel.conductSearch());
-    resultLabel.textProperty().bind(searchModel.result());
-    lastEntry.disableProperty().bind(searchModel.hasPreviousEntry().not());
-    lastEntry.setOnAction(e -> searchModel.showPrevious());
-    nextEntry.disableProperty().bind(searchModel.hasNextEntry().not());
-    nextEntry.setOnAction(e -> searchModel.showNext());
-    notificationPane.setOnHidden(e -> searchModel.clearSearch());
-
-    notificationPane.setOnShowing(e -> searchField.requestFocus());
-  }
 
   private class SearchModel {
 
@@ -1205,7 +1328,9 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     }
 
     public void updateIndex() {
-      allCells = mxGraphModel.getChildCells(jgxAdapter.getModel(), jgxAdapter.getDefaultParent(), true, true);
+      allCells =
+          mxGraphModel.getChildCells(
+              jgxAdapter.getModel(), jgxAdapter.getDefaultParent(), true, true);
       clearSearch();
     }
 
@@ -1248,47 +1373,53 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
 
       foundCell = found.get(index.get());
       oldStyle = getCellStyle(foundCell);
-      jgxAdapter.getModel().setStyle(foundCell,
-          new EFSMDebugger.SB(foundCell).set(mxConstants.STYLE_STROKEWIDTH, String.valueOf(STROKE_WIDTH_HIGHLIGHTED))
-              .set(mxConstants.STYLE_STROKECOLOR, COLOR_FOUND_CELL).build());
+      jgxAdapter
+          .getModel()
+          .setStyle(
+              foundCell,
+              new EFSMDebugger.SB(foundCell)
+                  .set(mxConstants.STYLE_STROKEWIDTH, String.valueOf(STROKE_WIDTH_HIGHLIGHTED))
+                  .set(mxConstants.STYLE_STROKECOLOR, COLOR_FOUND_CELL)
+                  .build());
       graphComponent.scrollCellToVisible(foundCell, true);
       showCellProperties(foundCell);
     }
 
     public ObservableValue<? extends EventHandler<ActionEvent>> conductSearch() {
-      EventHandler<ActionEvent> search = e -> {
-        if (!searchTermChanged.get()) {
-          if (hasNextEntry().get()) {
-            showNext();
-          }
-          return;
-        }
+      EventHandler<ActionEvent> search =
+          e -> {
+            if (!searchTermChanged.get()) {
+              if (hasNextEntry().get()) {
+                showNext();
+              }
+              return;
+            }
 
-        clearSearch();
+            clearSearch();
 
-        final String term = searchTerm.getValue().toLowerCase();
+            final String term = searchTerm.getValue().toLowerCase();
 
-        if (Strings.isNullOrEmpty(term)) {
-          resultText.set("No search term given");
-          return;
-        }
+            if (Strings.isNullOrEmpty(term)) {
+              resultText.set("No search term given");
+              return;
+            }
 
-        for (Object cell : allCells) {
-          final mxICell mxCell = (mxICell) cell;
-          if (mxCell.getValue().toString().toLowerCase().contains(term)) {
-            found.add(mxCell);
-          }
-        }
+            for (Object cell : allCells) {
+              final mxICell mxCell = (mxICell) cell;
+              if (mxCell.getValue().toString().toLowerCase().contains(term)) {
+                found.add(mxCell);
+              }
+            }
 
-        if (found.isEmpty()) {
-          resultText.set("No matches found");
-          return;
-        }
+            if (found.isEmpty()) {
+              resultText.set("No matches found");
+              return;
+            }
 
-        resultText.set(String.format("%d of %d matches", index.intValue() + 1, found.size()));
-        searchTermChanged.set(false);
-        showFound();
-      };
+            resultText.set(String.format("%d of %d matches", index.intValue() + 1, found.size()));
+            searchTermChanged.set(false);
+            showFound();
+          };
       return new SimpleObjectProperty<>(search);
     }
 

@@ -100,7 +100,7 @@ public class EFSM<
    *     configuration
    */
   public Set<Parameter> transition() {
-    return transition((Parameter) null);
+    return transition(null);
   }
 
   /**
@@ -127,7 +127,7 @@ public class EFSM<
    *     null if the input is not accepted in the current configuration
    */
   public Configuration<State, Context> transitionAndDrop() {
-    return transitionAndDrop((Parameter) null);
+    return transitionAndDrop(null);
   }
 
   public Configuration<State, Context> getConfiguration() {

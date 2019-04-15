@@ -1,6 +1,8 @@
 package de.upb.testify.efsm.eefsm;
 
 import de.upb.testify.efsm.Transition;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -8,11 +10,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 /** @author Manuel Benz created on 22.02.18 */
-public class ETransition<State, Input, ContextObject> extends Transition<State, Input, EEFSMContext<ContextObject>> {
+public class ETransition<State, Input, ContextObject>
+    extends Transition<State, Input, EEFSMContext<ContextObject>> {
 
   public static final String ℂ = "\u2102";
   protected final Input expectedInput;
@@ -23,8 +23,12 @@ public class ETransition<State, Input, ContextObject> extends Transition<State, 
 
   private final int cachedHash;
 
-  protected ETransition(Input expectedInput, ContextObject[] inContext, ContextObject[] notInContext,
-      ContextObject[] addToContext, ContextObject[] removeFromContext) {
+  protected ETransition(
+      Input expectedInput,
+      ContextObject[] inContext,
+      ContextObject[] notInContext,
+      ContextObject[] addToContext,
+      ContextObject[] removeFromContext) {
     this.expectedInput = expectedInput;
     // ensure that these arrays are not empty, so that later checks against null ensure there are
     // not operations
@@ -33,12 +37,21 @@ public class ETransition<State, Input, ContextObject> extends Transition<State, 
     this.addToContext = sanitize(addToContext);
     this.removeFromContext = sanitize(removeFromContext);
 
-    cachedHash = new HashCodeBuilder(17, 37).append(expectedInput).append(addToContext).append(removeFromContext)
-        .append(inContext).append(notInContext).append(getSrc()).append(getTgt()).toHashCode();
+    cachedHash =
+        new HashCodeBuilder(17, 37)
+            .append(expectedInput)
+            .append(addToContext)
+            .append(removeFromContext)
+            .append(inContext)
+            .append(notInContext)
+            .append(getSrc())
+            .append(getTgt())
+            .toHashCode();
   }
 
   /**
-   * Returns null if the given array is null or empty, the given array without null values otherwise.
+   * Returns null if the given array is null or empty, the given array without null values
+   * otherwise.
    *
    * @param array
    * @param <T>
@@ -81,20 +94,13 @@ public class ETransition<State, Input, ContextObject> extends Transition<State, 
   @Override
   protected boolean inputGuard(Input input) {
     // we accept epsilon (expectedInput=null) by checking if expected input is input
-    if (Objects.equals(expectedInput, input)) {
-      return true;
-    }
-    return false;
+    return Objects.equals(expectedInput, input);
   }
 
   @Override
   protected boolean domainGuard(EEFSMContext<ContextObject> eefsmContext) {
-    if ((inContext != null && !eefsmContext.elementOf(inContext))
-        || (notInContext != null && !eefsmContext.notElementOf(notInContext))) {
-      return false;
-    }
-
-    return true;
+    return (inContext == null || eefsmContext.elementOf(inContext))
+            && (notInContext == null || eefsmContext.notElementOf(notInContext));
   }
 
   @Override
@@ -151,7 +157,8 @@ public class ETransition<State, Input, ContextObject> extends Transition<State, 
         builder.append("(" + ℂ + " \u222A " + Arrays.toString(addToContext) + ")");
       }
       if (removeFromContext != null) {
-        builder.append((addToContext == null ? ℂ : "") + " \u2216 " + Arrays.toString(removeFromContext));
+        builder.append(
+            (addToContext == null ? ℂ : "") + " \u2216 " + Arrays.toString(removeFromContext));
       }
     } else {
       builder.append("-");
@@ -164,17 +171,21 @@ public class ETransition<State, Input, ContextObject> extends Transition<State, 
 
   @Override
   public boolean equals(Object o) {
-    if (this == o)
-      return true;
+    if (this == o) return true;
 
-    if (o == null || getClass() != o.getClass())
-      return false;
+    if (o == null || getClass() != o.getClass()) return false;
 
     ETransition<?, ?, ?> that = (ETransition<?, ?, ?>) o;
 
-    return new EqualsBuilder().append(expectedInput, that.expectedInput).append(addToContext, that.addToContext)
-        .append(removeFromContext, that.removeFromContext).append(inContext, that.inContext)
-        .append(notInContext, that.notInContext).append(getSrc(), that.getSrc()).append(getTgt(), that.getTgt()).isEquals();
+    return new EqualsBuilder()
+        .append(expectedInput, that.expectedInput)
+        .append(addToContext, that.addToContext)
+        .append(removeFromContext, that.removeFromContext)
+        .append(inContext, that.inContext)
+        .append(notInContext, that.notInContext)
+        .append(getSrc(), that.getSrc())
+        .append(getTgt(), that.getTgt())
+        .isEquals();
   }
 
   @Override

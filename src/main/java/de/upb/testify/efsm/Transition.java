@@ -14,7 +14,8 @@ public abstract class Transition<State, Parameter, Context> {
   }
 
   /**
-   * Assumes {@link Transition#isFeasible(Parameter, Context)} was called and returned true to work properly
+   * Assumes {@link Transition#isFeasible(Parameter, Context)} was called and returned true to work
+   * properly
    *
    * @param input
    * @param context
@@ -31,8 +32,8 @@ public abstract class Transition<State, Parameter, Context> {
   }
 
   /**
-   * Tries to take the transition by calling {@link Transition#isFeasible(Parameter, Context)} itself and returning null if
-   * the transition cannot be taken.
+   * Tries to take the transition by calling {@link Transition#isFeasible(Parameter, Context)}
+   * itself and returning null if the transition cannot be taken.
    *
    * @param input
    * @param context
@@ -65,8 +66,7 @@ public abstract class Transition<State, Parameter, Context> {
   /**
    * Has to handle the empty input (null)
    *
-   * @param input
-   *          Null as empty input or a Parameter
+   * @param input Null as empty input or a Parameter
    * @return
    */
   protected abstract boolean inputGuard(Parameter input);

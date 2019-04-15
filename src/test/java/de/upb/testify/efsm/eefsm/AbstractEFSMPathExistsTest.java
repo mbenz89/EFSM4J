@@ -1,24 +1,25 @@
 package de.upb.testify.efsm.eefsm;
 
-import java.io.IOException;
-
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import de.upb.testify.efsm.Configuration;
 import de.upb.testify.efsm.IFeasiblePathAlgo;
 import de.upb.testify.efsm.Param;
 import de.upb.testify.efsm.State;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
 
 /** @author Manuel Benz created on 26.03.18 */
 public abstract class AbstractEFSMPathExistsTest {
-  protected abstract IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>>
+  protected abstract IFeasiblePathAlgo<
+          State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>>
       getAlgo(EEFSM<State, Param, Object> eefsm);
 
   @Test
   void c1ToHx() {
     BasicInterComponentExample example = new BasicInterComponentExample();
-    IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp = getAlgo(example.eefsm);
+    IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp =
+        getAlgo(example.eefsm);
     Assertions.assertTrue(sfp.pathExists(example.Hx));
   }
 
@@ -26,7 +27,8 @@ public abstract class AbstractEFSMPathExistsTest {
   void c1ToHxWithOnStop() {
     BasicInterComponentExample example = new BasicInterComponentExample();
     EEFSM<State, Param, Object> eefsm = example.eefsm;
-    IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp = getAlgo(eefsm);
+    IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp =
+        getAlgo(eefsm);
     EEFSMContext<Object> context = new EEFSMContext<>();
     context.union(example.oR2, example.Hc);
 
@@ -39,7 +41,8 @@ public abstract class AbstractEFSMPathExistsTest {
   void infeasiblePath() {
     InterComponentExampleInfeasible example = new InterComponentExampleInfeasible();
     EEFSM<State, Param, Object> eefsm = example.eefsm;
-    IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp = getAlgo(eefsm);
+    IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp =
+        getAlgo(eefsm);
     Assertions.assertFalse(sfp.pathExists(example.Hx));
   }
 
@@ -50,7 +53,8 @@ public abstract class AbstractEFSMPathExistsTest {
 
     // new EFSMDotExporter(e).writeOut(Paths.get("./target/large.dot"));
 
-    IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp = getAlgo(e);
+    IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp =
+        getAlgo(e);
     Assertions.assertTrue(sfp.pathExists(example.example6.oR1));
     Assertions.assertTrue(sfp.pathExists(example.example3.oD1));
     Assertions.assertTrue(sfp.pathExists(example.tgt));
@@ -61,7 +65,8 @@ public abstract class AbstractEFSMPathExistsTest {
     LargeInterComponentExample example = new LargeInterComponentExample();
     EEFSM<State, Param, Object> e = example.eefsm;
 
-    IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp = getAlgo(e);
+    IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp =
+        getAlgo(e);
     Assertions.assertTrue(sfp.pathExists(example.example1.oR2));
     Assertions.assertTrue(sfp.pathExists(example.example2.oR2));
     Assertions.assertTrue(sfp.pathExists(example.example3.oR2));
@@ -75,11 +80,23 @@ public abstract class AbstractEFSMPathExistsTest {
     LargeInterComponentExample example = new LargeInterComponentExample();
     EEFSM<State, Param, Object> e = example.eefsm;
 
-    IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp = getAlgo(e);
-    e.forceConfiguration(new Configuration<>(example.example6.oR2,
-        new EEFSMContext<>(example.example1.Hc, example.example2.Hc, example.example3.Hc, example.example4.Hc,
-            example.example5.Hc, example.example6.Hc, example.example1.Le, example.example2.Le, example.example3.oSto1,
-            example.example5.oSto1, example.additionalContext)));
+    IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp =
+        getAlgo(e);
+    e.forceConfiguration(
+        new Configuration<>(
+            example.example6.oR2,
+            new EEFSMContext<>(
+                example.example1.Hc,
+                example.example2.Hc,
+                example.example3.Hc,
+                example.example4.Hc,
+                example.example5.Hc,
+                example.example6.Hc,
+                example.example1.Le,
+                example.example2.Le,
+                example.example3.oSto1,
+                example.example5.oSto1,
+                example.additionalContext)));
     Assertions.assertFalse(sfp.pathExists(example.example1.oR1));
   }
 
@@ -88,7 +105,8 @@ public abstract class AbstractEFSMPathExistsTest {
     MediumInterComponentExample example = new MediumInterComponentExample();
     EEFSM<State, Param, Object> eefsm = example.eefsm;
 
-    IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp = getAlgo(eefsm);
+    IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp =
+        getAlgo(eefsm);
     Assertions.assertTrue(sfp.pathExists(example.example1.oR1));
     Assertions.assertTrue(sfp.pathExists(example.example1.UIy));
     Assertions.assertTrue(sfp.pathExists(example.example1.Hf));

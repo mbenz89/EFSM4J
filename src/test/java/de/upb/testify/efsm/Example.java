@@ -12,68 +12,80 @@ public class Example {
   Object initialized = new Object();
   Object running = new Object();
 
-  SimpleTransition<State, Boolean, Context> trans1 = new SimpleTransition<State, Boolean, Context>() {
+  SimpleTransition<State, Boolean, Context> trans1 =
+      new SimpleTransition<State, Boolean, Context>() {
 
-    @Override
-    protected Set<Boolean> operation(Boolean input, Context context) {
-      context.remove(uninitialized);
-      context.add(initialized);
-      return null;
-    }
+        @Override
+        protected Set<Boolean> operation(Boolean input, Context context) {
+          context.remove(uninitialized);
+          context.add(initialized);
+          return null;
+        }
 
-    @Override
-    public boolean hasOperation() {
-      return true;
-    }
-  };
+        @Override
+        public boolean hasOperation() {
+          return true;
+        }
+      };
 
-  PGDGTransition<State, Boolean, Context> trans2 = new PGDGTransition<State, Boolean, Context>() {
-    @Override
-    protected boolean inputGuard(Boolean input) {
-      return input != null && input;
-    }
+  PGDGTransition<State, Boolean, Context> trans2 =
+      new PGDGTransition<State, Boolean, Context>() {
+        @Override
+        protected boolean inputGuard(Boolean input) {
+          return input != null && input;
+        }
 
-    @Override
-    protected boolean domainGuard(Context context) {
-      return context.contains(initialized);
-    }
+        @Override
+        protected boolean domainGuard(Context context) {
+          return context.contains(initialized);
+        }
 
-    @Override
-    protected Set<Boolean> operation(Boolean input, Context context) {
-      context.remove(initialized);
-      context.add(running);
-      return null;
-    }
+        @Override
+        protected Set<Boolean> operation(Boolean input, Context context) {
+          context.remove(initialized);
+          context.add(running);
+          return null;
+        }
 
-    @Override
-    public boolean hasOperation() {
-      return true;
-    }
-  };
-  DGTransition<State, Boolean, Context> trans3 = new DGTransition<State, Boolean, Context>() {
-    @Override
-    protected boolean domainGuard(Context context) {
-      return context.contains(running);
-    }
+        @Override
+        public boolean hasOperation() {
+          return true;
+        }
+      };
+  DGTransition<State, Boolean, Context> trans3 =
+      new DGTransition<State, Boolean, Context>() {
+        @Override
+        protected boolean domainGuard(Context context) {
+          return context.contains(running);
+        }
 
-    @Override
-    protected Set<Boolean> operation(Boolean input, Context context) {
-      context.remove(running);
-      context.add(initialized);
-      return null;
-    }
+        @Override
+        protected Set<Boolean> operation(Boolean input, Context context) {
+          context.remove(running);
+          context.add(initialized);
+          return null;
+        }
 
-    @Override
-    public boolean hasOperation() {
-      return true;
-    }
-  };
+        @Override
+        public boolean hasOperation() {
+          return true;
+        }
+      };
   EFSM<State, Boolean, Context, Transition<State, Boolean, Context>> efsm;
-  private EFSMBuilder<State, Boolean, Context, Transition<State, Boolean, Context>,
-      EFSM<State, Boolean, Context, Transition<State, Boolean, Context>>> builder = new EFSMBuilder(EFSM.class);
+  private EFSMBuilder<
+          State,
+          Boolean,
+          Context,
+          Transition<State, Boolean, Context>,
+          EFSM<State, Boolean, Context, Transition<State, Boolean, Context>>>
+      builder = new EFSMBuilder(EFSM.class);
 
   public Example() {
-    efsm = builder.withTransition(state0, state1, trans1).withTransition(state1, state2, trans2)
-        .withTransition(state2, state1, trans3).build(state0, new Context(uninitialized));
+    efsm =
+        builder
+            .withTransition(state0, state1, trans1)
+            .withTransition(state1, state2, trans2)
+            .withTransition(state2, state1, trans3)
+            .build(state0, new Context(uninitialized));
   }
 }

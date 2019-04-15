@@ -1,5 +1,8 @@
 package de.upb.testify.efsm;
 
+import org.jgrapht.io.DOTExporter;
+import org.jgrapht.io.IntegerComponentNameProvider;
+
 import java.io.BufferedWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -8,9 +11,6 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.function.Function;
-
-import org.jgrapht.io.DOTExporter;
-import org.jgrapht.io.IntegerComponentNameProvider;
 
 /** @author Manuel Benz created on 24.02.18 */
 public class EFSMDotExporter<State, Transition> {
@@ -22,7 +22,9 @@ public class EFSMDotExporter<State, Transition> {
     this(efsm, Object::toString, Object::toString);
   }
 
-  public EFSMDotExporter(EFSM<State, Transition, ?, ?> efsm, Function<State, String> stateLabeler,
+  public EFSMDotExporter(
+      EFSM<State, Transition, ?, ?> efsm,
+      Function<State, String> stateLabeler,
       Function<Transition, String> edgeLabeler) {
     this.efsm = efsm;
     this.stateLabeler = stateLabeler;
@@ -30,11 +32,16 @@ public class EFSMDotExporter<State, Transition> {
   }
 
   public void writeOut(Path outFile) throws IOException {
-    DOTExporter exporter = new DOTExporter<State, Transition>(new IntegerComponentNameProvider<>(),
-        s -> stateLabeler.apply(s), t -> edgeLabeler.apply(t));
+    DOTExporter exporter =
+        new DOTExporter<State, Transition>(
+            new IntegerComponentNameProvider<>(),
+            s -> stateLabeler.apply(s),
+            t -> edgeLabeler.apply(t));
 
-    try (Writer writer
-        = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outFile.toFile()), StandardCharsets.UTF_8))) {
+    try (Writer writer =
+        new BufferedWriter(
+            new OutputStreamWriter(
+                new FileOutputStream(outFile.toFile()), StandardCharsets.UTF_8))) {
       exporter.exportGraph(efsm.getBaseGraph(), writer);
     }
   }

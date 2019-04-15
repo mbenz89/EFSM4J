@@ -1,22 +1,21 @@
 package de.upb.testify.efsm.eefsm;
 
+import com.google.common.base.Stopwatch;
 import de.upb.testify.efsm.IFeasiblePathAlgo;
 import de.upb.testify.efsm.Param;
 import de.upb.testify.efsm.State;
-
-import com.google.common.base.Stopwatch;
-
-import java.time.Duration;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+
+import java.time.Duration;
 
 /** @author Manuel Benz created on 26.03.18 */
 class GraphExplosionFeasiblePathAlgorithmTest extends AbstractEEFSMFPAlgoTest {
 
   @Override
-  protected IEEFSMFeasiblePathAlgo<State, Param, Object> getAlgo(EEFSM<State, Param, Object> eefsm) {
+  protected IEEFSMFeasiblePathAlgo<State, Param, Object> getAlgo(
+      EEFSM<State, Param, Object> eefsm) {
     return new GraphExplosionFeasiblePathAlgorithm(eefsm);
   }
 
@@ -25,7 +24,8 @@ class GraphExplosionFeasiblePathAlgorithmTest extends AbstractEEFSMFPAlgoTest {
   void doItOften() {
     LargeInterComponentExample example = new LargeInterComponentExample();
     EEFSM<State, Param, Object> e = example.eefsm;
-    IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp = getAlgo(e);
+    IFeasiblePathAlgo<State, Param, EEFSMContext<Object>, ETransition<State, Param, Object>> sfp =
+        getAlgo(e);
     for (int i = 0; i < 300; i++) {
       sfp.getPath(example.example6.oR2);
     }
@@ -36,12 +36,13 @@ class GraphExplosionFeasiblePathAlgorithmTest extends AbstractEEFSMFPAlgoTest {
     MediumInterComponentExample example = new MediumInterComponentExample();
     EEFSM<State, Param, Object> e = example.eefsm;
 
-    final GraphExplosionFeasiblePathAlgorithm<State, Param, Object> sfp = new GraphExplosionFeasiblePathAlgorithm<>(e);
+    final GraphExplosionFeasiblePathAlgorithm<State, Param, Object> sfp =
+        new GraphExplosionFeasiblePathAlgorithm<>(e);
 
     Stopwatch sw = Stopwatch.createStarted();
 
-    final GraphExplosionFeasiblePathAlgorithm<State, Param, Object>.SingleSourceShortestPath sssp
-        = sfp.getSingleSourceShortestPath();
+    final GraphExplosionFeasiblePathAlgorithm<State, Param, Object>.SingleSourceShortestPath sssp =
+        sfp.getSingleSourceShortestPath();
 
     final Duration computationTime = sw.elapsed();
     sw.reset().start();
@@ -70,8 +71,9 @@ class GraphExplosionFeasiblePathAlgorithmTest extends AbstractEEFSMFPAlgoTest {
 
     final Duration queryTime = sw.elapsed();
 
-    Assertions.assertTrue(computationTime.compareTo(queryTime) > 0,
-        String.format("Computation time (%s) smaller than query time (%s)", computationTime, queryTime));
+    Assertions.assertTrue(
+        computationTime.compareTo(queryTime) > 0,
+        String.format(
+            "Computation time (%s) smaller than query time (%s)", computationTime, queryTime));
   }
-
 }

@@ -87,7 +87,9 @@ public class EEFSMContext<ContextObject> implements IEFSMContext<EEFSMContext<Co
 
   @Override
   public String toString() {
-    return "{" + internalSet.stream().map(ContextObject::toString).collect(Collectors.joining(", ")) + "}";
+    return "{"
+        + internalSet.stream().map(ContextObject::toString).collect(Collectors.joining(", "))
+        + "}";
   }
 
   @Override
