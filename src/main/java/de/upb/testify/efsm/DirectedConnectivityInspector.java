@@ -3,7 +3,8 @@ package de.upb.testify.efsm;
 import java.lang.reflect.Field;
 
 import org.jgrapht.Graph;
-import org.jgrapht.alg.ConnectivityInspector;
+import org.jgrapht.alg.connectivity.ConnectivityInspector;
+
 
 /** @author Manuel Benz created on 26.03.18 */
 public class DirectedConnectivityInspector<V, E> extends ConnectivityInspector<V, E> {
