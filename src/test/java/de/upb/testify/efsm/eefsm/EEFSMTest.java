@@ -5,13 +5,12 @@ import de.upb.testify.efsm.EFSMDotExporter;
 import de.upb.testify.efsm.Param;
 import de.upb.testify.efsm.State;
 import de.upb.testify.efsm.Super;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Set;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** @author Manuel Benz created on 22.02.18 */
 class EEFSMTest {

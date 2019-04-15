@@ -1,8 +1,6 @@
 package de.upb.testify.efsm;
 
 import com.google.common.collect.Lists;
-import org.jgrapht.GraphPath;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -12,6 +10,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Spliterator;
 import java.util.function.Consumer;
+import org.jgrapht.GraphPath;
 
 /** @author Manuel Benz created on 02.03.18 */
 public class EFSMPath<

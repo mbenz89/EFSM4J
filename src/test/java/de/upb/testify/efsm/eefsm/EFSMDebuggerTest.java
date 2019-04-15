@@ -4,11 +4,10 @@ import de.upb.testify.efsm.EFSMDebugger;
 import de.upb.testify.efsm.EFSMPath;
 import de.upb.testify.efsm.Param;
 import de.upb.testify.efsm.State;
+import java.util.Iterator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-
-import java.util.Iterator;
 
 /** @author Manuel Benz created on 26.02.18 */
 public class EFSMDebuggerTest {

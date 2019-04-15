@@ -13,17 +13,6 @@ import de.upb.testify.efsm.DirectedConnectivityInspector;
 import de.upb.testify.efsm.EFSMPath;
 import de.upb.testify.efsm.IFeasiblePathAlgo;
 import de.upb.testify.efsm.JGraphBasedFPALgo;
-import org.jgrapht.GraphPath;
-import org.jgrapht.alg.interfaces.ShortestPathAlgorithm;
-import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
-import org.jgrapht.graph.DirectedPseudograph;
-import org.jgrapht.io.DOTExporter;
-import org.jgrapht.io.ExportException;
-import org.jgrapht.io.IntegerComponentNameProvider;
-import org.jgrapht.io.StringComponentNameProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,6 +23,16 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
+import org.jgrapht.GraphPath;
+import org.jgrapht.alg.interfaces.ShortestPathAlgorithm;
+import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
+import org.jgrapht.graph.DirectedPseudograph;
+import org.jgrapht.io.DOTExporter;
+import org.jgrapht.io.ExportException;
+import org.jgrapht.io.IntegerComponentNameProvider;
+import org.jgrapht.io.StringComponentNameProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Computes feasible paths based on an exploded graph where ich node is a feasible configuration of
@@ -255,7 +254,9 @@ public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context>
 
   private void explode(EEFSM<State, Parameter, Context> eefsm) {
     Set<State> rootNodes =
-        baseGraph.vertexSet().stream()
+        baseGraph
+            .vertexSet()
+            .stream()
             .filter(v -> baseGraph.inDegreeOf(v) == 0)
             .collect(Collectors.toSet());
 

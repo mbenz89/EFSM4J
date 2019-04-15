@@ -1,16 +1,15 @@
 package de.upb.testify.efsm;
 
 import com.google.common.base.Preconditions;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.TypeVariable;
+import java.util.Arrays;
+import java.util.Set;
 import org.jgrapht.Graph;
 import org.jgrapht.Graphs;
 import org.jgrapht.graph.DirectedPseudograph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.TypeVariable;
-import java.util.Arrays;
-import java.util.Set;
 
 /** @author Manuel Benz created on 20.02.18 */
 public class EFSMBuilder<

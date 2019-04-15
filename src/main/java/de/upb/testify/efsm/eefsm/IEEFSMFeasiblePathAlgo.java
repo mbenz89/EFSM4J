@@ -2,7 +2,6 @@ package de.upb.testify.efsm.eefsm;
 
 import de.upb.testify.efsm.Configuration;
 import de.upb.testify.efsm.IFeasiblePathAlgo;
-
 import java.util.List;
 
 /** @author Manuel Benz created on 29.05.18 */

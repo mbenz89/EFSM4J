@@ -49,6 +49,7 @@
         <controlsfx.version>8.40.14</controlsfx.version>
         <fontawesomefx-commons.version>8.15</fontawesomefx-commons.version>
         <fontawesomefx-materialdesignfont.version>1.7.22-4</fontawesomefx-materialdesignfont.version>
+        <googleformatter-maven-plugin.version>1.6.4</googleformatter-maven-plugin.version>
     </properties>
     <dependencies>
         <dependency>
@@ -122,6 +123,27 @@
     </repositories>
     <build>
         <plugins>
+            <plugin>
+                <groupId>com.theoryinpractise</groupId>
+                <artifactId>googleformatter-maven-plugin</artifactId>
+                <version>${googleformatter-maven-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>reformat-sources</id>
+                        <configuration>
+                            <includeStale>false</includeStale>
+                            <style>GOOGLE</style>
+                            <filterModified>false</filterModified>
+                            <skip>false</skip>
+                            <fixImports>true</fixImports>
+                        </configuration>
+                        <goals>
+                            <goal>format</goal>
+                        </goals>
+                        <phase>process-sources</phase>
+                    </execution>
+                </executions>
+            </plugin>
             <!-- JUnit 5 requires Surefire version 2.22.1 or higher -->
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>

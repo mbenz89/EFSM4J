@@ -1,8 +1,7 @@
 package de.upb.testify.efsm;
 
-import org.jgrapht.ListenableGraph;
-
 import java.util.List;
+import org.jgrapht.ListenableGraph;
 
 /** @author Manuel Benz created on 02.03.18 */
 public abstract class JGraphBasedFPALgo<

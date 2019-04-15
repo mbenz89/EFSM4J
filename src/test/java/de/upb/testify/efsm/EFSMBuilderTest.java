@@ -1,11 +1,10 @@
 package de.upb.testify.efsm;
 
 import com.google.common.collect.Sets;
+import java.util.Collections;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.Collections;
 
 /** @author Manuel Benz created on 20.02.18 */
 class EFSMBuilderTest {

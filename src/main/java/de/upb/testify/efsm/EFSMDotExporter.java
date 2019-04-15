@@ -1,8 +1,5 @@
 package de.upb.testify.efsm;
 
-import org.jgrapht.io.DOTExporter;
-import org.jgrapht.io.IntegerComponentNameProvider;
-
 import java.io.BufferedWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -11,6 +8,8 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.function.Function;
+import org.jgrapht.io.DOTExporter;
+import org.jgrapht.io.IntegerComponentNameProvider;
 
 /** @author Manuel Benz created on 24.02.18 */
 public class EFSMDotExporter<State, Transition> {

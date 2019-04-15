@@ -3,12 +3,11 @@ package de.upb.testify.efsm.eefsm;
 import de.upb.testify.efsm.Configuration;
 import de.upb.testify.efsm.EFSM;
 import de.upb.testify.efsm.EFSMBuilder;
-import org.jgrapht.Graph;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import org.jgrapht.Graph;
 
 /** @author Manuel Benz created on 22.02.18 */
 public class EEFSM<State, Input, ContextObject>

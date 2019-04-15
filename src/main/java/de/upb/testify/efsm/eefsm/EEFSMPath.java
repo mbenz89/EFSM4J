@@ -1,11 +1,10 @@
 package de.upb.testify.efsm.eefsm;
 
 import de.upb.testify.efsm.EFSMPath;
-import org.jgrapht.GraphPath;
-
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import org.jgrapht.GraphPath;
 
 /** @author Manuel Benz created on 02.03.18 */
 public class EEFSMPath<State, Input, ContextObject>

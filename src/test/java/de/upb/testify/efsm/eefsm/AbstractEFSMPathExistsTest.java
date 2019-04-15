@@ -4,10 +4,9 @@ import de.upb.testify.efsm.Configuration;
 import de.upb.testify.efsm.IFeasiblePathAlgo;
 import de.upb.testify.efsm.Param;
 import de.upb.testify.efsm.State;
+import java.io.IOException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
 
 /** @author Manuel Benz created on 26.03.18 */
 public abstract class AbstractEFSMPathExistsTest {

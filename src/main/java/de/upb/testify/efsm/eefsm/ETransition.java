@@ -1,14 +1,13 @@
 package de.upb.testify.efsm.eefsm;
 
 import de.upb.testify.efsm.Transition;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /** @author Manuel Benz created on 22.02.18 */
 public class ETransition<State, Input, ContextObject>
@@ -100,7 +99,7 @@ public class ETransition<State, Input, ContextObject>
   @Override
   protected boolean domainGuard(EEFSMContext<ContextObject> eefsmContext) {
     return (inContext == null || eefsmContext.elementOf(inContext))
-            && (notInContext == null || eefsmContext.notElementOf(notInContext));
+        && (notInContext == null || eefsmContext.notElementOf(notInContext));
   }
 
   @Override

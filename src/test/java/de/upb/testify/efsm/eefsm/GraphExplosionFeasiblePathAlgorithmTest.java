@@ -4,11 +4,10 @@ import com.google.common.base.Stopwatch;
 import de.upb.testify.efsm.IFeasiblePathAlgo;
 import de.upb.testify.efsm.Param;
 import de.upb.testify.efsm.State;
+import java.time.Duration;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-
-import java.time.Duration;
 
 /** @author Manuel Benz created on 26.03.18 */
 class GraphExplosionFeasiblePathAlgorithmTest extends AbstractEEFSMFPAlgoTest {

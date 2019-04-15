@@ -1,7 +1,6 @@
 package de.upb.testify.efsm.eefsm;
 
 import de.upb.testify.efsm.IEFSMContext;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
