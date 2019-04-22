@@ -46,7 +46,7 @@
         <jgrapht-core.version>1.3.0</jgrapht-core.version>
         <guava.version>27.1-jre</guava.version>
         <jgraphx.version>3.4.1.3</jgraphx.version>
-        <controlsfx.version>8.40.14</controlsfx.version>
+        <controlsfx.version>11.0.0</controlsfx.version>
         <fontawesomefx-commons.version>8.15</fontawesomefx-commons.version>
         <fontawesomefx-materialdesignfont.version>1.7.22-4</fontawesomefx-materialdesignfont.version>
         <googleformatter-maven-plugin.version>1.7.2</googleformatter-maven-plugin.version>
