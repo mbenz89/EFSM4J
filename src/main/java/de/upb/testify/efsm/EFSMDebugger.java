@@ -14,9 +14,11 @@ import com.mxgraph.swing.mxGraphComponent;
 import com.mxgraph.util.mxConstants;
 import com.mxgraph.util.mxRectangle;
 import com.sun.javafx.collections.ObservableListWrapper;
+
 import de.jensd.fx.glyphs.materialdesignicons.MaterialDesignIcon;
 import de.jensd.fx.glyphs.materialdesignicons.MaterialDesignIconView;
 import de.upb.testify.efsm.eefsm.EEFSM;
+
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -36,6 +38,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import javax.naming.Context;
+import javax.swing.JComponent;
+import javax.swing.JViewport;
+import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
+
+import org.apache.commons.lang3.tuple.Pair;
+import org.controlsfx.control.NotificationPane;
+import org.controlsfx.control.StatusBar;
+import org.controlsfx.control.textfield.CustomTextField;
+import org.jgrapht.ext.JGraphXAdapter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
@@ -76,18 +93,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-import javax.naming.Context;
-import javax.swing.JComponent;
-import javax.swing.JViewport;
-import javax.swing.SwingUtilities;
-import javax.swing.ToolTipManager;
-import org.apache.commons.lang3.tuple.Pair;
-import org.controlsfx.control.NotificationPane;
-import org.controlsfx.control.StatusBar;
-import org.controlsfx.control.textfield.CustomTextField;
-import org.jgrapht.ext.JGraphXAdapter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /** @author Manuel Benz created on 01.02.18 */
 public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transition<State, ?, ?>>
@@ -1140,9 +1145,7 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     }
 
     private String mapToStyle(Map<String, String> curStyleMap) {
-      return curStyleMap
-          .entrySet()
-          .stream()
+      return curStyleMap.entrySet().stream()
           .map(e -> e.getKey() + "=" + e.getValue())
           .collect(Collectors.joining(";"));
     }
@@ -1283,9 +1286,7 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
 
       // set some properties
       final int maxLabelLength =
-          getVertexToCellMap()
-              .values()
-              .stream()
+          getVertexToCellMap().values().stream()
               .mapToInt(c -> convertValueToString(c).length())
               .max()
               .orElse(0);
