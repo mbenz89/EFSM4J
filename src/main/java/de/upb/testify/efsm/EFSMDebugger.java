@@ -14,11 +14,9 @@ import com.mxgraph.swing.mxGraphComponent;
 import com.mxgraph.util.mxConstants;
 import com.mxgraph.util.mxRectangle;
 import com.sun.javafx.collections.ObservableListWrapper;
-
 import de.jensd.fx.glyphs.materialdesignicons.MaterialDesignIcon;
 import de.jensd.fx.glyphs.materialdesignicons.MaterialDesignIconView;
 import de.upb.testify.efsm.eefsm.EEFSM;
-
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -38,21 +36,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import javax.naming.Context;
-import javax.swing.JComponent;
-import javax.swing.JViewport;
-import javax.swing.SwingUtilities;
-import javax.swing.ToolTipManager;
-
-import org.apache.commons.lang3.tuple.Pair;
-import org.controlsfx.control.NotificationPane;
-import org.controlsfx.control.StatusBar;
-import org.controlsfx.control.textfield.CustomTextField;
-import org.jgrapht.ext.JGraphXAdapter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
@@ -93,9 +76,23 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import javax.swing.JComponent;
+import javax.swing.JViewport;
+import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
+import org.apache.commons.lang3.tuple.Pair;
+import org.controlsfx.control.NotificationPane;
+import org.controlsfx.control.StatusBar;
+import org.controlsfx.control.textfield.CustomTextField;
+import org.jgrapht.ext.JGraphXAdapter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** @author Manuel Benz created on 01.02.18 */
-public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transition<State, ?, ?>>
+public class EFSMDebugger<
+        State,
+        Transition extends de.upb.testify.efsm.Transition<State, ?, Context>,
+        Context extends IEFSMContext<Context>>
     extends Application implements PropertyChangeListener {
 
   // region fields and constants
@@ -131,6 +128,8 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
   private Function<Object, String> stateLabeler;
   private Function<Object, String> transitionLabeler;
   private SearchModel searchModel;
+  private Map<mxICell, String> infeasibleEdgeStyles = new HashMap<>();
+  private EFSM<State, ?, ?, Transition> efsm;
 
   // endregion
 
@@ -144,16 +143,22 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
 
   // region setup
 
-  public static synchronized <State, Transition extends de.upb.testify.efsm.Transition<State, ?, ?>>
-      EFSMDebugger<State, Transition> startDebugger(
-          EFSM<State, ?, ?, Transition> efsm, boolean startInControlMode) {
+  public static synchronized <
+          State,
+          Transition extends de.upb.testify.efsm.Transition<State, ?, Context>,
+          Context extends IEFSMContext<Context>>
+      EFSMDebugger<State, Transition, Context> startDebugger(
+          EFSM<State, ?, Context, Transition> efsm, boolean startInControlMode) {
     return startDebugger(
         efsm, startInControlMode, state -> state.toString(), transition -> transition.toString());
   }
 
-  public static synchronized <State, Transition extends de.upb.testify.efsm.Transition<State, ?, ?>>
-      EFSMDebugger<State, Transition> startDebugger(
-          EFSM<State, ?, ?, Transition> efsm,
+  public static synchronized <
+          State,
+          Transition extends de.upb.testify.efsm.Transition<State, ?, Context>,
+          Context extends IEFSMContext<Context>>
+      EFSMDebugger<State, Transition, Context> startDebugger(
+          EFSM<State, ?, Context, Transition> efsm,
           boolean startInControlMode,
           Function<State, String> stateLabeler,
           Function<Transition, String> transitionLabeler) {
@@ -202,10 +207,11 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
   }
 
   private void init(
-      EFSM<State, ?, ?, Transition> efsm,
+      EFSM<State, ?, Context, Transition> efsm,
       boolean startInControlMode,
       Function<State, String> stateLabeler,
       Function<Transition, String> transitionLabeler) {
+    this.efsm = efsm;
     logger.debug("Starting up efsm debugger...");
     Stopwatch sw = Stopwatch.createStarted();
 
@@ -284,7 +290,7 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
   }
 
   public void reset(
-      EFSM<State, ?, ?, Transition> efsm,
+      EFSM<State, ?, Context, Transition> efsm,
       boolean startInControlMode,
       Function<State, String> stateLabeler,
       Function<Transition, String> transitionLabeler) {
@@ -418,7 +424,34 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
     }
   }
 
-  private void setCurrentConfig(Configuration<State, ?> newConfig) {
+  private void markInfeasiblePaths(mxIGraphModel model, Configuration<State, Context> curConfig) {
+    for (Transition transition : efsm.transitionsOutOf(curConfig.getState())) {
+      // en edge is infeasible if the domain guard does not allow the current context
+      if (!transition.domainGuard(curConfig.getContext())) {
+        mxICell edge = jgxAdapter.getEdgeToCellMap().get(transition);
+        String oldStyle = getCellStyle(edge);
+        infeasibleEdgeStyles.put(edge, oldStyle);
+        String newStyle = new SB(edge).set(mxConstants.STYLE_DASHED, true).build();
+        model.setStyle(edge, newStyle);
+      }
+    }
+  }
+
+  private void resetInfeasiblePaths(mxIGraphModel model) {
+    for (Map.Entry<mxICell, String> infeasibleEdges : infeasibleEdgeStyles.entrySet()) {
+      mxICell edge = infeasibleEdges.getKey();
+      model.setStyle(
+          edge, new SB(edge).setFrom(infeasibleEdges.getValue(), mxConstants.STYLE_DASHED).build());
+    }
+    infeasibleEdgeStyles.clear();
+  }
+
+  private void setCurrentConfig(Configuration<State, Context> newConfig) {
+    mxIGraphModel model = jgxAdapter.getModel();
+
+    model.beginUpdate();
+    resetInfeasiblePaths(model);
+
     curState = jgxAdapter.getVertexToCellMap().get(newConfig.getState());
 
     savedStyleCurState = getCellStyle(curState);
@@ -426,6 +459,9 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
         new SB(curState).set(mxConstants.STYLE_FILLCOLOR, COLOR_CUR_VERTEX).build(),
         new mxICell[] {curState});
     toCur.setDisable(false);
+
+    markInfeasiblePaths(model, newConfig);
+    model.endUpdate();
 
     // show the new context in the properties window
     Platform.runLater(
@@ -455,7 +491,7 @@ public class EFSMDebugger<State, Transition extends de.upb.testify.efsm.Transiti
    *
    * @param path The path to highlight or null remove path highlighting all together
    */
-  public void highlightPath(EFSMPath<State, ?, ?, Transition> path) {
+  public void highlightPath(EFSMPath<State, ?, Context, Transition> path) {
     HashMap<Transition, mxICell> edgeToCellMap = jgxAdapter.getEdgeToCellMap();
 
     mxIGraphModel model = jgxAdapter.getModel();
