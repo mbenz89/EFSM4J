@@ -129,7 +129,7 @@ public class EFSMDebugger<
   private Function<Object, String> transitionLabeler;
   private SearchModel searchModel;
   private Map<mxICell, String> infeasibleEdgeStyles = new HashMap<>();
-  private EFSM<State, ?, ?, Transition> efsm;
+  private EFSM<State, ?, Context, Transition> efsm;
 
   // endregion
 
