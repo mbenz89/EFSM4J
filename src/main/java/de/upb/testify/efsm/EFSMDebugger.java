@@ -17,6 +17,7 @@ import com.sun.javafx.collections.ObservableListWrapper;
 import de.jensd.fx.glyphs.materialdesignicons.MaterialDesignIcon;
 import de.jensd.fx.glyphs.materialdesignicons.MaterialDesignIconView;
 import de.upb.testify.efsm.eefsm.EEFSM;
+import de.upb.testify.efsm.eefsm.ETransition;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -77,6 +78,8 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javax.swing.JComponent;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
@@ -91,7 +94,8 @@ import org.slf4j.LoggerFactory;
 /** @author Manuel Benz created on 01.02.18 */
 public class EFSMDebugger<
         State,
-        Transition extends de.upb.testify.efsm.Transition<State, ?, Context>,
+        Input,
+        Transition extends de.upb.testify.efsm.Transition<State, Input, Context>,
         Context extends IEFSMContext<Context>>
     extends Application implements PropertyChangeListener {
 
@@ -129,7 +133,7 @@ public class EFSMDebugger<
   private Function<Object, String> transitionLabeler;
   private SearchModel searchModel;
   private Map<mxICell, String> infeasibleEdgeStyles = new HashMap<>();
-  private EFSM<State, ?, Context, Transition> efsm;
+  private EFSM<State, Input, Context, Transition> efsm;
 
   // endregion
 
@@ -145,20 +149,22 @@ public class EFSMDebugger<
 
   public static synchronized <
           State,
-          Transition extends de.upb.testify.efsm.Transition<State, ?, Context>,
+          Input,
+          Transition extends de.upb.testify.efsm.Transition<State, Input, Context>,
           Context extends IEFSMContext<Context>>
-      EFSMDebugger<State, Transition, Context> startDebugger(
-          EFSM<State, ?, Context, Transition> efsm, boolean startInControlMode) {
+      EFSMDebugger<State, Input, Transition, Context> startDebugger(
+          EFSM<State, Input, Context, Transition> efsm, boolean startInControlMode) {
     return startDebugger(
         efsm, startInControlMode, state -> state.toString(), transition -> transition.toString());
   }
 
   public static synchronized <
           State,
-          Transition extends de.upb.testify.efsm.Transition<State, ?, Context>,
+          Input,
+          Transition extends de.upb.testify.efsm.Transition<State, Input, Context>,
           Context extends IEFSMContext<Context>>
-      EFSMDebugger<State, Transition, Context> startDebugger(
-          EFSM<State, ?, Context, Transition> efsm,
+      EFSMDebugger<State, Input, Transition, Context> startDebugger(
+          EFSM<State, Input, Context, Transition> efsm,
           boolean startInControlMode,
           Function<State, String> stateLabeler,
           Function<Transition, String> transitionLabeler) {
@@ -207,7 +213,7 @@ public class EFSMDebugger<
   }
 
   private void init(
-      EFSM<State, ?, Context, Transition> efsm,
+      EFSM<State, Input, Context, Transition> efsm,
       boolean startInControlMode,
       Function<State, String> stateLabeler,
       Function<Transition, String> transitionLabeler) {
@@ -233,6 +239,7 @@ public class EFSMDebugger<
     setupScrolling();
     setupZooming();
     setupHaltOnNode();
+    setupEdgeContextMenu();
 
     notificationPane = new NotificationPane(createSwingNode(graphComponent));
     setupSearchBar();
@@ -712,6 +719,44 @@ public class EFSMDebugger<
 
   // region control
 
+  private void setupEdgeContextMenu() {
+    graphComponent
+        .getGraphControl()
+        .addMouseListener(
+            new MouseAdapter() {
+              @Override
+              public void mouseClicked(MouseEvent e) {
+                if (e.getButton() == MouseEvent.BUTTON3) {
+                  Object cellAt = graphComponent.getCellAt(e.getX(), e.getY());
+                  if (cellAt != null) {
+                    mxICell cell = (mxICell) cellAt;
+                    if (cell.isEdge()) {
+                      Transition transition = jgxAdapter.getCellToEdgeMap().get(cell);
+                      // this only works for EEFSMs due to knowing the input value
+                      // Also, we only show the menu if the transition is adjacent to the current
+                      // state
+                      if (transition instanceof ETransition
+                          && efsm.transitionsOutOf(efsm.curState).contains(transition)
+                          && transition.isFeasible(
+                              ((ETransition<State, Input, ?>) transition).getExpectedInput(),
+                              efsm.curContext)) {
+                        JPopupMenu menu = new JPopupMenu("Popup");
+                        JMenuItem item1 = new JMenuItem("Transition!");
+                        item1.addActionListener(
+                            e1 ->
+                                efsm.transition(
+                                    ((ETransition<State, Input, ?>) transition)
+                                        .getExpectedInput()));
+                        menu.add(item1);
+                        menu.show(e.getComponent(), e.getX(), e.getY());
+                      }
+                    }
+                  }
+                }
+              }
+            });
+  }
+
   private void setupHaltOnNode() {
     graphComponent
         .getGraphControl()
@@ -784,27 +829,31 @@ public class EFSMDebugger<
 
           @Override
           public void mouseDragged(MouseEvent e) {
-            final JComponent jc = (JComponent) e.getSource();
-            Container c = jc.getParent();
-            if (c instanceof JViewport) {
-              JViewport vport = (JViewport) c;
-              Point cp = SwingUtilities.convertPoint(jc, e.getPoint(), vport);
-              Point vp = vport.getViewPosition();
-              vp.translate(pp.x - cp.x, pp.y - cp.y);
-              jc.scrollRectToVisible(new Rectangle(vp, vport.getSize()));
-              pp.setLocation(cp);
+            if (e.getButton() == MouseEvent.BUTTON1) {
+              final JComponent jc = (JComponent) e.getSource();
+              Container c = jc.getParent();
+              if (c instanceof JViewport) {
+                JViewport vport = (JViewport) c;
+                Point cp = SwingUtilities.convertPoint(jc, e.getPoint(), vport);
+                Point vp = vport.getViewPosition();
+                vp.translate(pp.x - cp.x, pp.y - cp.y);
+                jc.scrollRectToVisible(new Rectangle(vp, vport.getSize()));
+                pp.setLocation(cp);
+              }
             }
           }
 
           @Override
           public void mousePressed(MouseEvent e) {
-            JComponent jc = (JComponent) e.getSource();
-            Container c = jc.getParent();
-            if (c instanceof JViewport) {
-              jc.setCursor(hndCursor);
-              JViewport vport = (JViewport) c;
-              Point cp = SwingUtilities.convertPoint(jc, e.getPoint(), vport);
-              pp.setLocation(cp);
+            if (e.getButton() == MouseEvent.BUTTON1) {
+              JComponent jc = (JComponent) e.getSource();
+              Container c = jc.getParent();
+              if (c instanceof JViewport) {
+                jc.setCursor(hndCursor);
+                JViewport vport = (JViewport) c;
+                Point cp = SwingUtilities.convertPoint(jc, e.getPoint(), vport);
+                pp.setLocation(cp);
+              }
             }
           }
 

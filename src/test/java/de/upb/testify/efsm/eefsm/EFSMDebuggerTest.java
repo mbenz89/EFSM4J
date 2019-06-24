@@ -15,7 +15,7 @@ public class EFSMDebuggerTest {
   public static void debugThis(EEFSMPath<State, Param, Object> path) {
     final EEFSM<State, Param, Object> efsm = path.getEefsm();
 
-    EFSMDebugger<State, ETransition<State, Param, Object>, EEFSMContext<Object>> debugger =
+    EFSMDebugger<State, Param, ETransition<State, Param, Object>, EEFSMContext<Object>> debugger =
         EFSMDebugger.startDebugger(efsm, true, state -> state.toString(), t -> t.toString());
     debugger.highlightPath(path);
     debugger.highlightStates(path.getTgt());
