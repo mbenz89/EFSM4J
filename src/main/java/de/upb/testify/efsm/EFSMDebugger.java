@@ -14,10 +14,12 @@ import com.mxgraph.swing.mxGraphComponent;
 import com.mxgraph.util.mxConstants;
 import com.mxgraph.util.mxRectangle;
 import com.sun.javafx.collections.ObservableListWrapper;
+
 import de.jensd.fx.glyphs.materialdesignicons.MaterialDesignIcon;
 import de.jensd.fx.glyphs.materialdesignicons.MaterialDesignIconView;
 import de.upb.testify.efsm.eefsm.EEFSM;
 import de.upb.testify.efsm.eefsm.ETransition;
+
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -37,6 +39,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import javax.swing.JComponent;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.JViewport;
+import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
+
+import org.apache.commons.lang3.tuple.Pair;
+import org.controlsfx.control.NotificationPane;
+import org.controlsfx.control.StatusBar;
+import org.controlsfx.control.textfield.CustomTextField;
+import org.jgrapht.ext.JGraphXAdapter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
@@ -77,19 +95,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-import javax.swing.JComponent;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.JViewport;
-import javax.swing.SwingUtilities;
-import javax.swing.ToolTipManager;
-import org.apache.commons.lang3.tuple.Pair;
-import org.controlsfx.control.NotificationPane;
-import org.controlsfx.control.StatusBar;
-import org.controlsfx.control.textfield.CustomTextField;
-import org.jgrapht.ext.JGraphXAdapter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /** @author Manuel Benz created on 01.02.18 */
 public class EFSMDebugger<
@@ -509,8 +514,11 @@ public class EFSMDebugger<
     if (highlightedPath != null) {
       for (Transition transition : highlightedPath) {
         mxICell mxICell = edgeToCellMap.get(transition);
-        model.setStyle(
-            mxICell, new SB(mxICell).set(mxConstants.STYLE_STROKECOLOR, Color.BLACK).build());
+        if (mxICell != null) {
+          // we might not have this edge anymore
+          model.setStyle(
+              mxICell, new SB(mxICell).set(mxConstants.STYLE_STROKECOLOR, Color.BLACK).build());
+        }
       }
     }
 

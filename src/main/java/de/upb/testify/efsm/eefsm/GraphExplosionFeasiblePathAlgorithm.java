@@ -8,11 +8,13 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.Sets;
+
 import de.upb.testify.efsm.Configuration;
 import de.upb.testify.efsm.DirectedConnectivityInspector;
 import de.upb.testify.efsm.EFSMPath;
 import de.upb.testify.efsm.IFeasiblePathAlgo;
 import de.upb.testify.efsm.JGraphBasedFPALgo;
+
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,9 +25,13 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
+
 import org.jgrapht.GraphPath;
 import org.jgrapht.alg.interfaces.ShortestPathAlgorithm;
 import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
+import org.jgrapht.event.GraphEdgeChangeEvent;
+import org.jgrapht.event.GraphListener;
+import org.jgrapht.event.GraphVertexChangeEvent;
 import org.jgrapht.graph.DirectedPseudograph;
 import org.jgrapht.io.DOTExporter;
 import org.jgrapht.io.ExportException;
@@ -46,7 +52,8 @@ import org.slf4j.LoggerFactory;
 public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context>
     extends JGraphBasedFPALgo<
         State, Parameter, EEFSMContext<Context>, ETransition<State, Parameter, Context>>
-    implements IEEFSMFeasiblePathAlgo<State, Parameter, Context> {
+    implements IEEFSMFeasiblePathAlgo<State, Parameter, Context>,
+        GraphListener<State, ETransition<State, Parameter, Context>> {
 
   private static final Logger logger =
       LoggerFactory.getLogger(GraphExplosionFeasiblePathAlgorithm.class);
@@ -79,6 +86,8 @@ public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context>
         explodedEEFSM.edgeSet().size());
     connectivityInspector = new DirectedConnectivityInspector<>(explodedEEFSM);
     shortestPath = new DijkstraShortestPath<>(explodedEEFSM);
+
+    baseGraph.addGraphListener(this);
   }
 
   @Override
@@ -304,6 +313,42 @@ public class GraphExplosionFeasiblePathAlgorithm<State, Parameter, Context>
       throw new RuntimeException(e);
     }
   }
+
+  /**
+   * Removes all transitions that are duplicates of the given transition
+   *
+   * @param transition
+   */
+  private void killEdge(ETransition<State, Parameter, Context> transition) {
+    Collection<Configuration<State, EEFSMContext<Context>>> srcs =
+        stateToConfigs.get(transition.getSrc());
+    Collection<Configuration<State, EEFSMContext<Context>>> tgts =
+        stateToConfigs.get(transition.getTgt());
+
+    for (Configuration<State, EEFSMContext<Context>> src : srcs) {
+      for (Configuration<State, EEFSMContext<Context>> tgt : tgts) {
+        TransitionWrapper candidate = explodedEEFSM.getEdge(src, tgt);
+        if (candidate != null && candidate.t == transition) {
+          explodedEEFSM.removeEdge(candidate);
+        }
+      }
+    }
+  }
+
+  @Override
+  public void edgeAdded(GraphEdgeChangeEvent<State, ETransition<State, Parameter, Context>> e) {}
+
+  @Override
+  public void edgeRemoved(GraphEdgeChangeEvent<State, ETransition<State, Parameter, Context>> e) {
+    killEdge(e.getEdge());
+  }
+
+  @Override
+  public void vertexAdded(GraphVertexChangeEvent<State> e) {
+  }
+
+  @Override
+  public void vertexRemoved(GraphVertexChangeEvent<State> e) {}
 
   private static final class NoPathForTargetException extends Exception {
 
