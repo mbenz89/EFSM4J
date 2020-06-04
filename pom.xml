@@ -49,7 +49,7 @@
         <controlsfx.version>8.40.14</controlsfx.version>
         <fontawesomefx-commons.version>8.15</fontawesomefx-commons.version>
         <fontawesomefx-materialdesignfont.version>1.7.22-4</fontawesomefx-materialdesignfont.version>
-        <fmt-maven-plugin.version>2.9</fmt-maven-plugin.version>
+        <fmt-maven-plugin.version>2.10</fmt-maven-plugin.version>
     </properties>
     <dependencies>
         <dependency>
