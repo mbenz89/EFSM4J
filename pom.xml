@@ -47,8 +47,8 @@
         <guava.version>28.0-jre</guava.version>
         <jgraphx.version>3.4.1.3</jgraphx.version>
         <controlsfx.version>8.40.14</controlsfx.version>
-        <fontawesomefx-commons.version>8.15</fontawesomefx-commons.version>
-        <fontawesomefx-materialdesignfont.version>1.7.22-4</fontawesomefx-materialdesignfont.version>
+        <fontawesomefx-commons.version>9.1.2</fontawesomefx-commons.version>
+        <fontawesomefx-materialdesignfont.version>2.0.26-9.1.2</fontawesomefx-materialdesignfont.version>
         <fmt-maven-plugin.version>2.9</fmt-maven-plugin.version>
     </properties>
     <dependencies>
